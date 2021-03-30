@@ -1,0 +1,40 @@
+//
+// Created by Khurram Javed on 2021-03-29.
+//
+
+#include <string>
+#include <iostream>
+#include <vector>
+#include <mysql.h>
+
+#ifndef BINDING_DATABASE_H
+#define BINDING_DATABASE_H
+
+
+class Database {
+    MYSQL *mysql;
+
+
+    static std::string vec_to_tuple(std::vector<std::string> row, const std::string &padding);
+
+public:
+    int connect();
+
+    int connect_and_use(std::string database_name);
+
+    int create_database(const std::string &database_name);
+
+    int add_rows_to_table(const std::string &database_name, const std::string &table, const std::vector<std::string> &keys,
+                          const std::vector<std::vector<std::string>> &values);
+
+    int add_row_to_table(const std::string &database_name, const std::string &table, std::vector<std::string> keys, std::vector<std::string> values);
+
+    int run_query(std::string query, const std::string &database_name);
+
+    int make_table(const std::string &database_name, const std::string &table, std::vector<std::string> keys, std::vector<std::string> types,
+                   std::vector<std::string> index_columns);
+
+    Database();
+};
+
+#endif //BINDING_DATABASE_H
