@@ -3,15 +3,12 @@
 //
 
 #include "../../include/experiment/Experiment.h"
-#include "../../include/nlohmann/json.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
+#include <assert.h>
 #include "../../include/experiment/Database.h"
-
-
-using json = nlohmann::json;
 
 
 std::map<std::string, std::vector<std::string>> Experiment::parse_params(int total_prams, char **pram_list) {
@@ -79,30 +76,35 @@ Experiment::Experiment(int argc, char *argv[]) {
         std::cout << arg.first << " " << arg.second[selected_combinations[temp_counter]] << std::endl;
         temp_counter++;
     }
-
-    this->database_name = "khurram_" + this->args_for_run["name"];
-    this->d.create_database(this->database_name);
-    std::vector<std::string> keys, values, types;
-    for(auto const& imap: this->args_for_run) {
-        keys.push_back(imap.first);
-        if (!imap.second.empty() && imap.second.find_first_not_of("-0123456789") == std::string::npos)
-        {
-            types.emplace_back("int");
-        }
-        else if(!imap.second.empty() && imap.second.find_first_not_of("-.0123456789") == std::string::npos) {
-            types.emplace_back("real");
-        }
-        else
-            types.emplace_back("text");
-
-        values.push_back(imap.second);
-
-    }
-    this->d.make_table(this->database_name, "runs", keys, types, std::vector<std::string> {"run"});
-    this->d.add_row_to_table(this->database_name, "runs", keys, values);
-
-
-
-
+//
+//    this->database_name = "khurram_" + this->args_for_run["name"];
+//    this->d.create_database(this->database_name);
+//    std::vector<std::string> keys, values, types;
+//    for(auto const& imap: this->args_for_run) {
+//        keys.push_back(imap.first);
+//        if (!imap.second.empty() && imap.second.find_first_not_of("-0123456789") == std::string::npos)
+//        {
+//            types.emplace_back("int");
+//        }
+//        else if(!imap.second.empty() && imap.second.find_first_not_of("-.0123456789") == std::string::npos) {
+//            types.emplace_back("real");
+//        }
+//        else
+//            types.emplace_back("text");
+//
+//        values.push_back(imap.second);
+//
+//    }
+//    this->d.make_table(this->database_name, "runs", keys, types, std::vector<std::string> {"run"});
+//    this->d.add_row_to_table(this->database_name, "runs", keys, values);
 }
 
+
+int Experiment::get_int_param(const std::string& param) {
+//    std::cout << "Param count " << param << this->args_for_run.count(param) << " " << std::endl;
+    if (this->args_for_run.count(param) == 0){
+        std::cout << "Param does not exist\n";
+        throw std::invalid_argument("Param " + param +  " does not exist");
+    }
+    return std::stoi(this->args_for_run[param]);
+}

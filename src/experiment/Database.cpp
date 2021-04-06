@@ -61,7 +61,7 @@ int Database::connect_and_use(std::string database_name) {
                        NULL,        /* socket file or named pipe name */
                        CLIENT_FOUND_ROWS /* connection flags */ );
     std::string use_query = "USE " + database_name + ";";
-    std::cout << "Running query " << use_query << std::endl;
+//    std::cout << "Running query " << use_query << std::endl;
     int selection = mysql_query(this->mysql, &use_query[0]);
     return 0;
 
@@ -69,6 +69,7 @@ int Database::connect_and_use(std::string database_name) {
 
 int Database::create_database(const std::string &database_name) {
     std::string query = "CREATE DATABASE " + database_name + ";";
+    std::cout << query << std::endl;
     this->connect();
     int val = mysql_query(this->mysql, &query[0]);
     if (val) {
@@ -98,7 +99,8 @@ std::string Database::vec_to_tuple(std::vector<std::string> row, const std::stri
     return tup;
 }
 
-int Database::add_rows_to_table(const std::string &database_name, const std::string &table, const std::vector<std::string> &keys,
+int Database::add_rows_to_table(const std::string &database_name, const std::string &table,
+                                const std::vector<std::string> &keys,
                                 const std::vector<std::vector<std::string>> &values) {
     for (auto &value : values) {
         std::string query = "INSERT INTO " + table + vec_to_tuple(keys, "") + " VALUES " + vec_to_tuple(value, "'");
@@ -110,7 +112,8 @@ int Database::add_rows_to_table(const std::string &database_name, const std::str
 }
 
 int
-Database::add_row_to_table(const std::string &database_name, const std::string &table, std::vector<std::string> keys, std::vector<std::string> values) {
+Database::add_row_to_table(const std::string &database_name, const std::string &table, std::vector<std::string> keys,
+                           std::vector<std::string> values) {
     std::string query = "INSERT INTO " + table + vec_to_tuple(keys, "") + " VALUES " + vec_to_tuple(values, "'");
     this->run_query(query, database_name);
     mysql_commit(this->mysql);
@@ -118,7 +121,8 @@ Database::add_row_to_table(const std::string &database_name, const std::string &
     return 0;
 }
 
-int Database::make_table(const std::string &database_name, const std::string &table, std::vector<std::string> keys, std::vector<std::string> types,
+int Database::make_table(const std::string &database_name, const std::string &table, std::vector<std::string> keys,
+                         std::vector<std::string> types,
                          std::vector<std::string> index_columns) {
     if (this->connect() == 0) {
         std::string query;
