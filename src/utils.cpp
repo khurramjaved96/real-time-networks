@@ -9,7 +9,6 @@
 
 
 void print_vector(std::vector<float> const &v) {
-    std::cout << "Begin print\n";
     std::cout << "[";
     int counter = 0;
     for (auto i = v.begin(); i != v.end(); ++i) {
@@ -18,11 +17,9 @@ void print_vector(std::vector<float> const &v) {
         counter++;
     }
     std::cout << "]\n";
-    std::cout << "End print\n";
 }
 
 void print_vector(std::vector<int> const &v) {
-    std::cout << "Begin print\n";
     std::cout << "[";
     int counter = 0;
     for (auto i = v.begin(); i != v.end(); ++i) {
@@ -31,12 +28,10 @@ void print_vector(std::vector<int> const &v) {
         counter++;
     }
     std::cout << "]\n";
-    std::cout << "End print\n";
 }
 
 
 void print_matrix(std::vector<std::vector<int>> const &v) {
-    std::cout << "Begin print\n";
     int counter = 0;
     for(int temp=0; temp<v.size(); temp++) {
         if (temp > 50)
@@ -58,5 +53,4 @@ void print_matrix(std::vector<std::vector<int>> const &v) {
         std::cout << "]\n";
     }
     std::cout << "\n";
-    std::cout << "End print\n";
 }
