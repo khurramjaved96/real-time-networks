@@ -20,7 +20,7 @@ public:
     std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
     std::vector<neuron*> output_neuros;
-    std::vector<synapse> all_synapses;
+    std::vector<synapse*> all_synapses;
     std::vector<std::vector<int>> adjacency_matric;
     NeuralNetwork(int total_layers, int width);
     void set_input_values(std::vector<float> const &input_values);
