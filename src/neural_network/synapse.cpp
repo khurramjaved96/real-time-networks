@@ -9,17 +9,21 @@
 #include <mutex>
 #include "../../include/neural_networks/neuron.h"
 #include "../../include/neural_networks/utils.h"
+#include <math.h>
 
 long long int temp=0;
-synapse::synapse(neuron *input, neuron *output, float w) {
+synapse::synapse(neuron *input, neuron *output, float w, float step_size) {
     input_neurons = input;
     output_neurons = output;
     credit = 0;
     weight = w;
-    step_size = 0.0001;
+    this->step_size = step_size;
     input_neurons->outgoing_synapses.push_back(this);
     output_neurons->incoming_synapses.push_back(this);
     print_status = false;
+    float b1=0;
+    float b2=0;
+
 }
 
 
@@ -45,7 +49,26 @@ void synapse::zero_gradient() {
 }
 
 void synapse::update_weight() {
-    this->weight -= this->step_size*this->credit;
+    this->b1 = this->b1*0.9 + this->credit*0.1;
+    this->b2 = this->b2*0.99 + (this->credit*this->credit)*0.01;
+//    std::cout << this->weight << " " << this->step_size << " " << this->credit << std::endl;
+    this->weight += (this->step_size*this->credit)/(sqrt(this->b2) + 0.00000001);
+//    std::cout << this->credit << " " << this->weight << std::endl;
+//    this->weight += this->step_size*this->credit;
+
+    if(this->weight > 5){
+        std::cout << this->credit << " " << this->weight << std::endl;
+        std::cout << this->input_neurons->id << " " << this->output_neurons->id << " Cutting weight\n";
+        exit(1);
+//        this->weight = 2;
+    }
+    else if(this->weight< -5)
+    {std::cout << this->credit << " " << this->weight << std::endl;
+        std::cout << this->input_neurons->id << " " << this->output_neurons->id << " Cutting weight\n";
+        std::cout << "Cutting weight\n";
+        exit(1);
+//        this->weight = -2;
+    }
 }
 
 void synapse::read_gradient() {
