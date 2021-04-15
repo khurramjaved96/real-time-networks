@@ -24,7 +24,7 @@ class CustomNetwork{
     std::vector<synapse*> all_synapses;
 public:
     std::vector<neuron*> input_neurons;
-    CustomNetwork();
+    CustomNetwork(float step_size, int width, int seed);
     ~CustomNetwork();
     void print_graph(neuron* root);
     void set_print_bool();
@@ -33,7 +33,7 @@ public:
     void step();
     std::vector<float> read_output_values();
     std::vector<float> read_all_values();
-    void introduce_targets(std::vector<float> targets);
+    float introduce_targets(std::vector<float> targets);
     int get_input_size();
     int get_total_synapses();
 };
