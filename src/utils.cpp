@@ -13,7 +13,7 @@ void print_vector(std::vector<float> const &v) {
     int counter = 0;
     for (auto i = v.begin(); i != v.end(); ++i) {
         std::cout << " " << std::setw(3)  <<  *i << ",";
-        if (counter % 10 == 9) std::cout << "\n";
+        if (counter % 50 == 49) std::cout << "\n";
         counter++;
     }
     std::cout << "]\n";
