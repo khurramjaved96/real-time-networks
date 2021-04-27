@@ -43,12 +43,15 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
 
     std::mt19937 mt(seed);
     mt.seed(seed);
-    std::uniform_real_distribution<float> dist(-0.001, 0.001);
+    float top_range = sqrt(2.0/float(width));
+    float input_range = sqrt(2.0/float(this->input_neurons.size()));
+    std::normal_distribution<float> dist(0, top_range);
+    std::normal_distribution<float> dist_inp(0, input_range);
 
 //    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
 //    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
     std::vector<neuron*> neurons_so_far;
-    for(int layer=0; layer < 5; layer++)
+    for(int layer=0; layer < 30; layer++)
     {
         std::vector<neuron*> this_layer;
         for(int this_layer_neuron = 0; this_layer_neuron < width; this_layer_neuron++) {
@@ -56,16 +59,25 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
             this->all_neurons.push_back(n);
             this_layer.push_back(n);
 //            adding connections from input
-            for(auto &it : this->input_neurons){
-                this->all_synapses.push_back(new synapse(it, n, dist(mt), step_size));
+            if(layer==0)
+            {
+                for (auto &it : this->input_neurons) {
+                    this->all_synapses.push_back(new synapse(it, n, dist_inp(mt), step_size));
+                }
             }
+//            Output weights should be initaliezd to be zero.bash
             for(auto &it : this->output_neuros){
-                this->all_synapses.push_back(new synapse(n, it,  dist(mt), step_size));
+                this->all_synapses.push_back(new synapse(n, it,  0, step_size));
             }
             for (auto &it : neurons_so_far) {
-                this->all_synapses.push_back(new synapse(it, n, dist(mt), step_size));
+                this->all_synapses.push_back(new synapse(it, n, dist(mt)*top_range, step_size));
             }
         }
+        while (!neurons_so_far.empty())
+        {
+            neurons_so_far.pop_back();
+        }
+
         for(auto &it : this_layer){
             neurons_so_far.push_back(it);
         }
