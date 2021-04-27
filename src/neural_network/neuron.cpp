@@ -36,20 +36,29 @@ void neuron::update_value() {
 
 void neuron::fire(int time_step) {
     this->value = temp_value;
-    if (this->activation_type && this->value < 0) {
+    if (this->activation_type && this->value <= 0) {
         this->value = 0;
     }
-    this->past_activations.push(std::pair<float, int>(this->value, time_step));
     temp_value = 0;
+    this->past_activations.push(std::pair<float, int>(this->value, time_step));
+
 }
 
 void neuron::forward_gradients() {
 
     if (!this->error_gradient.empty()) {
         for (auto &it : this->incoming_synapses) {
-            message grad_temp(this->error_gradient.front().message_value, this->error_gradient.front().time_step);
+            float message_value = 0;
+            if (this->past_activations.front().first > 0 or !activation_type or true) {
+                message_value = this->error_gradient.front().message_value;
+            }
+            else{
+                message_value = 0;
+            }
+            message grad_temp(message_value, this->error_gradient.front().time_step);
             grad_temp.distance_travelled = this->error_gradient.front().distance_travelled + 1;
             it->grad_queue.push(grad_temp);
+
         }
         this->error_gradient.pop();
     }
@@ -60,7 +69,12 @@ float neuron::introduce_targets(float target, int time_step) {
 
         assert(time_step == this->past_activations.front().second);
         float error = target - this->past_activations.front().first;
-        message m(error, time_step);
+        float error_grad = error ;
+        if(this->past_activations.front().first <= 0 and this->activation_type){
+            error_grad = 0;
+        }
+//        std::cout << "Error = " << error << std::endl;
+        message m(error_grad, time_step);
         this->error_gradient.push(m);
         this->past_activations.pop();
         return error*error;
@@ -110,9 +124,11 @@ void neuron::propogate_error() {
                         distance_vector.push_back(output_synapses_iterator->grad_queue.front().distance_travelled);
 
 //                    Only accumulate gradient if activation was non-zero.
-                        if (this->past_activations.front().first > 0)
-                            accumulate_gradient += output_synapses_iterator->weight *
-                                                   output_synapses_iterator->grad_queue.front().message_value;
+                        if (this->past_activations.front().first > 0 or !this->activation_type) {
+//                            std::cout << "Past activation = " << this->past_activations.front().first << std::endl;
+                        accumulate_gradient += output_synapses_iterator->weight *
+                                               output_synapses_iterator->grad_queue.front().message_value;
+                        }
 
                         if (time_check == 99999) {
                             time_check = activation_time_required;
