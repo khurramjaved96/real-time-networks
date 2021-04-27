@@ -52,24 +52,29 @@ int main(int argc, char *argv[]) {
 
 
         std::vector<float> temp_target;
-        if (counter % 3 == 0) {
-            my_network.set_input_values(std::vector<float>{1, 1});
-            temp_target.push_back(0.50);
-            temp_target.push_back(-0.50);
-        } else if (counter % 3 == 1) {
-            my_network.set_input_values(std::vector<float>{1, 0});
-            temp_target.push_back(-0.1);
-            temp_target.push_back(-0.3);
-        } else {
-            my_network.set_input_values(std::vector<float>{0, 1});
-            temp_target.push_back(-0.50);
-            temp_target.push_back(0.40);
-        }
+
+        temp_target.push_back(tc.get_target(gamma));
+        my_network.set_input_values(tc.step());
+
+//        temp_target.push_back(0);
+//        if (counter % 3 == 0) {
+//            my_network.set_input_values(std::vector<float>{1, 1});
+//            temp_target.push_back(0.50);
+//            temp_target.push_back(-0.50);
+//        } else if (counter % 3 == 1) {
+//            my_network.set_input_values(std::vector<float>{1, 0});
+//            temp_target.push_back(-0.1);
+//            temp_target.push_back(-0.3);
+//        } else {
+//            my_network.set_input_values(std::vector<float>{0, 1});
+//            temp_target.push_back(-0.50);
+//            temp_target.push_back(0.40);
+//        }
 
         if (running_error == -1)
             running_error = my_network.introduce_targets(temp_target);
         else
-            running_error = running_error * 0.99 + 0.01 * my_network.introduce_targets(temp_target);
+            running_error = running_error * 0.999 + 0.001 * my_network.introduce_targets(temp_target);
 
 
 
@@ -79,7 +84,7 @@ int main(int argc, char *argv[]) {
 //
         my_network.step();
 
-        if(counter % 100 == 0)
+        if(counter % 500 == 0)
         {
             error.push_back(std::to_string(counter));
             error.push_back(std::to_string(my_experiment.get_int_param("run")));
@@ -88,17 +93,27 @@ int main(int argc, char *argv[]) {
             error_logger.push_back(error);
 
         }
+        if(counter % 10000 < 100)
+        {
+            std::vector<float> cur_state = tc.get_state();
+            cur_state.push_back(tc.get_target(gamma) );
+            cur_state.push_back(my_network.read_output_values()[0]);
+//            cur_state[2] = tc.get_target(gamma);
+//            cur_state[3] = my_network.read_output_values()[0];
+            print_vector(cur_state);
+        }
         if(counter % 10000 == 0)
         {
             synapses_metric.add_values(error_logger);
             error_logger.clear();
         }
-        if (counter % 1000 == 0 || counter % 1000 == 999 || counter % 1000 == 998) {
+        if (counter % 1000 == 0 || counter % 10000 == 999 || counter % 10000 == 998) {
             std::cout << "### STEP = " << counter << std::endl;
             std::cout << "Running error = " << running_error << std::endl;
 
 
             print_vector(my_network.read_output_values());
+            std::cout << "Target = " << tc.get_target(gamma) << std::endl;
         }
     }
 
@@ -109,7 +124,7 @@ int main(int argc, char *argv[]) {
               << " fps" << std::endl;
     return 0;
 }
-//
+
 //
 // Created by Khurram Javed on 2021-04-01.
 //
