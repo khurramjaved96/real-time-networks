@@ -14,13 +14,22 @@
 #include "include/neural_networks/utils.h"
 #include "include/experiment/Metric.h"
 #include "src/hybrid_code/queue.cu"
-
+#include "include/animal_learning/tracecondioning.h"
 
 
 int main(int argc, char *argv[]) {
 
 //    std::string default_config = "--name test --width 10 --seed 0 --steps 100 --run 0";
     std::cout << "Program started \n";
+    float gamma = 1 - 1.0/(3.0);
+    TraceConditioning tc = TraceConditioning(std::pair<int, int>(20, 20), std::pair<int, int>(60, 100), 2, 2);
+    for(int temp = 0; temp<200; temp++)
+    {
+        std::vector<float> cur_state = tc.step();
+        cur_state[2] = tc.get_target(gamma);
+        print_vector(cur_state);
+    }
+//    exit(1);
     Experiment my_experiment = Experiment(argc, argv);
     std::cout << "Experiment object created \n";
     int width = my_experiment.get_int_param("width");
