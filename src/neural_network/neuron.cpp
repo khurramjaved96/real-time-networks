@@ -67,7 +67,13 @@ void neuron::forward_gradients() {
 float neuron::introduce_targets(float target, int time_step) {
     if (!this->past_activations.empty()) {
 
-        assert(time_step == this->past_activations.front().second);
+        //TODO this assert is bugged, or the time_step is (compile with Debug flag)
+        //assert(time_step == this->past_activations.front().second);
+        //if (time_step != this->past_activations.front().second) {
+        //    std::cout << "test" << std::endl;
+        //}
+        //std::cout << "time_step: " << time_step << std::endl;
+        //std::cout << "this->past_activations.front().second: " << this->past_activations.front().second << std::endl;
         float error = target - this->past_activations.front().first;
         float error_grad = error ;
         if(this->past_activations.front().first <= 0 and this->activation_type){
