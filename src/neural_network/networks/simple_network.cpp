@@ -24,14 +24,14 @@ SimpleNetwork::SimpleNetwork(float step_size, int width, int seed) {
     }
 
     std::vector<neuron*> neurons_so_far;
-    for(int layer=0; layer < 3; layer++)
+    for(int layer=0; layer < 100; layer++)
     {
         std::vector<neuron*> this_layer;
         for(int this_layer_neuron = 0; this_layer_neuron < width; this_layer_neuron++) {
             auto* n = new neuron(true);
             this->all_neurons.push_back(n);
             this_layer.push_back(n);
-            std::cout << layer << ":" << n->id << std::endl;
+            //std::cout << layer << ":" << n->id << std::endl;
 //            adding connections from input
             if(layer==0)
             {
@@ -76,7 +76,7 @@ void SimpleNetwork::print_graph(neuron *root) {
                       << os->grad_queue.size() << "\t\t" << current_n->input_neurons->past_activations.size()
                       << "\t\t\t" << current_n->output_neurons->past_activations.size() << "\t\t\t"
                       << current_n->input_neurons->error_gradient.size()
-                      << "\t\t" << current_n->credit << std::endl;
+                      << "\t\tc:" << current_n->credit << "\t\t\tw:" << os->weight << std::endl;
             current_n->print_status = true;
         }
         print_graph(current_n->output_neurons);
@@ -194,13 +194,42 @@ float SimpleNetwork::introduce_targets(std::vector<float> targets) {
 }
 
 void SimpleNetwork::initialize_network(const std::vector<std::vector<float>>& input_batch) {
+    // calculate mean of inputs and use it to initialize the network
     std::vector<float> mean_of_inputs = mean(input_batch);
+    this->set_input_values(mean_of_inputs);
 
-//    std::for_each(
-//            std::execution::par_unseq,
-//            all_neurons.begin(),
-//            all_neurons.end(),
-//            [&](neuron *n) {
-//                n->fire(this->time_step);
-//            });
+    // turn grads off
+    std::for_each(
+            std::execution::par_unseq,
+            all_neurons.begin(),
+            all_neurons.end(),
+            [&](neuron *n) {
+                n->no_grad = true;
+            });
+
+    // pass forward the mean inputs
+    std::for_each(
+            std::execution::par_unseq,
+            input_neurons.begin(),
+            input_neurons.end(),
+            [&](neuron *n) {
+                n->fire(0);
+            });
+
+    // parallel execution messes this up
+    std::for_each(
+            all_neurons.begin(),
+            all_neurons.end(),
+            [&](neuron *n) {
+                n->init_incoming_synapses();
+            });
+
+    // turn grads back on
+    std::for_each(
+            std::execution::par_unseq,
+            all_neurons.begin(),
+            all_neurons.end(),
+            [&](neuron *n) {
+                n->no_grad = false;
+            });
 }

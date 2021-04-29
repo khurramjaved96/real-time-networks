@@ -22,7 +22,21 @@ neuron::neuron(bool activation) {
     id = neuron_id;
     neuron_id++;
     this->activation_type = activation;
+    this->no_grad = false;
 
+}
+
+void neuron::init_incoming_synapses(){
+    if (this->incoming_synapses.size() > 0){
+        // goal here is to make w1x1 + w2x2 == target_activation_val (which is N(1,0.1))
+        float target_activation_val = normal_dist.get_random_number();
+        for (auto &it : this->incoming_synapses){
+            it->weight = target_activation_val / (this->incoming_synapses.size() * it->input_neurons->value);
+            //std::cout << "id: " << id << " w: " << it->weight << std::endl;
+        }
+        this->update_value();
+        this->fire(0);
+    }
 }
 
 void neuron::update_value() {
@@ -40,8 +54,9 @@ void neuron::fire(int time_step) {
         this->value = 0;
     }
     temp_value = 0;
-    this->past_activations.push(std::pair<float, int>(this->value, time_step));
-
+    if (!this->no_grad)
+        this->past_activations.push(std::pair<float, int>(this->value, time_step));
+    //std::cout << "n: " << id << "avg_activation_val: " << this->value << std::endl;
 }
 
 void neuron::forward_gradients() {
@@ -163,9 +178,15 @@ void neuron::propogate_error() {
             n_message.distance_travelled = *it;
             this->past_activations.pop();
             this->error_gradient.push(n_message);
+//            if (this->id < 5 && accumulate_gradient != 0)
+//                std::cout << "-> neuron id: " << this->id << " accumulate_gradient: " << accumulate_gradient << std::endl;
+//
+//            if (this->id > 997 && accumulate_gradient != 0)
+//                std::cout << "** neuron id: " << this->id << " accumulate_gradient: " << accumulate_gradient << std::endl;
 
         }
     }
 }
 
 int neuron::neuron_id = 0;
+normal_random neuron::normal_dist = normal_random(0, 1, 0.1);
