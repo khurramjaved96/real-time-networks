@@ -74,6 +74,17 @@ float sum(const std::vector<float>& values){
     return total;
 }
 
+std::vector<float> mean(const std::vector<std::vector<float>>& values){
+    // returns mean for each dim
+    int dim = values[0].size();
+    std::vector<float> ans_vector(dim, 0);
+    for(const auto & value : values)
+        ans_vector = sum(ans_vector, value);
+    for(int counter = 0; counter < dim; counter++)
+        ans_vector[counter] = ans_vector[counter]/values.size();
+    return ans_vector;
+}
+
 uniform_random::uniform_random(int seed) {
     this->mt = std::mt19937(seed);
     this->dist = std::uniform_real_distribution<float>(-1, 1);

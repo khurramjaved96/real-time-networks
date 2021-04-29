@@ -19,6 +19,7 @@ float sum(const std::vector<float>&);
 std::vector<float> sum(std::vector<float> &lhs, std::vector<float> &rhs);
 std::vector<int> sum(std::vector<int> &lhs, std::vector<int> &rhs);
 int argmax(std::vector<float>);
+std::vector<float> mean(const std::vector<std::vector<float>>&);
 
 class uniform_random{
     std::mt19937 mt;
