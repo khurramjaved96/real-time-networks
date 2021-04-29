@@ -98,3 +98,21 @@ std::vector<float> uniform_random::get_random_vector(int size){
         output.push_back(dist(mt));
     return output;
 }
+
+normal_random::normal_random(int seed, float mean, float stddev) {
+    this->mt = std::mt19937(seed);
+    this->dist = std::normal_distribution<float>(mean, stddev);
+}
+
+float normal_random::get_random_number() {
+    float value = dist(mt);
+    return dist(mt);
+}
+
+std::vector<float> normal_random::get_random_vector(int size){
+    std::vector<float> output;
+    output.reserve(size);
+    for(int counter=0; counter<size; counter++)
+        output.push_back(dist(mt));
+    return output;
+}

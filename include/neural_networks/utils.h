@@ -29,6 +29,13 @@ public:
     std::vector<float> get_random_vector(int size);
 };
 
-
+class normal_random{
+    std::mt19937 mt;
+    std::normal_distribution<float> dist;
+public:
+    normal_random(int seed, float mean, float stddev);
+    float get_random_number();
+    std::vector<float> get_random_vector(int size);
+};
 #endif //FLEXIBLENN_UTILS_H
 //
