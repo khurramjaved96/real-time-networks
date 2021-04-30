@@ -23,26 +23,9 @@ synapse::synapse(neuron *input, neuron *output, float w, float step_size) {
     print_status = false;
     this->b1 = 0;
     this->b2 = 0;
-
+    this->memory_made = false;
 }
 
-
-//
-//void synapse::step() {
-//
-//    output_neurons->value_mutex.lock();
-//    output_neurons->temp_value +=  input_neurons->value * weight;
-//    output_neurons->value_mutex.unlock();
-//
-//    input_neurons->depth_mutex.lock();
-//    input_neurons->depth = std::max(output_neurons->depth + 1, input_neurons->depth);
-//    input_neurons->depth_mutex.unlock();
-//
-//}
-
-//void synapse::update_credit() {
-//    this->credit = this->input_neurons->past_activations.front()*this->output_neurons->error_gradient.front();
-//}
 
 void synapse::zero_gradient() {
     this->credit = 0;
@@ -55,29 +38,25 @@ void synapse::update_weight()
     if(this->credit != 0) {
         this->b1 = this->b1 * 0.9 + this->credit * 0.1;
         this->b2 = this->b2 * 0.99 + (this->credit * this->credit) * 0.01;
-//    std::cout << this->weight << " " << this->step_size << " " << this->credit << std::endl;
         this->weight += (this->step_size * this->b1) / (sqrt(this->b2 + 1e-8));
     }
-
-//    std::cout << this->credit << " " << this->weight << std::endl;
-//    this->weight += this->step_size*this->credit;
-
-//    if(this->weight > 5){
-//        std::cout << this->credit << " " << this->weight << std::endl;
-//        std::cout << this->input_neurons->id << " " << this->output_neurons->id << " Cutting weight\n";
-//        exit(1);
-////        this->weight = 2;
-//    }
-//    else if(this->weight< -5)
-//    {std::cout << this->credit << " " << this->weight << std::endl;
-//        std::cout << this->input_neurons->id << " " << this->output_neurons->id << " Cutting weight\n";
-//        std::cout << "Cutting weight\n";
-//        exit(1);
-////        this->weight = -2;
-//    }
 }
 
 void synapse::read_gradient() {
     auto grad = this->output_neurons->error_gradient.front();
 
+}
+
+
+no_grad_synapse::no_grad_synapse(neuron *input, neuron *output) {
+    this->input_neurons = input;
+    this->output_neurons = output;
+
+}
+
+void no_grad_synapse::copy_activation() {
+//    if(this->input_neurons->value > 0)
+//        std::cout << "Copying val " << this->input_neurons->value << " to " << this->output_neurons->temp_value << std::endl;
+//    std::cout << "No grad synapse value  =" <<
+    this->output_neurons->temp_value = this->input_neurons->value;
 }
