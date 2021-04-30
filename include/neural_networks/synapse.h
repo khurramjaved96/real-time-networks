@@ -44,4 +44,14 @@ public:
 
 };
 
+class no_grad_synapse{
+public:
+    neuron *input_neurons;
+    neuron *output_neurons;
+
+    explicit no_grad_synapse(neuron *input, neuron *output);
+
+    void copy_activation();
+};
+
 #endif //BENCHMARKS_SYNAPSE_H

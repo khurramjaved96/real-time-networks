@@ -39,6 +39,7 @@ void neuron::fire(int time_step) {
     if (this->activation_type && this->value <= 0) {
         this->value = 0;
     }
+    this->average_activation = this->average_activation*0.9999 + 0.0001*this->value;
     temp_value = 0;
     this->past_activations.push(std::pair<float, int>(this->value, time_step));
 
@@ -49,12 +50,9 @@ void neuron::forward_gradients() {
     if (!this->error_gradient.empty()) {
         for (auto &it : this->incoming_synapses) {
             float message_value = 0;
-            if (this->past_activations.front().first > 0 or !activation_type or true) {
-                message_value = this->error_gradient.front().message_value;
-            }
-            else{
-                message_value = 0;
-            }
+
+            message_value = this->error_gradient.front().message_value;
+
             message grad_temp(message_value, this->error_gradient.front().time_step);
             grad_temp.distance_travelled = this->error_gradient.front().distance_travelled + 1;
             it->grad_queue.push(grad_temp);
@@ -84,6 +82,7 @@ float neuron::introduce_targets(float target, int time_step) {
 
 
 void neuron::propogate_error() {
+
     float accumulate_gradient = 0;
     std::vector<int> time_vector;
     std::vector<int> distance_vector;
@@ -98,6 +97,7 @@ void neuron::propogate_error() {
 
                 if (!output_synapses_iterator->grad_queue.empty()) {
 
+
                     int activation_time_required = output_synapses_iterator->grad_queue.front().time_step -
                                                    output_synapses_iterator->grad_queue.front().distance_travelled - 1;
                     while (!output_synapses_iterator->grad_queue.empty() and this->past_activations.front().second >
@@ -106,10 +106,12 @@ void neuron::propogate_error() {
                         output_synapses_iterator->grad_queue.pop();
                     }
 
+
                     if (output_synapses_iterator->grad_queue.empty()) {
 //                        "Waiting for gradient from other paths; skipping propagation"
                         flag = true;
                     }
+
                     if (!flag) {
                         assert(!output_synapses_iterator->grad_queue.empty());
                         activation_time_required = output_synapses_iterator->grad_queue.front().time_step -
@@ -134,15 +136,20 @@ void neuron::propogate_error() {
                             time_check = activation_time_required;
                         } else {
                             if (time_check != activation_time_required) {
+
                                 flag = true;
                             }
                         }
                     }
-                } else {
+                } else
+                    {
                     flag = true;
                 }
 
             }
+
+
+
             if (flag)
                 return;
             for (auto &it : this->outgoing_synapses) {
@@ -150,6 +157,7 @@ void neuron::propogate_error() {
                              this->past_activations.front().first;
                 it->grad_queue.pop();
             }
+
 
 
             message n_message(accumulate_gradient, time_vector[0]);

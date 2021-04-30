@@ -29,6 +29,7 @@ public:
     int depth;
     bool activation_type;
     int id;
+    float average_activation;
     void forward_gradients();
     void update_value();
     std::queue<message> error_gradient;
