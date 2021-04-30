@@ -7,7 +7,7 @@
 #include <math.h>
 
 
-TraceConditioning::TraceConditioning(std::pair<int, int> ISI, std::pair<int, int> ITI, int num_distractors, int seed): ISI_sampler(ISI.first, ISI.second), ITI_sampler(ITI.first, ITI.second), mt(seed), NoiseSampler(0, 1) {
+TraceConditioning::TraceConditioning(std::pair<int, int> ISI, std::pair<int, int> ISI_long,  std::pair<int, int> ITI, int num_distractors, int seed): ISI_sampler(ISI.first, ISI.second), ISI_long_sampler(ISI_long.first, ISI_long.second), ITI_sampler(ITI.first, ITI.second), mt(seed), NoiseSampler(0, 1) {
     this->num_distractors = num_distractors;
     for(int temp = 0; temp< num_distractors; temp++)
     {
@@ -16,6 +16,7 @@ TraceConditioning::TraceConditioning(std::pair<int, int> ISI, std::pair<int, int
     requires_reset = true;
     remaining_steps = 0;
     remaining_until_US = 0;
+    remaining_until_US_long = 0;
 }
 
 std::vector<float> TraceConditioning::get_state() {
@@ -35,15 +36,24 @@ std::vector<float> TraceConditioning::step(){
     else{
         this->current_state[1] = 0;
     }
+    if(this->remaining_until_US_long == 1)
+    {
+        this->current_state[2] = 1;
+    }
+    else{
+        this->current_state[2] = 0;
+    }
     this->current_state[0] = 0;
     this->remaining_until_US--;
+    this->remaining_until_US_long--;
     this->remaining_steps--;
     return current_state;
 }
 
 std::vector<float> TraceConditioning::reset() {
     this->remaining_until_US = ISI_sampler(mt);
-    this->remaining_steps = this->remaining_until_US + ITI_sampler(mt);
+    this->remaining_until_US_long = ISI_long_sampler(mt);
+    this->remaining_steps = this->remaining_until_US_long + ITI_sampler(mt);
 
     set_noise_bits();
     current_state[0] = 1; // Setting the CS
@@ -52,9 +62,9 @@ std::vector<float> TraceConditioning::reset() {
 }
 
 void TraceConditioning::set_noise_bits() {
-    for(int temp = 2; temp < this->current_state.size(); temp++)
+    for(int temp = 3; temp < this->current_state.size(); temp++)
     {
-        if(NoiseSampler(mt) > 0.99999 and false)
+        if(NoiseSampler(mt) > 0.9 and false)
         {
             this->current_state[temp] = 1;
         }
@@ -64,10 +74,26 @@ void TraceConditioning::set_noise_bits() {
     }
 }
 
+float TraceConditioning::get_US(){
+    return this->current_state[1];
+}
+
+float TraceConditioning::get_long_US(){
+    return this->current_state[2];
+}
+
 float TraceConditioning::get_target(float gamma) {
-    if(this->remaining_until_US>0)
+    if(this->remaining_until_US>=0)
     {
-        return pow(gamma, this->remaining_until_US-1);
+        return pow(gamma, this->remaining_until_US);
+    }
+    return 0;
+}
+
+float TraceConditioning::get_target_long(float gamma) {
+    if(this->remaining_until_US_long>=0)
+    {
+        return pow(gamma, this->remaining_until_US_long);
     }
     return 0;
 }
