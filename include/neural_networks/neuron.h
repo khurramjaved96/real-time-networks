@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include "synapse.h"
 #include "message.h"
+#include "utils.h"
 #include <utility>
 
 //class synapse;
@@ -23,11 +24,13 @@ class neuron {
 
 public:
     static int neuron_id;
+    static normal_random normal_dist;
     float value;
     float temp_value;
     float temp_gradient;
     int depth;
     bool activation_type;
+    bool no_grad;
     int id;
     float average_activation;
     void forward_gradients();
@@ -42,6 +45,7 @@ public:
     float introduce_targets(float target, int timestep);
     void propogate_error();
     void activation();
+    void init_incoming_synapses();
 };
 
 #endif //BENCHMARKS_NEURON_H
