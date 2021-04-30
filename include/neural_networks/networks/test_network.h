@@ -22,6 +22,9 @@ class CustomNetwork{
     std::vector<neuron*> all_neurons;
     long long int time_step;
     std::vector<synapse*> all_synapses;
+    std::vector<synapse*> output_synapses;
+    std::vector<no_grad_synapse*> memories;
+    std::vector<synapse*> memory_feature_weights;
 public:
     std::vector<neuron*> input_neurons;
     CustomNetwork(float step_size, int width, int seed);
@@ -36,6 +39,8 @@ public:
     float introduce_targets(std::vector<float> targets);
     int get_input_size();
     int get_total_synapses();
+    void add_memory(float step_size);
+    std::vector<float> get_memory_weights();
 };
 
 

@@ -33,12 +33,20 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
         this->all_neurons.push_back(n);
     }
 
-    int output_neuros = 1;
+    int output_neuros = 2;
     for (int counter=0; counter < output_neuros; counter++)
     {
         auto n = new neuron(false);
         this->output_neuros.push_back(n);
         this->all_neurons.push_back(n);
+    }
+
+    for(auto &input: this->input_neurons){
+        for(auto &output: this->output_neuros){
+            auto s = new synapse(input, output, 0, step_size*10);
+            this->all_synapses.push_back(s);
+            this->output_synapses.push_back(s);
+        }
     }
 
     std::mt19937 mt(seed);
@@ -51,7 +59,7 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
 //    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
 //    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
     std::vector<neuron*> neurons_so_far;
-    for(int layer=0; layer < 30; layer++)
+    for(int layer=0; layer < 6; layer++)
     {
         std::vector<neuron*> this_layer;
         for(int this_layer_neuron = 0; this_layer_neuron < width; this_layer_neuron++) {
@@ -67,7 +75,9 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
             }
 //            Output weights should be initaliezd to be zero.bash
             for(auto &it : this->output_neuros){
-                this->all_synapses.push_back(new synapse(n, it,  0, step_size));
+                auto s = new synapse(n, it,  0, step_size*10);
+                this->all_synapses.push_back(s);
+                this->output_synapses.push_back(s);
             }
             for (auto &it : neurons_so_far) {
                 this->all_synapses.push_back(new synapse(it, n, dist(mt)*top_range, step_size));
@@ -126,6 +136,56 @@ void CustomNetwork::print_graph(neuron *root) {
 }
 
 
+void CustomNetwork::add_memory(float step_size) {
+    float largest_weight = -10;
+    synapse * large_s = nullptr;
+    for(auto &s : this->output_synapses)
+    {
+        if(abs(s->weight)*s->input_neurons->average_activation > largest_weight and !s->memory_made){
+            largest_weight = abs(s->weight) * s->input_neurons->average_activation;
+            large_s = s;
+        }
+    }
+    if(large_s != nullptr)
+    {
+        large_s->memory_made = true;
+        neuron* last_neuron = new neuron(false);
+        this->all_neurons.push_back(last_neuron);
+        memories.push_back(new no_grad_synapse(large_s->input_neurons, last_neuron));
+        for(int a = 0; a<12; a++)
+        {
+            for(auto& output_n : this->output_neuros){
+                synapse* output_s_temp = new synapse(last_neuron, output_n,  0, step_size*10);
+//                std::cout << "Added step_size = " << step_size << std::endl;
+                memory_feature_weights.push_back(output_s_temp);
+                this->all_synapses.push_back(output_s_temp);
+                this->output_synapses.push_back(output_s_temp);
+                std::cout << "Memory added\n";
+            }
+            neuron* n = new neuron(true);
+            this->all_neurons.push_back(n);
+            synapse* s = new synapse(last_neuron, n,  1, 1e-20);
+            this->all_synapses.push_back(s);
+            last_neuron = n;
+        }
+        for(auto& output_n : this->output_neuros) {
+            synapse *output_s_temp = new synapse(last_neuron, output_n, 0, step_size*10);
+//                std::cout << "Added step_size = " << step_size << std::endl;
+            memory_feature_weights.push_back(output_s_temp);
+            this->all_synapses.push_back(output_s_temp);
+            this->output_synapses.push_back(output_s_temp);
+        }
+    }
+
+}
+
+std::vector<float> CustomNetwork::get_memory_weights() {
+    std::vector<float> my_vec;
+    for(auto & s : memory_feature_weights){
+        my_vec.push_back(s->weight);
+    }
+    return my_vec;
+}
 void CustomNetwork::set_print_bool() {
     std::cout
             << "From\tTo\tGrad_queue_size\tFrom activations_size\tTo activations_size\tError grad_queue From\tCredit\n";
@@ -159,6 +219,21 @@ void CustomNetwork::set_input_values(std::vector<float> const &input_values) {
 }
 
 void CustomNetwork::step() {
+
+
+//    Making copies of features and storing them for a while (for structural credit-assignment problem
+// Verify if correct
+//    this->set_print_bool();
+    std::for_each(
+            std::execution::par_unseq,
+            memories.begin(),
+            memories.end(),
+            [&](no_grad_synapse *s) {
+                s->copy_activation();
+//                std::cout << "GETS HERE \n";
+//                print_graph(s->output_neurons);
+            });
+
 
 
     std::for_each(
@@ -271,7 +346,7 @@ std::vector<float> CustomNetwork::read_all_values() {
 float CustomNetwork::introduce_targets(std::vector<float> targets) {
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
-        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step);
+        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1);
     }
     return error;
 }
