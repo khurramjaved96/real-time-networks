@@ -102,9 +102,10 @@ std::string Database::vec_to_tuple(std::vector<std::string> row, const std::stri
 int Database::add_rows_to_table(const std::string &database_name, const std::string &table,
                                 const std::vector<std::string> &keys,
                                 const std::vector<std::vector<std::string>> &values) {
+    this->connect_and_use(database_name);
     for (auto &value : values) {
         std::string query = "INSERT INTO " + table + vec_to_tuple(keys, "") + " VALUES " + vec_to_tuple(value, "'");
-        this->run_query(query, database_name);
+        mysql_query(this->mysql, &query[0]);
     }
     mysql_commit(this->mysql);
     mysql_close(this->mysql);

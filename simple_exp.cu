@@ -15,7 +15,7 @@
 #include "include/experiment/Metric.h"
 #include "src/hybrid_code/queue.cu"
 #include "include/animal_learning/tracecondioning.h"
-#include "include/neural_networks/networks/simple_network.h"
+#include "include/neural_networks/networks/test_network.h"
 
 
 int main(int argc, char *argv[]) {
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 //    std::string default_config = "--name test --width 10 --seed 0 --steps 100 --run 0 --step_size 0.0001";
     std::cout << "Program started \n";
     float gamma = 1 - 1.0/(3.0);
-    TraceConditioning tc = TraceConditioning(std::pair<int, int>(4, 4), std::pair<int, int>(15, 15), std::pair<int, int>(60, 100), 5, 2);
+    TraceConditioning tc = TraceConditioning(std::pair<int, int>(2, 4), std::pair<int, int>(14, 16), std::pair<int, int>(60, 100), 5, 2);
     for(int temp = 0; temp<200; temp++)
     {
         std::vector<float> cur_state = tc.step();
@@ -39,15 +39,15 @@ int main(int argc, char *argv[]) {
 //    std::cout << "Database stuff done \n";
 //    CustomNetwork my_network = CustomNetwork(my_experiment.get_float_param("step_size"),
 //                                             my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
-    SimpleNetwork my_network = SimpleNetwork(my_experiment.get_float_param("step_size"),
-                                             my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
+    CustomNetwork my_network = CustomNetwork(my_experiment.get_float_param("step_size"),
+                                                         my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
 
     //get a sequence of data for data-driven initialization
-    std::vector<std::vector<float>> input_batch;
-    input_batch.reserve(500);
-    for(int temp=0; temp<500; temp++)
-        input_batch.push_back(tc.step());
-    my_network.initialize_network(input_batch);
+//    std::vector<std::vector<float>> input_batch;
+//    input_batch.reserve(500);
+//    for(int temp=0; temp<500; temp++)
+//        input_batch.push_back(tc.step());
+//    my_network.initialize_network(input_batch);
 
 //    my_network.set_print_bool();
 
@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) {
 
         }
 //
-        if(counter % 10000 == 9998)
+        if(counter % 100000 == 99998)
         {
             print_vector(my_network.get_memory_weights());
             std::cout << "Pushing results" << std::endl;
