@@ -24,6 +24,7 @@ public:
     float b1;
     float b2;
     bool memory_made;
+    float prediction_synapse;
     std::queue<message> grad_queue;
     neuron *input_neurons;
     neuron *output_neurons;

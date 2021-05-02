@@ -20,5 +20,7 @@ class NetworkVisualizer{
 public:
     NetworkVisualizer(std::vector<neuron *> all_neurons);
     void generate_dot(int time_step);
+    std::string get_graph(int time_step);
+    std::string get_graph_detailed(int time_step);
     void generate_dot_detailed(int time_step);
 };

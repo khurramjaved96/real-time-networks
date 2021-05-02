@@ -19,19 +19,22 @@
 class CustomNetwork{
 
     std::vector<neuron*> output_neuros;
-    std::vector<neuron*> all_neurons;
+
     long long int time_step;
     std::vector<synapse*> all_synapses;
     std::vector<synapse*> output_synapses;
     std::vector<no_grad_synapse*> memories;
     std::vector<synapse*> memory_feature_weights;
 public:
+    std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
     CustomNetwork(float step_size, int width, int seed);
     ~CustomNetwork();
     void print_graph(neuron* root);
     void viz_graph();
     void set_print_bool();
+    std::string get_viz_graph();
+    long long int get_timestep();
 
     void set_input_values(std::vector<float> const &input_values);
     void step();
