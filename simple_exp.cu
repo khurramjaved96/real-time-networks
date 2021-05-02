@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 //    std::string default_config = "--name test --width 10 --seed 0 --steps 100 --run 0 --step_size 0.0001";
     std::cout << "Program started \n";
     float gamma = 1 - 1.0/(3.0);
-    TraceConditioning tc = TraceConditioning(std::pair<int, int>(2, 4), std::pair<int, int>(14, 16), std::pair<int, int>(60, 100), 5, 2);
+    TraceConditioning tc = TraceConditioning(std::pair<int, int>(4, 6), std::pair<int, int>(12, 16), std::pair<int, int>(60, 100), 5, 2);
     for(int temp = 0; temp<200; temp++)
     {
         std::vector<float> cur_state = tc.step();
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
             error_logger.push_back(error);
 
         }
-        if(counter % 10000 < 500)
+        if(counter % 50000 < 200)
         {
             std::vector<float> cur_state = tc.get_state();
             cur_state.push_back(real_target);
@@ -149,8 +149,33 @@ int main(int argc, char *argv[]) {
 //            cur_state[3] = my_network.read_output_values()[0];
             print_vector(cur_state);
         }
+//        This makes the problem non-stationary; let's forget about this for now
+
+//        if(counter%200000  == 199999)
+//        {
+//            tc.increase_ISI(1);
+//            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//
+////            my_network.add_memory(my_experiment.get_float_param("step_size"));
+////            my_network.add_memory(my_experiment.get_float_param("step_size"));
+//
+//
+//        }
+
         if(counter%500000  == 499999)
         {
+            my_network.add_memory(my_experiment.get_float_param("step_size"));
+            my_network.add_memory(my_experiment.get_float_param("step_size"));
             my_network.add_memory(my_experiment.get_float_param("step_size"));
             my_network.add_memory(my_experiment.get_float_param("step_size"));
             my_network.add_memory(my_experiment.get_float_param("step_size"));

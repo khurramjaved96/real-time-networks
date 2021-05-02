@@ -33,14 +33,13 @@ void synapse::zero_gradient() {
 
 void synapse::update_weight()
 {
-//    this->weight += (this->step_size * this->credit);
+    this->weight += (this->step_size * this->credit);
 //            this->credit = 0;
-//    this->weight += (this->step_size * this->credit);
-    if(this->credit != 0) {
-        this->b1 = this->b1 * 0.9 + this->credit * 0.1;
-        this->b2 = this->b2 * 0.99 + (this->credit * this->credit) * 0.01;
-        this->weight += (this->step_size * this->b1) / (sqrt(this->b2 + 1e-8));
-    }
+//    if(this->credit != 0) {
+////        this->b1 = this->b1 * 0.9 + this->credit * 0.1;
+//        this->b2 = this->b2 * 0.99 + (this->credit * this->credit) * 0.01;
+//        this->weight += (this->step_size * this->credit) / (sqrt(this->b2) + 1e-8);
+//    }
 }
 
 void synapse::read_gradient() {

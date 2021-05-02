@@ -21,6 +21,7 @@ class TraceConditioning{
     std::vector<float> current_state;
     bool requires_reset;
     int remaining_steps;
+    int ISI_length;
     int remaining_until_US;
     int remaining_until_US_long;
     void set_noise_bits();
@@ -36,6 +37,7 @@ public:
     float get_target(float gamma);
     float get_target_long(float gamma);
     float cumulant();
+    void increase_ISI(int t);
 };
 
 
