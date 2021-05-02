@@ -21,6 +21,7 @@ synapse::synapse(neuron *input, neuron *output, float w, float step_size) {
     input_neurons->outgoing_synapses.push_back(this);
     output_neurons->incoming_synapses.push_back(this);
     print_status = false;
+    this->prediction_synapse = false;
     this->b1 = 0;
     this->b2 = 0;
     this->memory_made = false;
