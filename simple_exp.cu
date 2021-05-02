@@ -36,6 +36,7 @@ int main(int argc, char *argv[]) {
     int width = my_experiment.get_int_param("width");
 
     Metric synapses_metric = Metric(my_experiment.database_name, "error_table", std::vector<std::string>{"step", "run", "error", "error_type"}, std::vector<std::string>{"int", "int", "real", "int"}, std::vector<std::string>{"step", "run", "error_type"});
+    Metric graph_state = Metric(my_experiment.database_name, "graph", std::vector<std::string>{"step", "run", "graph_data"}, std::vector<std::string>{"int", "int", "MEDIUMTEXT"}, std::vector<std::string>{"step", "run"});
 //    std::cout << "Database stuff done \n";
 //    CustomNetwork my_network = CustomNetwork(my_experiment.get_float_param("step_size"),
 //                                             my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
@@ -60,6 +61,7 @@ int main(int argc, char *argv[]) {
     running_error.push_back(-1);
     running_error.push_back(-1);
     std::vector<std::vector<std::string>> error_logger;
+
     float prediction = 0;
 
     float prediction_long = 0;
@@ -210,7 +212,15 @@ int main(int argc, char *argv[]) {
               << 1000000 / (std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() /
                             my_experiment.get_int_param("steps"))
               << " fps" << std::endl;
-    my_network.viz_graph();
+
+
+    std::string g = my_network.get_viz_graph();
+    std::vector<std::string> graph_data;
+    graph_data.push_back(std::to_string(my_experiment.get_int_param("steps")));
+    graph_data.push_back(std::to_string(my_experiment.get_int_param("run")));
+    graph_data.push_back(g);
+    graph_state.add_value(graph_data);
+
     return 0;
 }
 
