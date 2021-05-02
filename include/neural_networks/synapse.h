@@ -23,6 +23,7 @@ public:
     bool print_status;
     float b1;
     float b2;
+    bool memory_made;
     std::queue<message> grad_queue;
     neuron *input_neurons;
     neuron *output_neurons;
