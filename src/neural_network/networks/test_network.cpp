@@ -9,6 +9,7 @@
 #include "../../../include/neural_networks/networks/test_network.h"
 #include "../../../include/neural_networks/neuron.h"
 #include "../../../include/neural_networks/synapse.h"
+#include "../../../include/utils.h"
 #include <assert.h>
 #include <random>
 #include <execution>
@@ -26,7 +27,7 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
 //            this->output_neuros.push_back(n);
 //        }
 //    }
-    int input_neuron = 10;
+    int input_neuron = 5;
     for (int counter = 0; counter < input_neuron; counter++) {
         auto n = new neuron(true);
         this->input_neurons.push_back(n);
@@ -59,7 +60,7 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
 //    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
 //    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
     std::vector<neuron*> neurons_so_far;
-    for(int layer=0; layer < 6; layer++)
+    for(int layer=0; layer < 3; layer++)
     {
         std::vector<neuron*> this_layer;
         for(int this_layer_neuron = 0; this_layer_neuron < width; this_layer_neuron++) {
@@ -133,6 +134,12 @@ void CustomNetwork::print_graph(neuron *root) {
         }
         print_graph(current_n->output_neurons);
     }
+}
+
+void CustomNetwork::viz_graph() {
+    NetworkVisualizer netviz = NetworkVisualizer(this->all_neurons);
+    netviz.generate_dot(this->time_step);
+    netviz.generate_dot_detailed(this->time_step);
 }
 
 

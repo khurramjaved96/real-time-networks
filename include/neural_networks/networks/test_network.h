@@ -30,6 +30,7 @@ public:
     CustomNetwork(float step_size, int width, int seed);
     ~CustomNetwork();
     void print_graph(neuron* root);
+    void viz_graph();
     void set_print_bool();
 
     void set_input_values(std::vector<float> const &input_values);

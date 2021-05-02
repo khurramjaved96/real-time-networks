@@ -50,10 +50,11 @@ int main(int argc, char *argv[]) {
 //    my_network.initialize_network(input_batch);
 
 //    my_network.set_print_bool();
-
+//
 //    for(auto &it : my_network.input_neurons)
 //        my_network.print_graph(it);
     std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
+    my_network.viz_graph();
     auto start = std::chrono::steady_clock::now();
     std::vector<float> running_error;
     running_error.push_back(-1);
@@ -209,6 +210,7 @@ int main(int argc, char *argv[]) {
               << 1000000 / (std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() /
                             my_experiment.get_int_param("steps"))
               << " fps" << std::endl;
+    my_network.viz_graph();
     return 0;
 }
 
