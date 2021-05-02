@@ -37,23 +37,24 @@ int main(int argc, char *argv[]) {
 
     Metric synapses_metric = Metric(my_experiment.database_name, "error_table", std::vector<std::string>{"step", "run", "error", "error_type"}, std::vector<std::string>{"int", "int", "real", "int"}, std::vector<std::string>{"step", "run", "error_type"});
 //    std::cout << "Database stuff done \n";
-//    CustomNetwork my_network = CustomNetwork(my_experiment.get_float_param("step_size"),
-//                                             my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
-    SimpleNetwork my_network = SimpleNetwork(my_experiment.get_float_param("step_size"),
+    CustomNetwork my_network = CustomNetwork(my_experiment.get_float_param("step_size"),
                                              my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
+//    SimpleNetwork my_network = SimpleNetwork(my_experiment.get_float_param("step_size"),
+//                                             my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
 
     //get a sequence of data for data-driven initialization
-    std::vector<std::vector<float>> input_batch;
-    input_batch.reserve(500);
-    for(int temp=0; temp<500; temp++)
-        input_batch.push_back(tc.step());
-    my_network.initialize_network(input_batch);
-
+//    std::vector<std::vector<float>> input_batch;
+//    input_batch.reserve(500);
+//    for(int temp=0; temp<500; temp++)
+//        input_batch.push_back(tc.step());
+//    my_network.initialize_network(input_batch);
+//
 //    my_network.set_print_bool();
-
+//
 //    for(auto &it : my_network.input_neurons)
 //        my_network.print_graph(it);
     std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
+    my_network.viz_graph();
     auto start = std::chrono::steady_clock::now();
     std::vector<float> running_error;
     running_error.push_back(-1);
@@ -184,6 +185,7 @@ int main(int argc, char *argv[]) {
               << 1000000 / (std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() /
                             my_experiment.get_int_param("steps"))
               << " fps" << std::endl;
+    my_network.viz_graph();
     return 0;
 }
 
