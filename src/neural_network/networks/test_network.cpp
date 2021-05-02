@@ -142,6 +142,16 @@ void CustomNetwork::viz_graph() {
     netviz.generate_dot_detailed(this->time_step);
 }
 
+std::string CustomNetwork::get_viz_graph() {
+    NetworkVisualizer netviz = NetworkVisualizer(this->all_neurons);
+    return netviz.get_graph(this->time_step);
+//    netviz.generate_dot_detailed(this->time_step);
+}
+
+
+long long int CustomNetwork::get_timestep() {
+    return this->time_step;
+}
 
 void CustomNetwork::add_memory(float step_size) {
     float largest_weight = -10;
