@@ -27,14 +27,14 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
 //            this->output_neuros.push_back(n);
 //        }
 //    }
-    int input_neuron = 5;
+    int input_neuron = 2;
     for (int counter = 0; counter < input_neuron; counter++) {
         auto n = new neuron(true);
         this->input_neurons.push_back(n);
         this->all_neurons.push_back(n);
     }
 
-    int output_neuros = 2;
+    int output_neuros = 1;
     for (int counter=0; counter < output_neuros; counter++)
     {
         auto n = new neuron(false);
@@ -60,7 +60,7 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
 //    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
 //    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
     std::vector<neuron*> neurons_so_far;
-    for(int layer=0; layer < 3; layer++)
+    for(int layer=0; layer < 5; layer++)
     {
         std::vector<neuron*> this_layer;
         for(int this_layer_neuron = 0; this_layer_neuron < width; this_layer_neuron++) {
