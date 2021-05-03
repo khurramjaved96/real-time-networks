@@ -19,12 +19,15 @@ class synapse {
 public:
     float weight;
     float credit;
+    float credit_activation_idbd;
     float step_size;
     bool print_status;
     float b1;
     float b2;
+    float beta_step_size;
+    float h_step_size;
     bool memory_made;
-    float prediction_synapse;
+    float idbd;
     std::queue<message> grad_queue;
     neuron *input_neurons;
     neuron *output_neurons;
@@ -43,6 +46,7 @@ public:
     void zero_gradient();
 
     void update_weight();
+    void turn_on_idbd();
 
 };
 
