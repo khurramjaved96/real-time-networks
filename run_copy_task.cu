@@ -32,22 +32,19 @@ int main(int argc, char *argv[]) {
     CustomNetwork my_network = CustomNetwork(my_experiment.get_float_param("step_size"),
                                              my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
 
-//    //get a sequence of data for data-driven initialization
-//    std::vector<std::vector<float>> input_batch;
-//    input_batch.reserve(500);
-//    for(int temp=0; temp<500; temp++)
-//        input_batch.push_back(tc.step());
-//    my_network.initialize_network(input_batch);
+    CopyTask env = CopyTask(my_experiment.get_int_param("seed"));
+    //get a sequence of data for data-driven initialization
+    std::vector<std::vector<float>> input_batch;
+    input_batch.reserve(500);
+    for(int temp=0; temp<500; temp++)
+        input_batch.push_back(env.step(1));
+    my_network.initialize_network(input_batch);
+    env.reset();
 
-//    my_network.set_print_bool();
-//
-//    for(auto &it : my_network.input_neurons)
-//        my_network.print_graph(it);
     std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
     my_network.viz_graph();
     auto start = std::chrono::steady_clock::now();
 
-    CopyTask env = CopyTask(my_experiment.get_int_param("seed"));
     float running_error = -1;
     float target = 0;
     float prediction = 0;

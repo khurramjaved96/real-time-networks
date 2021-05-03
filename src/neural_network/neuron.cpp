@@ -27,6 +27,9 @@ neuron::neuron(bool activation) {
 }
 
 void neuron::init_incoming_synapses(){
+    if (this->outgoing_synapses.size() == 0)
+        // skip initializing output nodes
+        return;
     if (this->incoming_synapses.size() > 0){
         // goal here is to make w1x1 + w2x2 == target_activation_val (which is N(1,0.1))
         float target_activation_val = normal_dist.get_random_number();

@@ -49,6 +49,18 @@ float CopyTask::get_target(){
 }
 
 
+std::vector<float> CopyTask::reset(){
+    this->L = 1;
+    this->seq_length = 1;
+    this->seq_timestep = 0;
+    this->data_timestep = 0;
+    this->current_timestep = 0;
+    this->total_err_per_seq = 0;
+    this->current_state = std::vector<float>{0, float(bit_sampler(mt))};
+    return this->current_state;
+}
+
+
 std::vector<float> CopyTask::step(float err_last_step){
     // after obtaining err for first pred
     if(this->seq_timestep > this->seq_length+1)

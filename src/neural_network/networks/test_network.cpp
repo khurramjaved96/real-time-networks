@@ -367,3 +367,45 @@ float CustomNetwork::introduce_targets(std::vector<float> targets) {
     }
     return error;
 }
+
+
+void CustomNetwork::initialize_network(const std::vector<std::vector<float>>& input_batch) {
+    // calculate mean of inputs and use it to initialize the network
+    std::vector<float> mean_of_inputs = mean(input_batch);
+    this->set_input_values(mean_of_inputs);
+
+    // turn grads off
+    std::for_each(
+            std::execution::par_unseq,
+            all_neurons.begin(),
+            all_neurons.end(),
+            [&](neuron *n) {
+                n->no_grad = true;
+            });
+
+    // pass forward the mean inputs
+    std::for_each(
+            std::execution::par_unseq,
+            input_neurons.begin(),
+            input_neurons.end(),
+            [&](neuron *n) {
+                n->fire(0);
+            });
+
+    // parallel execution messes this up
+    std::for_each(
+            all_neurons.begin(),
+            all_neurons.end(),
+            [&](neuron *n) {
+                n->init_incoming_synapses();
+            });
+
+    // turn grads back on
+    std::for_each(
+            std::execution::par_unseq,
+            all_neurons.begin(),
+            all_neurons.end(),
+            [&](neuron *n) {
+                n->no_grad = false;
+            });
+}

@@ -45,6 +45,7 @@ public:
     int get_total_synapses();
     void add_memory(float step_size);
     std::vector<float> get_memory_weights();
+    void initialize_network(const std::vector<std::vector<float>>& input_batch);
 };
 
 
