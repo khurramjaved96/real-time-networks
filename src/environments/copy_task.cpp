@@ -8,6 +8,7 @@
 #include <random>
 
 CopyTask::CopyTask(int seed): mt(seed) {
+    this->L = 1;
     this->seq_length = 1;
     this->seq_timestep = 0;
     this->data_timestep = 0;
@@ -17,8 +18,17 @@ CopyTask::CopyTask(int seed): mt(seed) {
 }
 
 
-int CopyTask::get_datatime(){
+int CopyTask::get_data_timestep(){
     return this->data_timestep;
+}
+
+
+int CopyTask::get_L(){
+    return this->L;
+}
+
+int CopyTask::get_seq_length(){
+    return this->seq_length;
 }
 
 
@@ -42,13 +52,15 @@ float CopyTask::get_target(){
 std::vector<float> CopyTask::step(float err_last_step){
     // after obtaining err for first pred
     if(this->seq_timestep > this->seq_length+1)
-        this->total_err_per_seq += err_last_step;
+      this->total_err_per_seq += abs(err_last_step);
 
     // after the seq + flag + pred is over and new seq started
     if(this->seq_timestep > this->seq_length*2){
         float err_per_bit = this->total_err_per_seq / this->seq_length;
         if(err_per_bit < 0.15)
-            this->seq_length += 1;
+            this->L += 1;
+        auto seq_len_sampler = std::uniform_int_distribution<int>(std::max(this->L-5,1), this->L);
+        this->seq_length = seq_len_sampler(mt);
         this->seq_timestep = 0;
         this->total_err_per_seq = 0;
     }

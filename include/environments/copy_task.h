@@ -10,6 +10,7 @@
 #define FLEXIBLENN_COPY_TASK_H
 
 class CopyTask{
+    int L;
     int seq_length;
     int seq_timestep;     // counts timestep in current seq
     int data_timestep;    // counts only target tokens
@@ -22,7 +23,9 @@ class CopyTask{
 
 public:
     CopyTask(int seed);
-    int get_datatime();
+    int get_data_timestep();
+    int get_L();
+    int get_seq_length();
     float get_target();
     std::vector<float> step(float err_last_step);
     std::vector<float> reset();
