@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
     int width = my_experiment.get_int_param("width");
 
     Metric synapses_metric = Metric(my_experiment.database_name, "error_table", std::vector<std::string>{"step", "datatime", "seq_length", "run", "error"}, std::vector<std::string>{"int", "int", "int", "int", "real"}, std::vector<std::string>{"step",  "run" });
-    Metric observations_metric = Metric(my_experiment.database_name, "obs_table", std::vector<std::string>{"run", "step", "pred flag", "inp seq", "target", "pred", "L", "seq_len", "data_timestep"}, std::vector<std::string>{"int", "int", "int", "int", "int", "int", "real", "int", "int"}, std::vector<std::string>{"data_timestep", "L" , "run"});
+    Metric observations_metric = Metric(my_experiment.database_name, "obs_table", std::vector<std::string>{"run", "step", "pred_flag", "inp_seq", "target", "pred", "L", "seq_len", "data_timestep"}, std::vector<std::string>{"int", "int", "real", "real", "real", "real", "int", "int", "int"}, std::vector<std::string>{"run", "step"});
     Metric graph_state = Metric(my_experiment.database_name, "graph", std::vector<std::string>{"step", "run", "graph_data"}, std::vector<std::string>{"int", "int", "MEDIUMTEXT"}, std::vector<std::string>{"step", "run"});
     CustomNetwork my_network = CustomNetwork(my_experiment.get_float_param("step_size"),
                                              my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
