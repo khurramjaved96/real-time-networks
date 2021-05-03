@@ -60,7 +60,9 @@ int main(int argc, char *argv[]) {
         auto state_current = env.step(last_err);
         my_network.set_input_values(state_current);
         my_network.step();
-        prediction = sigmoid(my_network.read_output_values()[0]);
+        prediction = my_network.read_output_values()[0];
+        // just realized that this sigmoid doesnt make any sense. It is just hiding the problem since it is not involved in the feedback.
+//        prediction = sigmoid(my_network.read_output_values()[0]);
 
         target = env.get_target();
         my_network.introduce_targets(std::vector<float>{target});
