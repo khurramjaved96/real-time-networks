@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
     int width = my_experiment.get_int_param("width");
 
     Metric synapses_metric = Metric(my_experiment.database_name, "error_table", std::vector<std::string>{"step", "datatime", "seq_length", "run", "error"}, std::vector<std::string>{"int", "int", "int", "int", "real"}, std::vector<std::string>{"step",  "run" });
+    Metric observations_metric = Metric(my_experiment.database_name, "obs_table", std::vector<std::string>{"run", "step", "pred flag", "inp seq", "target", "pred", "L", "seq_len", "data_timestep"}, std::vector<std::string>{"int", "int", "int", "int", "int", "int", "real", "int", "int"}, std::vector<std::string>{"data_timestep", "L" , "run"});
     Metric graph_state = Metric(my_experiment.database_name, "graph", std::vector<std::string>{"step", "run", "graph_data"}, std::vector<std::string>{"int", "int", "MEDIUMTEXT"}, std::vector<std::string>{"step", "run"});
     CustomNetwork my_network = CustomNetwork(my_experiment.get_float_param("step_size"),
                                              my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
@@ -51,6 +52,7 @@ int main(int argc, char *argv[]) {
     float last_err = 1;
     int current_seq_length = 1;
     std::vector<std::vector<std::string>> error_logger;
+    std::vector<std::vector<std::string>> state_logger;
 
     std::cout << "Flag Bit \t Pred Bit \t Target \t Pred \t Seq_len \t Datatime" << std::endl;
     for (int counter = 0; counter < my_experiment.get_int_param("steps"); counter++) {
@@ -71,6 +73,8 @@ int main(int argc, char *argv[]) {
         else
             running_error = running_error * 0.999 + 0.001 *error;
 
+
+
         if(env.get_L() > current_seq_length || counter % 300 == 0)
         {
             std::vector<std::string> error_vec;
@@ -81,8 +85,26 @@ int main(int argc, char *argv[]) {
             error_vec.push_back(std::to_string(running_error));
             error_logger.push_back(error_vec);
             current_seq_length = env.get_L();
-
         }
+
+
+        std::vector<float> cur_state = env.get_state();
+
+        if(counter < 5000)
+        {
+            std::vector<std::string> state_vec;
+            state_vec.push_back(std::to_string(my_experiment.get_int_param("run")));
+            state_vec.push_back(std::to_string(counter));
+            state_vec.push_back(std::to_string(cur_state[0]));
+            state_vec.push_back(std::to_string(cur_state[1]));
+            state_vec.push_back(std::to_string(target));
+            state_vec.push_back(std::to_string(prediction));
+            state_vec.push_back(std::to_string(env.get_L()));
+            state_vec.push_back(std::to_string(env.get_seq_length()));
+            state_vec.push_back(std::to_string(env.get_data_timestep()));
+            state_logger.push_back(state_vec);
+        }
+
         if(counter % 50000 < 200)
         {
             std::vector<float> cur_state = env.get_state();
@@ -109,9 +131,11 @@ int main(int argc, char *argv[]) {
 //            print_vector(my_network.get_memory_weights());
             std::cout << "Pushing results" << std::endl;
             synapses_metric.add_values(error_logger);
+            observations_metric.add_values(state_logger);
             std::cout << "Results added " << std::endl;
             std::cout << "Len = " << error_logger.size() << std::endl;
             error_logger.clear();
+            state_logger.clear();
         }
         if (counter % 10000 == 0 || counter % 10000 == 999 || counter % 10000 == 998) {
             std::cout << "### STEP = " << counter << std::endl;
