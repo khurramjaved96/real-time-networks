@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
         auto state_current = env.step(last_err);
         my_network.set_input_values(state_current);
         my_network.step();
-        prediction = my_network.read_output_values()[0];
+        prediction = sigmoid(my_network.read_output_values()[0]);
 
         target = env.get_target();
         my_network.introduce_targets(std::vector<float>{target});
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
         {
             std::vector<float> cur_state = env.get_state();
             cur_state.push_back(target);
-            cur_state.push_back(my_network.read_output_values()[0]);
+            cur_state.push_back(prediction);
             cur_state.push_back(env.get_L());
             cur_state.push_back(env.get_data_timestep());
             print_vector(cur_state);
