@@ -16,6 +16,7 @@ class CopyTask{
     int data_timestep;    // counts only target tokens
     int current_timestep; // counts overall timestep
     float total_err_per_seq;
+    float decayed_avg_err;
     std::mt19937 mt;
     std::vector<float> current_state;
     std::queue<std::vector<float>> past_states;

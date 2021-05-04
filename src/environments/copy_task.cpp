@@ -14,6 +14,7 @@ CopyTask::CopyTask(int seed): mt(seed) {
     this->data_timestep = 0;
     this->current_timestep = 0;
     this->total_err_per_seq = 0;
+    this->decayed_avg_err = 1;
     this->bit_sampler = std::uniform_int_distribution<int>(0,1);
 }
 
@@ -56,21 +57,26 @@ std::vector<float> CopyTask::reset(){
     this->data_timestep = 0;
     this->current_timestep = 0;
     this->total_err_per_seq = 0;
+    this->decayed_avg_err = 1;
     this->current_state = std::vector<float>{0, float(bit_sampler(mt))};
     return this->current_state;
 }
 
 
 std::vector<float> CopyTask::step(float err_last_step){
+    this->total_err_per_seq += abs(err_last_step);
     // after obtaining err for first pred
-    if(this->seq_timestep > this->seq_length+1)
-      this->total_err_per_seq += abs(err_last_step);
+    //if(this->seq_timestep > this->seq_length+1)
 
     // after the seq + flag + pred is over and new seq started
     if(this->seq_timestep > this->seq_length*2){
         float err_per_bit = this->total_err_per_seq / this->seq_length;
-        if(err_per_bit < 0.15)
+        this->decayed_avg_err = (this->decayed_avg_err * 0.9) + (err_per_bit * 0.1);
+        //std::cout << "avg err: " << this->decayed_avg_err << std::endl;
+        if(this->decayed_avg_err < 0.15){
             this->L += 1;
+            this->decayed_avg_err = 1;
+        }
         auto seq_len_sampler = std::uniform_int_distribution<int>(std::max(this->L-5,1), this->L);
         this->seq_length = seq_len_sampler(mt);
         this->seq_timestep = 0;

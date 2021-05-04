@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Flag Bit \t Pred Bit \t Target \t Pred \t Seq_len \t Datatime" << std::endl;
     for (int counter = 0; counter < my_experiment.get_int_param("steps"); counter++) {
 
-        auto state_current = env.step(1);
+        auto state_current = env.step(last_err);
 //        print_vector(state_current);
         my_network.set_input_values(state_current);
         my_network.step();
