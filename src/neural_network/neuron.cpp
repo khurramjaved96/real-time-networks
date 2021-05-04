@@ -176,6 +176,7 @@ void neuron::propogate_error() {
             for (auto &it : this->outgoing_synapses) {
                 it->credit = it->grad_queue.front().message_value *
                              this->past_activations.front().first;
+                it->credit_activation_idbd =  this->past_activations.front().first;
                 it->grad_queue.pop();
             }
 

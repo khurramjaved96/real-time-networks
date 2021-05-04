@@ -13,7 +13,6 @@
 #include "include/experiment/Experiment.h"
 #include "include/neural_networks/utils.h"
 #include "include/experiment/Metric.h"
-#include "src/hybrid_code/queue.cu"
 #include "include/animal_learning/tracecondioning.h"
 #include "include/neural_networks/networks/test_network.h"
 
