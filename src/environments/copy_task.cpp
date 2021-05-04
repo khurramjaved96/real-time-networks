@@ -93,7 +93,7 @@ std::vector<float> CopyTask::step(float err_last_step){
     // start the pred sequence
     else if(this->seq_timestep > this->seq_length){
         this->data_timestep += 1;
-        this->current_state = std::vector<float>{1, 0};
+        this->current_state = std::vector<float>{1, 1};
     }
 
     this->seq_timestep += 1;
