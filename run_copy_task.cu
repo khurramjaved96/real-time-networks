@@ -20,7 +20,7 @@
 
 
 int main(int argc, char *argv[]) {
-//    std::string default_config = "--name test --width 10 --seed 0 --steps 100 --run 0 --step_size 0.0001";
+//    std::string default_config = "--name test --width 10 --seed 0 --steps 100 --run 0 --step_size 0.0001 --num_layers 5";
 //    __builtin_trap();
     std::cout << "Program started \n";
     Experiment my_experiment = Experiment(argc, argv);
@@ -31,7 +31,9 @@ int main(int argc, char *argv[]) {
     Metric observations_metric = Metric(my_experiment.database_name, "obs_table", std::vector<std::string>{"run", "step", "pred_flag", "inp_seq", "target", "pred", "L", "seq_len", "data_timestep"}, std::vector<std::string>{"int", "int", "real", "real", "real", "real", "int", "int", "int"}, std::vector<std::string>{"run", "step"});
     Metric graph_state = Metric(my_experiment.database_name, "graph", std::vector<std::string>{"step", "run", "graph_data"}, std::vector<std::string>{"int", "int", "MEDIUMTEXT"}, std::vector<std::string>{"step", "run"});
     CustomNetwork my_network = CustomNetwork(my_experiment.get_float_param("step_size"),
-                                             my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
+                                             my_experiment.get_int_param("width"),
+                                             my_experiment.get_int_param("num_layers"),
+                                             my_experiment.get_int_param("seed"));
 
     CopyTask env = CopyTask(my_experiment.get_int_param("seed"));
     //get a sequence of data for data-driven initialization

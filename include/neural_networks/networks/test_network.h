@@ -28,7 +28,7 @@ class CustomNetwork{
 public:
     std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
-    CustomNetwork(float step_size, int width, int seed);
+    CustomNetwork(float step_size, int width, int num_layers, int seed);
     ~CustomNetwork();
     void print_graph(neuron* root);
     void viz_graph();

@@ -15,7 +15,7 @@
 #include <execution>
 #include <iostream>
 
-CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
+CustomNetwork::CustomNetwork(float step_size, int width, int num_layers, int seed) {
     this->time_step = 0;
 //    for (int counter = 0; counter < width; counter++) {
 //        auto n = new neuron((counter < width - 2));
@@ -60,7 +60,7 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
 //    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
 //    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
     std::vector<neuron*> neurons_so_far;
-    for(int layer=0; layer < 5; layer++)
+    for(int layer=0; layer < num_layers; layer++)
     {
         std::vector<neuron*> this_layer;
         for(int this_layer_neuron = 0; this_layer_neuron < width; this_layer_neuron++) {
