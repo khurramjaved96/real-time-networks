@@ -36,20 +36,21 @@ int main(int argc, char *argv[]) {
     CopyTask env = CopyTask(my_experiment.get_int_param("seed"));
     //get a sequence of data for data-driven initialization
     std::vector<std::vector<float>> input_batch;
-    input_batch.reserve(500);
-    for(int temp=0; temp<500; temp++)
-        input_batch.push_back(env.step(1));
-    my_network.initialize_network(input_batch);
+//    input_batch.reserve(500);
+//    for(int temp=0; temp<500; temp++)
+//        input_batch.push_back(env.step(1));
+//    my_network.initialize_network(input_batch);
     env.reset();
 
     std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
-    my_network.viz_graph();
+//    my_network.viz_graph();
     auto start = std::chrono::steady_clock::now();
 
     float running_error = -1;
     float target = 0;
     float prediction = 0;
     float last_err = 1;
+    float target_old = 0;
     int current_seq_length = 1;
     std::vector<std::vector<std::string>> error_logger;
     std::vector<std::vector<std::string>> state_logger;
@@ -57,18 +58,20 @@ int main(int argc, char *argv[]) {
     std::cout << "Flag Bit \t Pred Bit \t Target \t Pred \t Seq_len \t Datatime" << std::endl;
     for (int counter = 0; counter < my_experiment.get_int_param("steps"); counter++) {
 
-        auto state_current = env.step(last_err);
+        auto state_current = env.step(1);
+//        print_vector(state_current);
         my_network.set_input_values(state_current);
         my_network.step();
         prediction = my_network.read_output_values()[0];
         // just realized that this sigmoid doesnt make any sense. It is just hiding the problem since it is not involved in the feedback.
 //        prediction = sigmoid(my_network.read_output_values()[0]);
-
+        target_old = target;
         target = env.get_target();
-        my_network.introduce_targets(std::vector<float>{target});
+        if(counter > 0)
+            my_network.introduce_targets(std::vector<float>{target_old});
 
 //        float error = (prediction - target) * (prediction - target);
-        float error = prediction - target;
+        float error = (prediction - target)*(prediction - target);
         last_err = error;
         if (running_error == -1)
             running_error = error;
