@@ -36,8 +36,8 @@ int main(int argc, char *argv[]) {
                                      std::vector<std::string>{"int", "MEDIUMTEXT", "MEDIUMTEXT"},
                                      std::vector<std::string>{"run"});
     Metric observations_metric = Metric(exp.database_name, "obs_table",
-                                        std::vector<std::string>{"run", "step", "pred_flag", "inp_seq", "target", "pred", "L", "seq_len", "data_timestep"},
-                                        std::vector<std::string>{"int", "int", "real", "real", "real", "real", "int", "int", "int"},
+                                        std::vector<std::string>{"run", "step", "inp_start_flag", "inp_end_flag", "stml_seq", "target", "pred", "L", "seq_len", "data_timestep"},
+                                        std::vector<std::string>{"int", "int", "real", "real", "real", "real", "real", "int", "int", "int"},
                                         std::vector<std::string>{"run", "step"});
     Metric graph_state = Metric(exp.database_name, "graph",
                                 std::vector<std::string>{"step", "run", "graph_data"},
@@ -134,6 +134,7 @@ int main(int argc, char *argv[]) {
             state_vec.push_back(std::to_string(counter));
             state_vec.push_back(std::to_string(cur_state[0]));
             state_vec.push_back(std::to_string(cur_state[1]));
+            state_vec.push_back(std::to_string(cur_state[2]));
             state_vec.push_back(std::to_string(target));
             state_vec.push_back(std::to_string(prediction));
             state_vec.push_back(std::to_string(env.get_L()));

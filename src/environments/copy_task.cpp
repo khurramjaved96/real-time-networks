@@ -45,7 +45,7 @@ float CopyTask::get_target(){
     // target is 0 until we've passed the pred token
     float target = 0;
     if(this->seq_timestep > this->seq_length + 1){
-        target = past_states.front()[1];
+        target = past_states.front()[2];
         past_states.pop();
     }
     return target;
@@ -59,7 +59,7 @@ std::vector<float> CopyTask::reset(){
     this->data_timestep = 0;
     this->total_err_per_seq = 0;
     this->decayed_avg_err = 1;
-    this->current_state = std::vector<float>{0, float(bit_sampler(mt))};
+    this->current_state = std::vector<float>{1, 0, 0};
     return this->current_state;
 }
 
@@ -69,7 +69,7 @@ std::vector<float> CopyTask::step(float err_last_step){
     if(this->sequence_gap_left > 0){
         this->sequence_gap_left -= 1;
         this->current_state = std::vector<float>{0, 0, 0};
-        if(this->sequence_gap_left == 1)
+        if(this->sequence_gap_left == 0)
             this->current_state = std::vector<float>{1, 0, 0};
         return this->current_state;
     }
@@ -95,6 +95,8 @@ std::vector<float> CopyTask::step(float err_last_step){
         this->seq_timestep = 0;
         this->total_err_per_seq = 0;
         this->sequence_gap_left = 50;
+        this->current_state = std::vector<float>{0, 0, 0};
+        return current_state;
     }
 
     if(this->seq_timestep < this->seq_length){
