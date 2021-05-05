@@ -20,7 +20,7 @@
 
 
 int main(int argc, char *argv[]) {
-//    std::string default_config = "--name test --width 10 --seed 0 --steps 100 --run 0 --step_size 0.0001 --num_layers 5 --data_driven_initialization false --randomize_sequence_length true --add_features false --sparsity 98"
+//    std::string default_config = "--name test --width 10 --seed 0 --steps 100 --run 0 --step_size 0.0001 --num_layers 5 --data_driven_initialization false --randomize_sequence_length true --add_features false --sparsity 98 --sequence_gap 20"
 //    __builtin_trap();
     std::cout << "Program started \n";
     Experiment exp = Experiment(argc, argv);
@@ -50,7 +50,9 @@ int main(int argc, char *argv[]) {
                                              exp.get_int_param("sparsity"),
                                              exp.get_int_param("seed"));
 
-    CopyTask env = CopyTask(exp.get_int_param("seed"), exp.get_bool_param("randomize_sequence_length"));
+    CopyTask env = CopyTask(exp.get_int_param("seed"),
+                            exp.get_bool_param("randomize_sequence_length"),
+                            exp.get_int_param("sequence_gap"));
     //get a sequence of data for data-driven initialization
     if (exp.get_bool_param("data_driven_initialization")){
         std::vector<std::vector<float>> input_batch;

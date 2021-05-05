@@ -7,7 +7,7 @@
 #include <math.h>
 #include <random>
 
-CopyTask::CopyTask(int seed, bool randomize_sequence_length): mt(seed){
+CopyTask::CopyTask(int seed, bool randomize_sequence_length, int sequence_gap): mt(seed){
     this->L = 1;
     this->seq_length = 1;
     this->seq_timestep = 0;
@@ -15,6 +15,7 @@ CopyTask::CopyTask(int seed, bool randomize_sequence_length): mt(seed){
     this->total_err_per_seq = 0;
     this->decayed_avg_err = 1;
     this->sequence_gap_left = 0;
+    this->sequence_gap = sequence_gap;
     this->randomize_sequence_length = randomize_sequence_length;
     this->bit_sampler = std::uniform_int_distribution<int>(0,1);
 }
@@ -94,7 +95,7 @@ std::vector<float> CopyTask::step(float err_last_step){
         }
         this->seq_timestep = 0;
         this->total_err_per_seq = 0;
-        this->sequence_gap_left = 50;
+        this->sequence_gap_left = this->sequence_gap;
         this->current_state = std::vector<float>{0, 0, 0};
         return current_state;
     }
