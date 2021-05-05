@@ -15,7 +15,7 @@
 #include <execution>
 #include <iostream>
 
-CustomNetwork::CustomNetwork(float step_size, int width, int num_layers, int seed) {
+CustomNetwork::CustomNetwork(float step_size, int width, int num_layers, int sparsity, int seed) {
     this->time_step = 0;
 //    for (int counter = 0; counter < width; counter++) {
 //        auto n = new neuron((counter < width - 2));
@@ -56,9 +56,8 @@ CustomNetwork::CustomNetwork(float step_size, int width, int num_layers, int see
     float input_range = sqrt(2.0/float(this->input_neurons.size()));
     std::normal_distribution<float> dist(0, top_range);
     std::normal_distribution<float> dist_inp(0, input_range);
+    std::uniform_int_distribution<int>  sparse_generator = std::uniform_int_distribution<int>(0, 100);
 
-//    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
-//    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
     std::vector<neuron*> neurons_so_far;
     for(int layer=0; layer < num_layers; layer++)
     {
@@ -81,41 +80,18 @@ CustomNetwork::CustomNetwork(float step_size, int width, int num_layers, int see
                 this->output_synapses.push_back(s);
             }
             for (auto &it : neurons_so_far) {
-                this->all_synapses.push_back(new synapse(it, n, dist(mt)*top_range, step_size));
+                if(sparse_generator(mt) >= sparsity)
+                    this->all_synapses.push_back(new synapse(it, n, dist(mt)*top_range, step_size));
             }
         }
-        while (!neurons_so_far.empty())
-        {
-            neurons_so_far.pop_back();
-        }
+//        while (!neurons_so_far.empty())
+//        {
+//            neurons_so_far.pop_back();
+//        }
 
         for(auto &it : this_layer){
             neurons_so_far.push_back(it);
         }
-//        for (int counter = 2; counter < width; counter++) {
-//
-//            this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[counter], dist(mt), step_size));
-//            this->all_synapses.push_back(new synapse(all_neurons[1], all_neurons[counter], dist(mt), step_size));
-//        }
-//        for (int counter = 2; counter < width - 2; counter++) {
-//            this->all_synapses.push_back(new synapse(all_neurons[counter], all_neurons[width - 1], dist(mt), step_size));
-//            this->all_synapses.push_back(new synapse(all_neurons[counter], all_neurons[width - 2], dist(mt), step_size));
-//        }
-    }
-
-//    this->all_synapses.push_back(new synapse(all_neurons[1], all_neurons[6], dist(mt), step_size));
-//    this->all_synapses.push_back(new synapse(all_neurons[1], all_neurons[2], dist(mt), step_size));
-//    this->all_synapses.push_back(new synapse(all_neurons[2], all_neurons[3], dist(mt), step_size));
-//    this->all_synapses.push_back(new synapse(all_neurons[1], all_neurons[3], dist(mt), step_size));
-//    this->all_synapses.push_back(new synapse(all_neurons[2], all_neurons[5], dist(mt), step_size));
-//    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[4], dist(mt), step_size));
-//    this->all_synapses.push_back(new synapse(all_neurons[3], all_neurons[4], dist(mt), step_size));
-//
-//    this->all_synapses.push_back(new synapse(all_neurons[4], all_neurons[5], dist(mt), step_size));
-//    this->all_synapses.push_back(new synapse(all_neurons[5], all_neurons[6], dist(mt), step_size));
-//    this->all_synapses.push_back(new synapse(all_neurons[2], all_neurons[6], dist(mt), step_size));
-//    this->all_synapses.push_back(new synapse(all_neurons[3], all_neurons[6], dist(mt), step_size));
-
 }
 
 void CustomNetwork::print_graph(neuron *root) {
