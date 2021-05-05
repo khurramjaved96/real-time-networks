@@ -28,6 +28,7 @@ public:
     static std::map<std::string, std::vector<std::string>> parse_params(int total_prams, char *pram_list[]);
     int get_int_param(const std::string&);
     float get_float_param(const std::string&);
+    bool get_bool_param(const std::string& param);
 };
 
 

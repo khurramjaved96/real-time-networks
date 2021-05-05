@@ -77,7 +77,7 @@ Experiment::Experiment(int argc, char *argv[]) {
         temp_counter++;
     }
 
-    this->database_name = "khurram_" + this->args_for_run["name"];
+    this->database_name = "hshah1_" + this->args_for_run["name"];
     this->d.create_database(this->database_name);
     std::vector<std::string> keys, values, types;
     for(auto const& imap: this->args_for_run) {
@@ -116,4 +116,18 @@ float Experiment::get_float_param(const std::string& param) {
         throw std::invalid_argument("Param " + param +  " does not exist");
     }
     return std::stof(this->args_for_run[param]);
+}
+
+
+bool Experiment::get_bool_param(const std::string& param) {
+    if (this->args_for_run.count(param) == 0){
+        std::cout << "Param does not exist\n";
+        throw std::invalid_argument("Param " + param +  " does not exist");
+    }
+    if (this->args_for_run[param] == "true")
+      return true;
+    else if (this->args_for_run[param] == "false")
+      return false;
+    else
+        throw std::invalid_argument("Param " + param +  " value is invalid (true or false)");
 }
