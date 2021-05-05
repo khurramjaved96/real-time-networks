@@ -84,10 +84,10 @@ CustomNetwork::CustomNetwork(float step_size, int width, int num_layers, int spa
                     this->all_synapses.push_back(new synapse(it, n, dist(mt)*top_range, step_size));
             }
         }
-//        while (!neurons_so_far.empty())
-//        {
-//            neurons_so_far.pop_back();
-//        }
+        if(sparsity == 0){
+          while (!neurons_so_far.empty())
+              neurons_so_far.pop_back();
+        }
 
         for(auto &it : this_layer){
             neurons_so_far.push_back(it);

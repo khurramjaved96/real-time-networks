@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
 
         std::vector<float> cur_state = env.get_state();
 
-        if(counter < 1000 || counter > exp.get_int_param("steps") - 1000)
+        if(counter%150000 < 1000 || counter > exp.get_int_param("steps") - 1000)
         {
             std::vector<std::string> state_vec;
             state_vec.push_back(std::to_string(exp.get_int_param("run")));
@@ -186,10 +186,12 @@ int main(int argc, char *argv[]) {
             std::cout << "Pushing results" << std::endl;
             synapses_metric.add_values(error_logger);
             observations_metric.add_values(state_logger);
+            graph_state.add_values(graph_logger);
             std::cout << "Results added " << std::endl;
             std::cout << "Len = " << error_logger.size() << std::endl;
             error_logger.clear();
             state_logger.clear();
+            graph_logger.clear();
         }
         if (counter % 10000 == 0 || counter % 10000 == 999 || counter % 10000 == 998) {
             std::cout << "### STEP = " << counter << std::endl;
