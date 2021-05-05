@@ -67,6 +67,7 @@ Experiment::Experiment(int argc, char *argv[]) {
 
         std::cout << "Run number not provided; using: " << run_id << std::endl;
         this->run = std::stoi(run_id);
+        this->args_for_run["run"] = std::string(run_id);
     }
 
     int temp_rank = this->run;

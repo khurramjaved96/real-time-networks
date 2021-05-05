@@ -27,7 +27,7 @@ CustomNetwork::CustomNetwork(float step_size, int width, int num_layers, int spa
 //            this->output_neuros.push_back(n);
 //        }
 //    }
-    int input_neuron = 2;
+    int input_neuron = 3;
     for (int counter = 0; counter < input_neuron; counter++) {
         auto n = new neuron(true);
         this->input_neurons.push_back(n);
@@ -92,6 +92,7 @@ CustomNetwork::CustomNetwork(float step_size, int width, int num_layers, int spa
         for(auto &it : this_layer){
             neurons_so_far.push_back(it);
         }
+    }
 }
 
 void CustomNetwork::print_graph(neuron *root) {

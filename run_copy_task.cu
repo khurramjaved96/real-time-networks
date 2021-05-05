@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     CustomNetwork my_network = CustomNetwork(exp.get_float_param("step_size"),
                                              exp.get_int_param("width"),
                                              exp.get_int_param("num_layers"),
-                                             exp.get_int_parap("sparsity"),
+                                             exp.get_int_param("sparsity"),
                                              exp.get_int_param("seed"));
 
     CopyTask env = CopyTask(exp.get_int_param("seed"), exp.get_bool_param("randomize_sequence_length"));
