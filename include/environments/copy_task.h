@@ -14,7 +14,7 @@ class CopyTask{
     int seq_length;
     int seq_timestep;     // counts timestep in current seq
     int data_timestep;    // counts only target tokens
-    int current_timestep; // counts overall timestep
+    int sequence_gap_left;
     float total_err_per_seq;
     float decayed_avg_err;
     bool randomize_sequence_length;

@@ -12,9 +12,9 @@ CopyTask::CopyTask(int seed, bool randomize_sequence_length): mt(seed){
     this->seq_length = 1;
     this->seq_timestep = 0;
     this->data_timestep = 0;
-    this->current_timestep = 0;
     this->total_err_per_seq = 0;
     this->decayed_avg_err = 1;
+    this->sequence_gap_left = 0;
     this->randomize_sequence_length = randomize_sequence_length;
     this->bit_sampler = std::uniform_int_distribution<int>(0,1);
 }
@@ -35,6 +35,7 @@ int CopyTask::get_seq_length(){
 
 
 std::vector<float> CopyTask::get_state(){
+    // state: [start_of_stimuli_flag, end_of_stimuli_flag, stimuli]
     return this->current_state;
 }
 
@@ -56,7 +57,6 @@ std::vector<float> CopyTask::reset(){
     this->seq_length = 1;
     this->seq_timestep = 0;
     this->data_timestep = 0;
-    this->current_timestep = 0;
     this->total_err_per_seq = 0;
     this->decayed_avg_err = 1;
     this->current_state = std::vector<float>{0, float(bit_sampler(mt))};
@@ -65,6 +65,15 @@ std::vector<float> CopyTask::reset(){
 
 
 std::vector<float> CopyTask::step(float err_last_step){
+    // the gap between sequence
+    if(this->sequence_gap_left > 0){
+        this->sequence_gap_left -= 1;
+        this->current_state = std::vector<float>{0, 0, 0};
+        if(this->sequence_gap_left == 1)
+            this->current_state = std::vector<float>{1, 0, 0};
+        return this->current_state;
+    }
+
     this->total_err_per_seq += abs(err_last_step);
     // after obtaining err for first pred
     //if(this->seq_timestep > this->seq_length+1)
@@ -85,22 +94,22 @@ std::vector<float> CopyTask::step(float err_last_step){
         }
         this->seq_timestep = 0;
         this->total_err_per_seq = 0;
+        this->sequence_gap_left = 50;
     }
 
     if(this->seq_timestep < this->seq_length){
-        this->current_state = std::vector<float>{0, float(bit_sampler(mt))};
+        this->current_state = std::vector<float>{0, 0, float(bit_sampler(mt))};
         this->past_states.push(this->current_state);
     }
     // throw a pred flag
     else if(this->seq_timestep == this->seq_length)
-        this->current_state = std::vector<float>{1, 0};
+        this->current_state = std::vector<float>{0, 1, 0};
     // start the pred sequence
     else if(this->seq_timestep > this->seq_length){
         this->data_timestep += 1;
-        this->current_state = std::vector<float>{1, 0};
+        this->current_state = std::vector<float>{0, 0, 0};
     }
 
     this->seq_timestep += 1;
-    this->current_timestep += 1;
     return current_state;
 }
