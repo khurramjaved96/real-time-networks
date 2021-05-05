@@ -17,13 +17,14 @@ class CopyTask{
     int current_timestep; // counts overall timestep
     float total_err_per_seq;
     float decayed_avg_err;
+    bool randomize_sequence_length;
     std::mt19937 mt;
     std::vector<float> current_state;
     std::queue<std::vector<float>> past_states;
     std::uniform_int_distribution<int> bit_sampler;
 
 public:
-    CopyTask(int seed);
+    CopyTask(int seed, bool randomize_sequence_length);
     int get_data_timestep();
     int get_L();
     int get_seq_length();

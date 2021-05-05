@@ -7,7 +7,7 @@
 #include <math.h>
 #include <random>
 
-CopyTask::CopyTask(int seed): mt(seed) {
+CopyTask::CopyTask(int seed, bool randomize_sequence_length): mt(seed){
     this->L = 1;
     this->seq_length = 1;
     this->seq_timestep = 0;
@@ -15,6 +15,7 @@ CopyTask::CopyTask(int seed): mt(seed) {
     this->current_timestep = 0;
     this->total_err_per_seq = 0;
     this->decayed_avg_err = 1;
+    this->randomize_sequence_length = randomize_sequence_length;
     this->bit_sampler = std::uniform_int_distribution<int>(0,1);
 }
 
@@ -77,8 +78,11 @@ std::vector<float> CopyTask::step(float err_last_step){
             this->L += 1;
             this->decayed_avg_err = 1;
         }
-        auto seq_len_sampler = std::uniform_int_distribution<int>(std::max(this->L-5,1), this->L);
-        this->seq_length = seq_len_sampler(mt);
+        this->seq_length = this->L;
+        if (this->randomize_sequence_length){
+          auto seq_len_sampler = std::uniform_int_distribution<int>(std::max(this->L-5,1), this->L);
+          this->seq_length = seq_len_sampler(mt);
+        }
         this->seq_timestep = 0;
         this->total_err_per_seq = 0;
     }
@@ -93,7 +97,7 @@ std::vector<float> CopyTask::step(float err_last_step){
     // start the pred sequence
     else if(this->seq_timestep > this->seq_length){
         this->data_timestep += 1;
-        this->current_state = std::vector<float>{1, 1};
+        this->current_state = std::vector<float>{1, 0};
     }
 
     this->seq_timestep += 1;
