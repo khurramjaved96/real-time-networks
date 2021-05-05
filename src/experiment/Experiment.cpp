@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <ctime>
 #include <assert.h>
 #include "../../include/experiment/Database.h"
 
@@ -58,8 +59,14 @@ Experiment::Experiment(int argc, char *argv[]) {
         this->run = std::stoi(this->args["run"][0]);
     }
     else{
-        std::cout << "Run number not provided; for example, pass --run 0 as command line argument. Exiting \n";
-        exit(0);
+        time_t cur_time;
+        time(&cur_time);
+        tm* cur_tm = localtime(&cur_time);
+        char run_id[12];
+        strftime(run_id, 12, "%m%d%H%M%S", cur_tm);
+
+        std::cout << "Run number not provided; using: " << run_id << std::endl;
+        this->run = std::stoi(run_id);
     }
 
     int temp_rank = this->run;
