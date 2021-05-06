@@ -7,8 +7,11 @@
 #include <math.h>
 #include <random>
 
-CopyTask::CopyTask(int seed, bool randomize_sequence_length, int sequence_gap): mt(seed){
+CopyTask::CopyTask(int seed, int fix_L_val,  bool randomize_sequence_length, int sequence_gap): mt(seed){
     this->L = 1;
+    this->fix_L_val = fix_L_val;
+    if(this->fix_L_val)
+      this->L = this->fix_L_val;
     this->seq_length = 1;
     this->seq_timestep = 0;
     this->data_timestep = 0;
@@ -55,6 +58,8 @@ float CopyTask::get_target(){
 
 std::vector<float> CopyTask::reset(){
     this->L = 1;
+    if(this->fix_L_val)
+      this->L = this->fix_L_val;
     this->seq_length = 1;
     this->seq_timestep = 0;
     this->data_timestep = 0;
@@ -84,7 +89,7 @@ std::vector<float> CopyTask::step(float err_last_step){
         float err_per_bit = this->total_err_per_seq / this->seq_length;
         this->decayed_avg_err = (this->decayed_avg_err * 0.9) + (err_per_bit * 0.1);
         //std::cout << "avg err: " << this->decayed_avg_err << std::endl;
-        if(this->decayed_avg_err < 0.15){
+        if(this->decayed_avg_err < 0.15 && !this->fix_L_val){
             this->L += 1;
             this->decayed_avg_err = 1;
         }

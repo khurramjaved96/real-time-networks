@@ -4,10 +4,11 @@
 #include <vector>
 #include <algorithm>
 #include <chrono>
-#include "include/utils.h"
 #include <map>
 #include <string>
+#include <signal.h>
 
+#include "include/utils.h"
 #include "include/neural_networks/networks/test_network.h"
 #include "include/neural_networks/neural_network.h"
 #include "include/experiment/Experiment.h"
@@ -18,10 +19,16 @@
 #include "include/animal_learning/tracecondioning.h"
 #include "include/neural_networks/networks/test_network.h"
 
+volatile sig_atomic_t someone_killed_me = 0;
+void sigint(int sig){
+    someone_killed_me = 1;
+    std::cout << "\nSIGINT detected, saving results and killing..." << std::endl;
+}
 
 int main(int argc, char *argv[]) {
 //    std::string default_config = "--name test --width 10 --seed 0 --steps 100 --run 0 --step_size 0.0001 --num_layers 5 --data_driven_initialization false --randomize_sequence_length true --add_features false --sparsity 98 --sequence_gap 20"
 //    __builtin_trap();
+    signal(SIGINT, sigint);
     std::cout << "Program started \n";
     Experiment exp = Experiment(argc, argv);
     std::cout << "Experiment object created \n";
@@ -51,6 +58,7 @@ int main(int argc, char *argv[]) {
                                              exp.get_int_param("seed"));
 
     CopyTask env = CopyTask(exp.get_int_param("seed"),
+                            exp.get_int_param("fix_L_val"),
                             exp.get_bool_param("randomize_sequence_length"),
                             exp.get_int_param("sequence_gap"));
     //get a sequence of data for data-driven initialization
@@ -76,12 +84,16 @@ int main(int argc, char *argv[]) {
     std::string state = "finished";
     std::string state_comments = "";
     std::vector<std::vector<std::string>> error_logger;
-    std::vector<std::vector<std::string>> state_logger;
+    std::vector<std::vector<std::string>> obs_logger;
     std::vector<std::vector<std::string>> graph_logger;
 
     std::cout << "Flag Bit \t Pred Bit \t Target \t Pred \t Seq_len \t Datatime" << std::endl;
     for (int counter = 0; counter < exp.get_int_param("steps"); counter++) {
-
+        if(someone_killed_me){
+            state = "killed";
+            state_comments = "interrupt_sig";
+            break;
+        }
         auto state_current = env.step(last_err);
 //        print_vector(state_current);
         my_network.set_input_values(state_current);
@@ -129,7 +141,7 @@ int main(int argc, char *argv[]) {
 
         std::vector<float> cur_state = env.get_state();
 
-        if(counter%150000 < 1000 || counter > exp.get_int_param("steps") - 1000)
+        if(counter%50000 < 200 || counter > exp.get_int_param("steps") - 1000)
         {
             std::vector<std::string> state_vec;
             state_vec.push_back(std::to_string(exp.get_int_param("run")));
@@ -142,7 +154,7 @@ int main(int argc, char *argv[]) {
             state_vec.push_back(std::to_string(env.get_L()));
             state_vec.push_back(std::to_string(env.get_seq_length()));
             state_vec.push_back(std::to_string(env.get_data_timestep()));
-            state_logger.push_back(state_vec);
+            obs_logger.push_back(state_vec);
         }
 
         if(counter < 10){
@@ -180,22 +192,24 @@ int main(int argc, char *argv[]) {
             graph_logger.push_back(graph_data);
         }
 
-        if(counter % 100000 == 99998)
+        if(counter % 300000 == 299998)
         {
-//            print_vector(my_network.get_memory_weights());
+            if(exp.get_bool_param("add_features"))
+                print_vector(my_network.get_memory_weights());
             std::cout << "Pushing results" << std::endl;
             synapses_metric.add_values(error_logger);
-            observations_metric.add_values(state_logger);
+            observations_metric.add_values(obs_logger);
             graph_state.add_values(graph_logger);
             std::cout << "Results added " << std::endl;
             std::cout << "Len = " << error_logger.size() << std::endl;
             error_logger.clear();
-            state_logger.clear();
+            obs_logger.clear();
             graph_logger.clear();
         }
         if (counter % 10000 == 0 || counter % 10000 == 999 || counter % 10000 == 998) {
             std::cout << "### STEP = " << counter << std::endl;
             std::cout << "Running error = " << running_error << std::endl;
+            std::cout << "Running accuracy = " << running_accuracy << std::endl;
         }
     }
 
@@ -205,7 +219,8 @@ int main(int argc, char *argv[]) {
                             exp.get_int_param("steps")))
               << " fps" << std::endl;
 
-
+    observations_metric.add_values(obs_logger);
+    synapses_metric.add_values(error_logger);
     std::string g = my_network.get_viz_graph();
     std::vector<std::string> graph_data;
     graph_data.push_back(std::to_string(exp.get_int_param("steps")));
@@ -222,8 +237,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
-//
-// Created by Khurram Javed on 2021-04-01.
-//
-

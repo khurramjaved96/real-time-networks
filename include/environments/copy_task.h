@@ -11,6 +11,7 @@
 
 class CopyTask{
     int L;
+    int fix_L_val;
     int seq_length;
     int seq_timestep;     // counts timestep in current seq
     int data_timestep;    // counts only target tokens
@@ -25,7 +26,7 @@ class CopyTask{
     std::uniform_int_distribution<int> bit_sampler;
 
 public:
-    CopyTask(int seed, bool randomize_sequence_length, int sequence_gap);
+    CopyTask(int seed, int fix_L_val, bool randomize_sequence_length, int sequence_gap);
     int get_data_timestep();
     int get_L();
     int get_seq_length();
