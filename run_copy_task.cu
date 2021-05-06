@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
         if(counter < 10){
             std::string g = my_network.get_viz_graph();
             std::vector<std::string> graph_data;
-            graph_data.push_back(std::to_string(exp.get_int_param("steps")));
+            graph_data.push_back(std::to_string(counter));
             graph_data.push_back(std::to_string(exp.get_int_param("run")));
             graph_data.push_back(g);
             graph_logger.push_back(graph_data);
@@ -186,7 +186,7 @@ int main(int argc, char *argv[]) {
 
             std::string g = my_network.get_viz_graph();
             std::vector<std::string> graph_data;
-            graph_data.push_back(std::to_string(exp.get_int_param("steps")));
+            graph_data.push_back(std::to_string(counter));
             graph_data.push_back(std::to_string(exp.get_int_param("run")));
             graph_data.push_back(g);
             graph_logger.push_back(graph_data);
@@ -223,6 +223,7 @@ int main(int argc, char *argv[]) {
     synapses_metric.add_values(error_logger);
     std::string g = my_network.get_viz_graph();
     std::vector<std::string> graph_data;
+    std::cout << g << std::endl;
     graph_data.push_back(std::to_string(exp.get_int_param("steps")));
     graph_data.push_back(std::to_string(exp.get_int_param("run")));
     graph_data.push_back(g);
