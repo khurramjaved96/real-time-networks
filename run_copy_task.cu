@@ -201,8 +201,8 @@ int main(int argc, char *argv[]) {
 
     auto end = std::chrono::steady_clock::now();
     std::cout << "Elapsed time in milliseconds for per steps: "
-              << 1000000 / (std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() /
-                            exp.get_int_param("steps"))
+              << 1000000 / (1+(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() /
+                            exp.get_int_param("steps")))
               << " fps" << std::endl;
 
 
