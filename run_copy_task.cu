@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
             cur_state.push_back(prediction);
             cur_state.push_back(env.get_L());
             cur_state.push_back(env.get_data_timestep());
-            cur_state.push_back(std::to_string(total_new_features));
+            cur_state.push_back(total_new_features);
             print_vector(cur_state);
         }
 
@@ -192,6 +192,8 @@ int main(int argc, char *argv[]) {
             timestep_since_feat_added = exp.get_int_param("features_min_timesteps");
             for (int i = 0; i < exp.get_int_param("num_new_features"); i++)
                 my_network.add_memory(exp.get_float_param("step_size"));
+
+            std::cout << "\n Adding features..." << std::endl;
 
             std::string g = my_network.get_viz_graph();
             std::vector<std::string> graph_data;
