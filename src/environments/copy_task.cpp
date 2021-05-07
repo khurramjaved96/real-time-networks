@@ -89,7 +89,7 @@ std::vector<float> CopyTask::step(float err_last_step){
         float err_per_bit = this->total_err_per_seq / this->seq_length;
         this->decayed_avg_err = (this->decayed_avg_err * 0.9) + (err_per_bit * 0.1);
         //std::cout << "avg err: " << this->decayed_avg_err << std::endl;
-        if(this->decayed_avg_err < 0.15 && !this->fix_L_val){
+        if(this->decayed_avg_err < 0.10 && !this->fix_L_val){
             this->L += 1;
             this->decayed_avg_err = 1;
         }

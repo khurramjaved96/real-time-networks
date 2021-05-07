@@ -35,16 +35,16 @@ int main(int argc, char *argv[]) {
     int width = exp.get_int_param("width");
 
     Metric synapses_metric = Metric(exp.database_name, "error_table",
-                                    std::vector<std::string>{"step", "datatime", "seq_length", "run", "error", "accuracy"},
-                                    std::vector<std::string>{"int", "int", "int", "int", "real", "real"},
+                                    std::vector<std::string>{"step", "datatime", "seq_length", "run", "error", "accuracy", "new_features"},
+                                    std::vector<std::string>{"int", "int", "int", "int", "real", "real", "int"},
                                     std::vector<std::string>{"step",  "run" });
     Metric run_state_metric = Metric(exp.database_name, "state_table",
                                      std::vector<std::string>{"run", "state", "state_comments"},
                                      std::vector<std::string>{"int", "MEDIUMTEXT", "MEDIUMTEXT"},
                                      std::vector<std::string>{"run"});
     Metric observations_metric = Metric(exp.database_name, "obs_table",
-                                        std::vector<std::string>{"run", "step", "inp_start_flag", "inp_end_flag", "stml_seq", "target", "pred", "L", "seq_len", "data_timestep"},
-                                        std::vector<std::string>{"int", "int", "real", "real", "real", "real", "real", "int", "int", "int"},
+                                        std::vector<std::string>{"run", "step", "inp_start_flag", "inp_end_flag", "stml_seq", "target", "pred", "L", "seq_len", "data_timestep", "new_features"},
+                                        std::vector<std::string>{"int", "int", "real", "real", "real", "real", "real", "int", "int", "int", "int"},
                                         std::vector<std::string>{"run", "step"});
     Metric graph_state = Metric(exp.database_name, "graph",
                                 std::vector<std::string>{"step", "run", "graph_data"},
@@ -81,19 +81,25 @@ int main(int argc, char *argv[]) {
     float last_err = 1;
     float target_old = 0;
     int current_seq_length = 1;
+    int timestep_since_feat_added = exp.get_int_param("features_min_timesteps");
+    int total_new_features = 0;
     std::string state = "finished";
     std::string state_comments = "";
     std::vector<std::vector<std::string>> error_logger;
     std::vector<std::vector<std::string>> obs_logger;
     std::vector<std::vector<std::string>> graph_logger;
 
-    std::cout << "Flag Bit \t Pred Bit \t Target \t Pred \t Seq_len \t Datatime" << std::endl;
+    std::cout << "Flag Bit \t Pred Bit \t Target \t Pred \t Seq_len \t Datatime \t new features" << std::endl;
     for (int counter = 0; counter < exp.get_int_param("steps"); counter++) {
         if(someone_killed_me){
             state = "killed";
             state_comments = "interrupt_sig";
             break;
         }
+
+        if(env.get_L() > exp.get_int_param("num_layers") / 2)
+          timestep_since_feat_added -= 1;
+
         auto state_current = env.step(last_err);
 //        print_vector(state_current);
         my_network.set_input_values(state_current);
@@ -134,6 +140,7 @@ int main(int argc, char *argv[]) {
             error_vec.push_back(std::to_string(exp.get_int_param("run")));
             error_vec.push_back(std::to_string(running_error));
             error_vec.push_back(std::to_string(running_accuracy));
+            error_vec.push_back(std::to_string(total_new_features));
             error_logger.push_back(error_vec);
             current_seq_length = env.get_L();
         }
@@ -154,6 +161,7 @@ int main(int argc, char *argv[]) {
             state_vec.push_back(std::to_string(env.get_L()));
             state_vec.push_back(std::to_string(env.get_seq_length()));
             state_vec.push_back(std::to_string(env.get_data_timestep()));
+            state_vec.push_back(std::to_string(total_new_features));
             obs_logger.push_back(state_vec);
         }
 
@@ -173,16 +181,17 @@ int main(int argc, char *argv[]) {
             cur_state.push_back(prediction);
             cur_state.push_back(env.get_L());
             cur_state.push_back(env.get_data_timestep());
+            cur_state.push_back(std::to_string(total_new_features));
             print_vector(cur_state);
         }
 
-        if(counter%500000  == 499999 && exp.get_bool_param("add_features"))
+        if(exp.get_bool_param("add_features") &&
+           timestep_since_feat_added < 1 &&
+           running_accuracy < exp.get_float_param("features_acc_thresh"))
         {
-            my_network.add_memory(exp.get_float_param("step_size"));
-            my_network.add_memory(exp.get_float_param("step_size"));
-            my_network.add_memory(exp.get_float_param("step_size"));
-            my_network.add_memory(exp.get_float_param("step_size"));
-            my_network.add_memory(exp.get_float_param("step_size"));
+            timestep_since_feat_added = exp.get_int_param("features_min_timesteps");
+            for (int i = 0; i < exp.get_int_param("num_new_features"); i++)
+                my_network.add_memory(exp.get_float_param("step_size"));
 
             std::string g = my_network.get_viz_graph();
             std::vector<std::string> graph_data;
