@@ -34,11 +34,12 @@ void synapse::zero_gradient() {
 }
 
 void synapse::turn_on_idbd() {
-    this->idbd = true;
+    this->step_size = this->step_size*10;
+//    this->idbd = true;
 //    this->beta_step_size = log(this->step_size);
-    this->beta_step_size = log(step_size);
-    this->h_step_size = 0;
-    this->step_size = exp(this->beta_step_size);
+//    this->beta_step_size = log(step_size);
+//    this->h_step_size = 0;
+//    this->step_size = exp(this->beta_step_size);
 }
 void synapse::update_weight()
 {
@@ -47,8 +48,8 @@ void synapse::update_weight()
         this->beta_step_size += (1e-4)*this->credit*this->h_step_size/(sqrt(this->b2) + 1e-8);
         this->b2 = this->b2*0.99 + this->credit*this->h_step_size*this->credit*this->h_step_size*0.01;
         this->step_size = exp(this->beta_step_size);
-        if(this->credit > 0 and this->step_size > 1e-2)
-            std::cout << "Step_size = " << this->step_size << " " << this->h_step_size << " " << this->credit*this->h_step_size <<  std::endl;
+//        if(this->credit > 0 and this->step_size > 1e-2)
+//            std::cout << "Step_size = " << this->step_size << " " << this->h_step_size << " " << this->credit*this->h_step_size <<  std::endl;
         this->weight += (this->step_size * this->credit);
         this->h_step_size = this->h_step_size *(1 - this->step_size*this->credit_activation_idbd*this->credit_activation_idbd) + this->step_size*this->credit;
 

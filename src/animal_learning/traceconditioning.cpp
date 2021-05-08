@@ -21,6 +21,7 @@ TraceConditioning::TraceConditioning(std::pair<int, int> ISI, std::pair<int, int
     ISI_length = ISI.first;
 }
 
+//
 void TraceConditioning::increase_ISI(int t) {
     ISI_length+= t;
     this->ISI_sampler = std::uniform_int_distribution<int>(ISI_length, ISI_length);

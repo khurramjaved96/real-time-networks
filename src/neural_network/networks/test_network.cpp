@@ -27,7 +27,7 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
 //            this->output_neuros.push_back(n);
 //        }
 //    }
-    int input_neuron = 5;
+    int input_neuron = 10;
     for (int counter = 0; counter < input_neuron; counter++) {
         auto n = new neuron(true);
         this->input_neurons.push_back(n);
@@ -53,27 +53,25 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
 
     std::mt19937 mt(seed);
     mt.seed(seed);
-    float top_range = sqrt(2.0/float(width));
+    float top_range = sqrt(2.0/float(width/50));
     float input_range = sqrt(2.0/float(this->input_neurons.size()));
     std::normal_distribution<float> dist(0, top_range);
     std::normal_distribution<float> dist_inp(0, input_range);
-//
-//    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
-//    this->all_synapses.push_back(new synapse(all_neurons[0], all_neurons[499], dist(mt), step_size));
+    std::uniform_int_distribution<int>  sparse_generator = std::uniform_int_distribution<int>(0, 50);
+
     std::vector<neuron*> neurons_so_far;
-    for(int layer=0; layer < 8; layer++)
+    for(int layer=0; layer < 5; layer++)
     {
         std::vector<neuron*> this_layer;
         for(int this_layer_neuron = 0; this_layer_neuron < width; this_layer_neuron++) {
+
             auto* n = new neuron(true);
             this->all_neurons.push_back(n);
             this_layer.push_back(n);
 //            adding connections from input
-            if(layer==0)
-            {
-                for (auto &it : this->input_neurons) {
-                    this->all_synapses.push_back(new synapse(it, n, dist_inp(mt), step_size));
-                }
+
+            for (auto &it : this->input_neurons) {
+                this->all_synapses.push_back(new synapse(it, n, dist_inp(mt), step_size));
             }
 //            Output weights should be initaliezd to be zero.bash
             for(auto &it : this->output_neuros){
@@ -83,14 +81,11 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
                 s->turn_on_idbd();
             }
             for (auto &it : neurons_so_far) {
-                this->all_synapses.push_back(new synapse(it, n, dist(mt)*top_range, step_size));
+                if(sparse_generator(mt) == 0) {
+                    this->all_synapses.push_back(new synapse(it, n, dist(mt) * top_range, step_size));
+                }
             }
         }
-        while (!neurons_so_far.empty())
-        {
-            neurons_so_far.pop_back();
-        }
-
         for(auto &it : this_layer){
             neurons_so_far.push_back(it);
         }
