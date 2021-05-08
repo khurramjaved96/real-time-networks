@@ -13,6 +13,7 @@
 --add_features true \
 --features_min_timesteps 100000 \
 --features_acc_thresh 0.90 \
+--features_no_min_L false \
 --num_new_features 5 \
 --sparsity 0 \
 --sequence_gap 1 \

@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
             break;
         }
 
-        if(env.get_L() > exp.get_int_param("num_layers") / 2)
+        if(exp.get_bool_param("features_no_min_L") || env.get_L() > exp.get_int_param("num_layers") / 2)
             timestep_since_feat_added -= 1;
 
         auto state_current = env.step(last_err);
