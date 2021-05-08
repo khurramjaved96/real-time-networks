@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     int width = exp.get_int_param("width");
 
     Metric synapses_metric = Metric(exp.database_name, "error_table",
-                                    std::vector<std::string>{"step", "datatime", "seq_length", "run", "error", "accuracy", "new_features"},
+                                    std::vector<std::string>{"step", "datatime", "seq_len", "run", "error", "accuracy", "new_features"},
                                     std::vector<std::string>{"int", "int", "int", "int", "real", "real", "int"},
                                     std::vector<std::string>{"step",  "run" });
     Metric run_state_metric = Metric(exp.database_name, "state_table",
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
                                      std::vector<std::string>{"int", "MEDIUMTEXT", "MEDIUMTEXT"},
                                      std::vector<std::string>{"run"});
     Metric observations_metric = Metric(exp.database_name, "obs_table",
-                                        std::vector<std::string>{"run", "step", "inp_start_flag", "inp_end_flag", "stml_seq", "target", "pred", "L", "seq_len", "data_timestep", "new_features"},
+                                        std::vector<std::string>{"run", "step", "inp_start_flag", "inp_end_flag", "inp_seq", "target", "pred", "L", "seq_len", "datatime", "new_features"},
                                         std::vector<std::string>{"int", "int", "real", "real", "real", "real", "real", "int", "int", "int", "int"},
                                         std::vector<std::string>{"run", "step"});
     Metric graph_state = Metric(exp.database_name, "graph",
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
         }
 
         if(env.get_L() > exp.get_int_param("num_layers") / 2)
-          timestep_since_feat_added -= 1;
+            timestep_since_feat_added -= 1;
 
         auto state_current = env.step(last_err);
 //        print_vector(state_current);
@@ -189,6 +189,7 @@ int main(int argc, char *argv[]) {
            timestep_since_feat_added < 1 &&
            running_accuracy < exp.get_float_param("features_acc_thresh"))
         {
+            total_new_features += exp.get_int_param("num_new_features");
             timestep_since_feat_added = exp.get_int_param("features_min_timesteps");
             for (int i = 0; i < exp.get_int_param("num_new_features"); i++)
                 my_network.add_memory(exp.get_float_param("step_size"));
