@@ -34,7 +34,7 @@ CustomNetwork::CustomNetwork(float step_size, int width, int num_layers, int spa
         this->all_neurons.push_back(n);
     }
 
-    int output_neuros = 1;
+    int output_neuros = 4;
     for (int counter=0; counter < output_neuros; counter++)
     {
         auto n = new neuron(false);
