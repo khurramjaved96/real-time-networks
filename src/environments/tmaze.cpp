@@ -45,6 +45,11 @@ std::vector<float> TMaze::generate_direction_state(){
 }
 
 
+std::vector<float> TMaze::get_no_op_action(){
+    return this->no_op;
+}
+
+
 std::vector<float> TMaze::get_random_action(){
     //TODO exclude the greedy action mby? Should I?
     std::vector<float> random_action(4, 0.0);
@@ -59,9 +64,10 @@ Observation TMaze::reset(){
     obs.timestep = 0;
     obs.episode = this->current_episode;
     obs.reward = 0;
+    obs.cmltv_reward = 0;
     obs.is_terminal = false;
     obs.state = this->generate_direction_state();
-    print_vector(obs.state);
+    //print_vector(obs.state);
     this->current_obs = obs;
 
     this->direction_state = obs.state;
@@ -82,6 +88,9 @@ Observation TMaze::step(std::vector<float> action){
         this->current_episode += 1;
         return this->reset();
     }
+
+    if (action == this->no_op)
+        return this->current_obs;
 
     this->current_obs.timestep += 1;
     this->current_obs.is_terminal = false;
@@ -138,5 +147,6 @@ Observation TMaze::step(std::vector<float> action){
         std::cout << "Error: Unhandled state/action pair" << std::endl;
         exit(1);
     }
+    this->current_obs.cmltv_reward += this->current_obs.reward;
     return this->current_obs;
 }

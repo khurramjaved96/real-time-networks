@@ -337,10 +337,11 @@ std::vector<float> CustomNetwork::read_all_values() {
 }
 
 
-float CustomNetwork::introduce_targets(std::vector<float> targets) {
+float CustomNetwork::introduce_targets(std::vector<float> targets, bool no_grad) {
+    //no_grad=false by default
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
-        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1);
+        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1, no_grad);
     }
     return error;
 }

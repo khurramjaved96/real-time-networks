@@ -11,6 +11,7 @@ struct Observation
     int timestep;
     int episode;
     float reward;
+    float cmltv_reward;
     bool is_terminal;
     std::vector<float> state;
 };
@@ -36,6 +37,7 @@ class TMaze{
     const std::vector<float> E = {0,1,0,0};
     const std::vector<float> W = {0,0,1,0};
     const std::vector<float> S = {0,0,0,1};
+    const std::vector<float> no_op = {0,0,0,0};
 
     const std::vector<float> corridor_state = {1,0,1};
     const std::vector<float> junction_state = {0,1,0};
@@ -47,6 +49,7 @@ public:
     int get_length_of_corridor();
     void set_length_of_corrider(int value);
     std::vector<float> get_random_action();
+    std::vector<float> get_no_op_action();
     Observation get_current_obs();
     Observation reset();
     Observation step(std::vector<float> action);

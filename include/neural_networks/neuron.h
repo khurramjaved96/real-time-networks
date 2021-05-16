@@ -42,7 +42,7 @@ public:
 //    std::vector<std::reference_wrapper<neuron>> output_nodes;
     neuron(bool activation);
     void fire(int time_step);
-    float introduce_targets(float target, int timestep);
+    float introduce_targets(float target, int timestep, bool no_grad=false);
     void propogate_error();
     void activation();
     void init_incoming_synapses();

@@ -1,7 +1,8 @@
 #! /bin/sh
 
 ./FlexibleNN \
---name test2 \
+--name testtmazee2 \
+--max_episodes 400000 \
 --seed 5 \
 --steps 5000000 \
 --width 10 \

@@ -65,9 +65,13 @@ int main(int argc, char *argv[]) {
     int width = exp.get_int_param("width");
 
     Metric run_state_metric = Metric(exp.database_name, "run_states",
-                                     std::vector<std::string>{"run", "state", "state_comments"},
+                                     std::vector<std::string>{"run", "run_state", "run_state_comments"},
                                      std::vector<std::string>{"int", "VARCHAR(10)", "VARCHAR(30)"},
                                      std::vector<std::string>{"run"});
+    Metric episodic_metric = Metric(exp.database_name, "episodic_metrics",
+                                     std::vector<std::string>{"run", "step", "episode", "avg_reward", "accuracy"},
+                                     std::vector<std::string>{"int", "int", "int", "real", "real"},
+                                     std::vector<std::string>{"run", "episode"});
     Metric observations_metric = Metric(exp.database_name, "run_metrics",
                                         std::vector<std::string>{"run", "step", "episode", "eps_step", "avg_reward",
                                                                  "corridor_len", "corridor_pos", "state", "qvalues",
@@ -90,32 +94,27 @@ int main(int argc, char *argv[]) {
     TMaze env = TMaze(exp.get_int_param("seed"),
                       exp.get_int_param("tmaze_corridor_length"));
 
-    //get a sequence of data for data-driven initialization
-//    if (exp.get_bool_param("data_driven_initialization")){
-//        std::vector<std::vector<float>> input_batch;
-//        input_batch.reserve(500);
-//        for(int temp=0; temp<500; temp++)
-//            input_batch.push_back(env.step(1));
-//        my_network.initialize_network(input_batch);
-//        env.reset();
-//    }
-
     std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
     auto start = std::chrono::steady_clock::now();
 
     float R = 0;
     float R_old = 0;
-    float average_reward = 0;
+    float average_reward = -1;
     float accuracy = -1;
     int selected_action_idx_old = 0;
     float gamma = exp.get_float_param("gamma");
     bool prev_was_terminal = false;
+    int no_op_step = 0;
+    std::vector<float> state_cur = env.get_current_obs().state;
+    std::vector<float> state_old = env.get_current_obs().state;
 
+    int max_episodes = exp.get_int_param("max_episodes");
     int timestep_since_feat_added = exp.get_int_param("features_min_timesteps");
     int total_new_features = 0;
-    std::string state = "finished";
-    std::string state_comments = "";
+    std::string run_state = "finished";
+    std::string run_state_comments = "";
     std::vector<std::vector<std::string>> metric_logger;
+    std::vector<std::vector<std::string>> episode_logger;
     std::vector<std::vector<std::string>> graph_logger;
     std::mt19937 mt(exp.get_int_param("seed"));
     auto exploration_sampler = std::uniform_int_distribution<int>(0,100);
@@ -123,21 +122,23 @@ int main(int argc, char *argv[]) {
 
     for (int counter = 0; counter < exp.get_int_param("steps"); counter++) {
         if(someone_killed_me){
-            state = "killed";
-            state_comments = "interrupt_sig";
+            run_state = "killed";
+            run_state_comments = "interrupt_sig";
             break;
         }
+        no_op_step -= 1;
 
         //TODO consider whether we want to add feats from start
         timestep_since_feat_added -= 1;
 
         Observation current_obs = env.get_current_obs();
+        if(max_episodes != -1 && current_obs.episode > max_episodes)
+            break;
         R_old = R;
         R = current_obs.reward;
 
         my_network.set_input_values(current_obs.state);
         my_network.step();
-        //TODO env step here
         std::vector<float> qvalues = my_network.read_output_values();
         std::vector<float> action(qvalues.size(), 0.0);
         std::vector<float> targets(qvalues.size(), 0.0);
@@ -155,38 +156,66 @@ int main(int argc, char *argv[]) {
         }
         else
             targets[selected_action_idx_old] = R_old + gamma * qvalues[selected_action_idx];
-        selected_action_idx_old = selected_action_idx;
+        if (no_op_step != 0)
+            selected_action_idx_old = selected_action_idx;
 
         if (counter > 0){
-            my_network.introduce_targets(targets);
-            average_reward = 0.999 * average_reward + 0.001 * R;
+            if (no_op_step == 0)
+                float err = my_network.introduce_targets(qvalues);//, true);//, (state_cur!=state_old));
+            else
+                my_network.introduce_targets(targets);//, (state_cur!=state_old));
             if (current_obs.is_terminal){
                 prev_was_terminal = true;
-                if (accuracy == -1)
+                if (accuracy == -1){
+                    average_reward = current_obs.cmltv_reward;
                     accuracy = int(R==4);
-                else
+                }
+                else{
+                    average_reward = 0.999 * average_reward + 0.001 * current_obs.cmltv_reward;
                     accuracy = 0.999 * accuracy + 0.001 * int(R==4);
+                }
             }
         }
-        if(counter % 50000 < 50000)
+        if (current_obs.is_terminal){
+            std::vector<std::string> episode_data;
+            episode_data.push_back(std::to_string(exp.get_int_param("run")));
+            episode_data.push_back(std::to_string(counter));
+            episode_data.push_back(std::to_string(current_obs.episode));
+            episode_data.push_back(std::to_string(average_reward));
+            episode_data.push_back(std::to_string(accuracy));
+            episode_logger.push_back(episode_data);
+        }
+        if(counter % 300000 == 299998){
+            episodic_metric.add_values(episode_logger);
+            episode_logger.clear();
+        }
+        if(counter % 50000 < 50000 && current_obs.is_terminal)
         {
             std::vector<float> cur_state = current_obs.state;
             cur_state.push_back(current_obs.episode);
             cur_state.push_back(current_obs.timestep);
             cur_state.push_back(current_obs.reward);
+            cur_state.push_back(current_obs.cmltv_reward);
             cur_state.push_back(average_reward);
             cur_state.push_back(accuracy);
             cur_state.push_back(env.get_current_pos_in_corridor());
-            print_vector(cur_state);
-            print_vector(qvalues);
+            //print_vector(cur_state);
+            std::cout<< "EP:" << current_obs.episode << "\t\tR:" << average_reward << "\t\tAcc:" << accuracy << std::endl;
+            //print_vector(qvalues);
         }
 
-        //TODO the qvalues used to make this action belong to old state
-        current_obs = env.step(action);
+        if (state_old != state_cur && !current_obs.is_terminal){
+            current_obs = env.step(env.get_no_op_action());
+            no_op_step = 2;
+        }
+        else
+            current_obs = env.step(action);
+        state_old = state_cur;
+        state_cur = current_obs.state;
 
         if(isnan(qvalues[selected_action_idx])){
-          state = "killed";
-          state_comments = "nan_prediction";
+          run_state = "killed";
+          run_state_comments = "nan_prediction";
           std::cout << "killing due to nans" << std::endl;
           break;
         }
@@ -246,6 +275,7 @@ int main(int argc, char *argv[]) {
               << " fps" << std::endl;
 
     //observations_metric.add_values(obs_logger);
+    episodic_metric.add_values(episode_logger);
     std::string g = my_network.get_viz_graph();
     std::vector<std::string> graph_data;
     std::cout << g << std::endl;
@@ -255,11 +285,11 @@ int main(int argc, char *argv[]) {
     graph_logger.push_back(graph_data);
     graph_state.add_values(graph_logger);
 
-    std::vector<std::string> state_data;
-    state_data.push_back(std::to_string(exp.get_int_param("run")));
-    state_data.push_back(state);
-    state_data.push_back(state_comments);
-    run_state_metric.add_value(state_data);
+    std::vector<std::string> run_state_data;
+    run_state_data.push_back(std::to_string(exp.get_int_param("run")));
+    run_state_data.push_back(run_state);
+    run_state_data.push_back(run_state_comments);
+    run_state_metric.add_value(run_state_data);
 
     return 0;
 }
