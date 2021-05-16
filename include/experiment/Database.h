@@ -5,7 +5,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include <mysql.h>
+#include <mysql/mysql.h>
 
 #ifndef BINDING_DATABASE_H
 #define BINDING_DATABASE_H

@@ -5,7 +5,7 @@
 #include "../../include/experiment/Database.h"
 #include <string>
 #include <iostream>
-#include <mysql.h>
+#include <mysql/mysql.h>
 #include <cstring>
 
 Database::Database() {
