@@ -5,13 +5,14 @@
 #include <random>
 
 
-TMaze::TMaze(int seed, int length_of_corridor): mt(seed){
+TMaze::TMaze(int seed, int length_of_corridor, bool prediction_problem): mt(seed){
     //detailed desc in header
     this->current_episode = 1;
     this->length_of_corridor = length_of_corridor;
     this->direction_sampler = std::uniform_int_distribution<int>(0,1);
     this->action_sampler = std::uniform_int_distribution<int>(0,3);
     this->current_obs = this->reset();
+    this->prediction_problem = prediction_problem;
 }
 
 
@@ -59,6 +60,17 @@ std::vector<float> TMaze::get_random_action(){
 }
 
 
+
+std::vector<float> TMaze::get_optimal_action(std::vector<float> action){
+    // Turns it into a prediction problem of delay length_of_corridor
+    // the agent always passes through the corridor smoothly
+    if (this->current_obs.state == this->junction_state)
+        return action;
+    else
+        return this->W;
+}
+
+
 Observation TMaze::reset(){
     Observation obs;
     obs.timestep = 0;
@@ -84,6 +96,9 @@ Observation TMaze::reset(){
 
 Observation TMaze::step(std::vector<float> action){
     //actions: N[1000], S[0001], E[0100], W[0010]
+    //if (this->prediction_problem)
+    //    action = this->get_optimal_action(action);
+
     if (this->current_obs.is_terminal){
         this->current_episode += 1;
         return this->reset();

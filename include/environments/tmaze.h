@@ -26,6 +26,7 @@ class TMaze{
     int length_of_corridor;
     int current_pos_in_corridor;
     int current_episode;
+    bool prediction_problem;
     Observation current_obs;
     std::vector<float> direction_state;
     std::vector<float> correct_direction; //[1000] or [0001]
@@ -39,21 +40,22 @@ class TMaze{
     const std::vector<float> S = {0,0,0,1};
     const std::vector<float> no_op = {0,0,0,0};
 
-    const std::vector<float> corridor_state = {1,0,1};
-    const std::vector<float> junction_state = {0,1,0};
-    const std::vector<float> terminal_state = {0,0,0};
 
 public:
-    TMaze(int seed, int length_of_corridor);
+    TMaze(int seed, int length_of_corridor, bool prediction_problem);
     int get_current_pos_in_corridor();
     int get_length_of_corridor();
     void set_length_of_corrider(int value);
     std::vector<float> get_random_action();
     std::vector<float> get_no_op_action();
+    std::vector<float> get_optimal_action(std::vector<float> action);
     Observation get_current_obs();
     Observation reset();
     Observation step(std::vector<float> action);
 
+    const std::vector<float> corridor_state = {1,0,1};
+    const std::vector<float> junction_state = {0,1,0};
+    const std::vector<float> terminal_state = {0,0,0};
 };
 
 #endif //FLEXIBLENN_COPY_TASK_H

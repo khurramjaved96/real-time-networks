@@ -1,10 +1,10 @@
 #! /bin/sh
 
 ./FlexibleNN \
---name testtmazee2 \
+--name hereami \
 --max_episodes 400000 \
 --seed 5 \
---steps 5000000 \
+--steps 4000000 \
 --width 10 \
 --step_size 3e-5 \
 --num_layers 10 \
@@ -17,4 +17,5 @@
 --gamma 0.98 \
 --epsilon 0.05 \
 --tmaze_corridor_length 2 \
+--prediction_problem true \
 --comment $1

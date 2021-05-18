@@ -69,8 +69,8 @@ int main(int argc, char *argv[]) {
                                      std::vector<std::string>{"int", "VARCHAR(10)", "VARCHAR(30)"},
                                      std::vector<std::string>{"run"});
     Metric episodic_metric = Metric(exp.database_name, "episodic_metrics",
-                                     std::vector<std::string>{"run", "step", "episode", "avg_reward", "accuracy"},
-                                     std::vector<std::string>{"int", "int", "int", "real", "real"},
+                                     std::vector<std::string>{"run", "step", "episode", "timestep", "avg_reward", "accuracy"},
+                                     std::vector<std::string>{"int", "int", "int", "int", "real", "real"},
                                      std::vector<std::string>{"run", "episode"});
     Metric observations_metric = Metric(exp.database_name, "run_metrics",
                                         std::vector<std::string>{"run", "step", "episode", "eps_step", "avg_reward",
@@ -92,7 +92,8 @@ int main(int argc, char *argv[]) {
                                              exp.get_int_param("seed"));
 
     TMaze env = TMaze(exp.get_int_param("seed"),
-                      exp.get_int_param("tmaze_corridor_length"));
+                      exp.get_int_param("tmaze_corridor_length"),
+                      exp.get_bool_param("prediction_problem"));
 
     std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
     auto start = std::chrono::steady_clock::now();
@@ -143,10 +144,25 @@ int main(int argc, char *argv[]) {
         std::vector<float> action(qvalues.size(), 0.0);
         std::vector<float> targets(qvalues.size(), 0.0);
         int selected_action_idx = 0;
-        if (exploration_sampler(mt) < exp.get_float_param("epsilon")*100)
-            selected_action_idx = rnd_action_sampler(mt);
-        else
-            selected_action_idx = std::distance(qvalues.begin(), std::max_element(qvalues.begin(), qvalues.end()));
+        if (exploration_sampler(mt) < exp.get_float_param("epsilon")*100){
+            int rnd_action = rnd_action_sampler(mt);
+            //for prediction problem, allow choosing only between two actions at junction
+            if (exp.get_bool_param("prediction_problem") && current_obs.state == env.junction_state)
+                rnd_action <= 1 ? selected_action_idx = 0 : selected_action_idx = 3;
+            //always go west in junction
+            else if (exp.get_bool_param("prediction_problem"))
+                selected_action_idx = 2;
+            else
+                selected_action_idx = rnd_action_sampler(mt);
+        }
+        else{
+            if (exp.get_bool_param("prediction_problem") && current_obs.state == env.junction_state)
+                qvalues[0] > qvalues[3] ? selected_action_idx = 0 : selected_action_idx = 3;
+            else if (exp.get_bool_param("prediction_problem"))
+                selected_action_idx = 2;
+            else
+                selected_action_idx = std::distance(qvalues.begin(), std::max_element(qvalues.begin(), qvalues.end()));
+        }
         action[selected_action_idx] = 1;
         //update the gradient for only the old action since current one is for bootstrap
         if (prev_was_terminal){
@@ -181,11 +197,12 @@ int main(int argc, char *argv[]) {
             episode_data.push_back(std::to_string(exp.get_int_param("run")));
             episode_data.push_back(std::to_string(counter));
             episode_data.push_back(std::to_string(current_obs.episode));
+            episode_data.push_back(std::to_string(current_obs.timestep));
             episode_data.push_back(std::to_string(average_reward));
             episode_data.push_back(std::to_string(accuracy));
             episode_logger.push_back(episode_data);
         }
-        if(counter % 300000 == 299998){
+        if(counter % 300000 == 299998 || current_obs.episode % 1000 == 998){
             episodic_metric.add_values(episode_logger);
             episode_logger.clear();
         }
@@ -200,7 +217,7 @@ int main(int argc, char *argv[]) {
             cur_state.push_back(accuracy);
             cur_state.push_back(env.get_current_pos_in_corridor());
             //print_vector(cur_state);
-            std::cout<< "EP:" << current_obs.episode << "\t\tR:" << average_reward << "\t\tAcc:" << accuracy << std::endl;
+            std::cout<< "EP:" << current_obs.episode << "\t\tSteps:" << current_obs.timestep <<  "\t\tR:" << average_reward << "\t\tAcc:" << accuracy << std::endl;
             //print_vector(qvalues);
         }
 
