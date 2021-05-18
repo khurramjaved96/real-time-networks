@@ -16,6 +16,7 @@
 --sparsity 0 \
 --gamma 0.98 \
 --epsilon 0.05 \
+--episode_length 10 \
 --tmaze_corridor_length 2 \
---prediction_problem true \
+--prediction_problem false \
 --comment $1

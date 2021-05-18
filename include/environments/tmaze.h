@@ -26,6 +26,7 @@ class TMaze{
     int length_of_corridor;
     int current_pos_in_corridor;
     int current_episode;
+    int episode_length;
     bool prediction_problem;
     Observation current_obs;
     std::vector<float> direction_state;
@@ -42,7 +43,7 @@ class TMaze{
 
 
 public:
-    TMaze(int seed, int length_of_corridor, bool prediction_problem);
+    TMaze(int seed, int length_of_corridor, int episode_length, bool prediction_problem);
     int get_current_pos_in_corridor();
     int get_length_of_corridor();
     void set_length_of_corrider(int value);

@@ -93,6 +93,7 @@ int main(int argc, char *argv[]) {
 
     TMaze env = TMaze(exp.get_int_param("seed"),
                       exp.get_int_param("tmaze_corridor_length"),
+                      exp.get_int_param("episode_length"),
                       exp.get_bool_param("prediction_problem"));
 
     std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
@@ -202,10 +203,10 @@ int main(int argc, char *argv[]) {
             episode_data.push_back(std::to_string(accuracy));
             episode_logger.push_back(episode_data);
         }
-        if(counter % 300000 == 299998 || current_obs.episode % 1000 == 998){
-            episodic_metric.add_values(episode_logger);
-            episode_logger.clear();
-        }
+        //if(counter % 300000 == 299998 || current_obs.episode % 1000 == 998){
+        //    episodic_metric.add_values(episode_logger);
+        //    episode_logger.clear();
+        //}
         if(counter % 50000 < 50000 && current_obs.is_terminal)
         {
             std::vector<float> cur_state = current_obs.state;
