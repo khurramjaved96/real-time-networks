@@ -9,9 +9,11 @@
 
 
 message::message(float m, int t) : time_step(t) {
-    this->message_value = m;
+    this->gradient = m;
     this->time_step = t;
     this->distance_travelled = 0;
+    this->lambda=0;
+    this->gamma=0;
 }
 
 //void message::increment_distance() {
@@ -23,14 +25,14 @@ message::message(float m, int t) : time_step(t) {
 //message operator+(message lhs,        // passing lhs by value helps optimize chained a+b+c
 //                   const float& rhs) // otherwise, both parameters may be const references
 //{
-//    lhs.message_value += rhs; // reuse compound assignment
+//    lhs.gradient += rhs; // reuse compound assignment
 //    return lhs; // return the result by value (uses move constructor)
 //}
 //
 //message operator-(message lhs,        // passing lhs by value helps optimize chained a+b+c
 //                  const float& rhs) // otherwise, both parameters may be const references
 //{
-//    lhs.message_value -= rhs; // reuse compound assignment
+//    lhs.gradient -= rhs; // reuse compound assignment
 //    return lhs; // return the result by value (uses move constructor)
 //}
 //
@@ -39,7 +41,7 @@ message::message(float m, int t) : time_step(t) {
 //{
 //    if (lhs.time_step != rhs.time_step)
 //        throw std::logic_error("Arithmetic operation on message with different time-steps; likely a bug");
-//    lhs.message_value -= rhs.message_value; // reuse compound assignment
+//    lhs.gradient -= rhs.gradient; // reuse compound assignment
 //    return lhs; // return the result by value (uses move constructor)
 //}
 //
@@ -48,6 +50,6 @@ message::message(float m, int t) : time_step(t) {
 //{
 //    if (lhs.time_step != rhs.time_step)
 //        throw std::logic_error("Arithmetic operation on message with different time-steps; likely a bug");
-//    lhs.message_value += rhs.message_value; // reuse compound assignment
+//    lhs.gradient += rhs.gradient; // reuse compound assignment
 //    return lhs; // return the result by value (uses move constructor)
 //}

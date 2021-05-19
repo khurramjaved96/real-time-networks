@@ -66,8 +66,8 @@ void NetworkVisualizer::generate_dot(int time_step) {
     for(auto &it : all_neurons) {
         for (auto &os: it->outgoing_synapses) {
             auto current_n = os;
-            dot_string += "\t" + std::to_string(current_n->input_neurons->id)
-                          + "->" + std::to_string(current_n->output_neurons->id) //+ ";\n";
+            dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+                          + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
                           + "[label = \"" + std::to_string(os->weight) + "\"];\n";
         }
     }
@@ -84,8 +84,8 @@ std::string NetworkVisualizer::get_graph(int time_step) {
     for(auto &it : all_neurons) {
         for (auto &os: it->outgoing_synapses) {
             auto current_n = os;
-            dot_string += "\t" + std::to_string(current_n->input_neurons->id)
-                          + "->" + std::to_string(current_n->output_neurons->id) //+ ";\n";
+            dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+                          + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
                           + "[label = \"" + std::to_string(os->weight) + "\"];\n";
         }
     }
@@ -109,8 +109,8 @@ std::string NetworkVisualizer::get_graph_detailed(int time_step) {
                       + "\"];\n";
         for (auto &os: it->outgoing_synapses) {
             auto current_n = os;
-            dot_string += "\t" + std::to_string(current_n->input_neurons->id)
-                          + "->" + std::to_string(current_n->output_neurons->id) + ";\n";
+            dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+                          + "->" + std::to_string(current_n->output_neuron->id) + ";\n";
             //+ " [label = \"gq_size:" + std::to_string(os->grad_queue.size())
             //+ " credit:" + std::to_string(os->credit) + "\"];\n";
 
@@ -138,8 +138,8 @@ void NetworkVisualizer::generate_dot_detailed(int time_step) {
                       + "\"];\n";
         for (auto &os: it->outgoing_synapses) {
             auto current_n = os;
-            dot_string += "\t" + std::to_string(current_n->input_neurons->id)
-                          + "->" + std::to_string(current_n->output_neurons->id) + ";\n";
+            dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+                          + "->" + std::to_string(current_n->output_neuron->id) + ";\n";
                           //+ " [label = \"gq_size:" + std::to_string(os->grad_queue.size())
                           //+ " credit:" + std::to_string(os->credit) + "\"];\n";
 

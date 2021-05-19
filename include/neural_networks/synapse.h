@@ -17,20 +17,26 @@ class neuron;
 
 class synapse {
 public:
+    long long int id;
+    static long long int synapse_id;
+    bool useless;
+    int age;
+    bool mark_delete;
     float weight;
     float credit;
+    float trace;
     float credit_activation_idbd;
     float step_size;
     bool print_status;
+    bool pass_gradients;
     float b1;
     float b2;
     float beta_step_size;
     float h_step_size;
-    bool memory_made;
     float idbd;
     std::queue<message> grad_queue;
-    neuron *input_neurons;
-    neuron *output_neurons;
+    neuron *input_neuron;
+    neuron *output_neuron;
 
     explicit synapse(neuron *input, neuron *output, float w, float step_size);
 
@@ -40,6 +46,7 @@ public:
 
 //    void process_input();
     void step();
+    void block_gradients();
 
     void read_gradient();
 

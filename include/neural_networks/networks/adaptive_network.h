@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-04-01.
 //
 
-#ifndef FLEXIBLENN_TEST_NETWORK_H
-#define FLEXIBLENN_TEST_NETWORK_H
+#ifndef FLEXIBLENN_ADAPTIVE_NETWORK_H
+#define FLEXIBLENN_ADAPTIVE_NETWORK_H
 
 
 
@@ -28,6 +28,7 @@ class CustomNetwork{
 public:
     std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
+    std::vector<neuron*> new_features;
     CustomNetwork(float step_size, int width, int seed);
     ~CustomNetwork();
     void print_graph(neuron* root);
@@ -41,6 +42,7 @@ public:
     std::vector<float> read_output_values();
     std::vector<float> read_all_values();
     float introduce_targets(std::vector<float> targets);
+    float introduce_targets(std::vector<float> targets, float gamma, float lambda);
     int get_input_size();
     int get_total_synapses();
     void add_memory(float step_size);
@@ -49,4 +51,4 @@ public:
 
 
 
-#endif //FLEXIBLENN_TEST_NETWORK_H
+#endif //FLEXIBLENN_ADAPTIVE_NETWORK_H

@@ -8,9 +8,11 @@
 
 class message{
 public:
-    float message_value;
+    float gradient;
     int time_step;
     int distance_travelled;
+    float lambda;
+    float gamma;
     message(float m, int t);
 };
 

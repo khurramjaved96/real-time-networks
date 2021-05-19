@@ -46,7 +46,7 @@ std::vector<float> TraceConditioning::step(){
     }
     if(this->remaining_until_US_long == 1)
     {
-        this->current_state[2] = 1;
+        this->current_state[2] = 0;
     }
     else{
         this->current_state[2] = 0;
@@ -72,7 +72,7 @@ std::vector<float> TraceConditioning::reset() {
 void TraceConditioning::set_noise_bits() {
     for(int temp = 3; temp < this->current_state.size(); temp++)
     {
-        if(NoiseSampler(mt) > 0.90)
+        if(NoiseSampler(mt) > 0.90 and false)
         {
             this->current_state[temp] = 1;
         }

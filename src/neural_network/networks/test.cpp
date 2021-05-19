@@ -85,14 +85,14 @@ void TestCase::print_graph(neuron *root) {
 
         if (!current_n->print_status) {
 
-            std::cout << current_n->input_neurons->id << "\t" << current_n->output_neurons->id << "\t"
-                      << os->grad_queue.size() << "\t\t" << current_n->input_neurons->past_activations.size()
-                      << "\t\t\t" << current_n->output_neurons->past_activations.size() << "\t\t\t"
-                      << current_n->input_neurons->error_gradient.size()
+            std::cout << current_n->input_neuron->id << "\t" << current_n->output_neuron->id << "\t"
+                      << os->grad_queue.size() << "\t\t" << current_n->input_neuron->past_activations.size()
+                      << "\t\t\t" << current_n->output_neuron->past_activations.size() << "\t\t\t"
+                      << current_n->input_neuron->error_gradient.size()
                       << "\t\t" << current_n->credit << std::endl;
             current_n->print_status = true;
         }
-        print_graph(current_n->output_neurons);
+        print_graph(current_n->output_neuron);
     }
 }
 
