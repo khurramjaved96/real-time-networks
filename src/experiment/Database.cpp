@@ -109,7 +109,6 @@ int Database::add_rows_to_table(const std::string &database_name, const std::str
         if (&value != &values.back())
             query += ",";
     }
-    std::cout << query << std::endl;
     mysql_query(this->mysql, &query[0]);
     mysql_commit(this->mysql);
     mysql_close(this->mysql);
