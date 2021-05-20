@@ -5,7 +5,7 @@
 #include <random>
 
 
-TMaze::TMaze(int seed, int length_of_corridor, int episode_length,  bool prediction_problem): mt(seed){
+TMaze::TMaze(int seed, int length_of_corridor, int episode_length, int episode_gap, bool prediction_problem): mt(seed){
     //detailed desc in header
     this->current_episode = 1;
     this->length_of_corridor = length_of_corridor;
@@ -14,6 +14,8 @@ TMaze::TMaze(int seed, int length_of_corridor, int episode_length,  bool predict
     this->current_obs = this->reset();
     this->prediction_problem = prediction_problem;
     this->episode_length = episode_length;
+    this->episode_gap = episode_gap;
+    this->current_episode_pos_in_gap = 0;
 }
 
 
@@ -91,6 +93,7 @@ Observation TMaze::reset(){
     else
         this->correct_direction = this->S;
 
+    this->current_episode_pos_in_gap = 0;
     return obs;
 }
 
@@ -102,6 +105,12 @@ Observation TMaze::step(std::vector<float> action){
 
     if (this->current_obs.timestep > this->episode_length)
         this->current_obs.is_terminal = true;
+
+    if (this->current_episode_pos_in_gap < this->episode_gap && this->current_obs.is_terminal){
+        this->current_episode_pos_in_gap += 1;
+        this->current_obs.reward = 0;
+        return this->current_obs;
+    }
 
     if (this->current_obs.is_terminal){
         this->current_episode += 1;

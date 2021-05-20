@@ -94,6 +94,7 @@ int main(int argc, char *argv[]) {
     TMaze env = TMaze(exp.get_int_param("seed"),
                       exp.get_int_param("tmaze_corridor_length"),
                       exp.get_int_param("episode_length"),
+                      exp.get_int_param("episode_gap"),
                       exp.get_bool_param("prediction_problem"));
 
     std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
@@ -107,6 +108,7 @@ int main(int argc, char *argv[]) {
     float gamma = exp.get_float_param("gamma");
     bool prev_was_terminal = false;
     int no_op_step = 0;
+    int no_grad_after_eps_gap = 0;
     std::vector<float> state_cur = env.get_current_obs().state;
     std::vector<float> state_old = env.get_current_obs().state;
 
@@ -129,6 +131,7 @@ int main(int argc, char *argv[]) {
             break;
         }
         no_op_step -= 1;
+        no_grad_after_eps_gap -= 1;
 
         //TODO consider whether we want to add feats from start
         timestep_since_feat_added -= 1;
@@ -145,48 +148,57 @@ int main(int argc, char *argv[]) {
         std::vector<float> action(qvalues.size(), 0.0);
         std::vector<float> targets(qvalues.size(), 0.0);
         std::vector<bool> no_grad(qvalues.size(), true);
-        int selected_action_idx = 0;
-        if (exploration_sampler(mt) < exp.get_float_param("epsilon")*100){
-            int rnd_action = rnd_action_sampler(mt);
-            //for prediction problem, allow choosing only between two actions at junction
-            if (exp.get_bool_param("prediction_problem") && current_obs.state == env.junction_state)
-                rnd_action <= 1 ? selected_action_idx = 0 : selected_action_idx = 3;
-            //always go west in junction
-            else if (exp.get_bool_param("prediction_problem"))
-                selected_action_idx = 2;
-            else
-                selected_action_idx = rnd_action_sampler(mt);
-        }
-        else{
-            if (exp.get_bool_param("prediction_problem") && current_obs.state == env.junction_state)
-                qvalues[0] > qvalues[3] ? selected_action_idx = 0 : selected_action_idx = 3;
-            else if (exp.get_bool_param("prediction_problem"))
-                selected_action_idx = 2;
-            else
-                selected_action_idx = std::distance(qvalues.begin(), std::max_element(qvalues.begin(), qvalues.end()));
-        }
-        action[selected_action_idx] = 1;
         //update the gradient for only the old action since current one is for bootstrap
         no_grad[selected_action_idx_old] = false;
         if (prev_was_terminal){
             // if previous state was terminal state, we dont want next episode's values to propagate into it
+            // this is the update for last state of the episode
             targets[selected_action_idx_old] = R_old;
             prev_was_terminal = false;
         }
-        else
-            targets[selected_action_idx_old] = R_old + gamma * qvalues[selected_action_idx];
-        if (no_op_step != 0)
-            selected_action_idx_old = selected_action_idx;
-
-        if (counter > 0){
-            if (no_op_step == 0){
-                std::vector<bool> no_grad(qvalues.size(), true);
-                float err = my_network.introduce_targets(qvalues, no_grad);//, true);//, (state_cur!=state_old));
+        else if (state_old == state_cur && current_obs.is_terminal){
+            // if we areinside the gap between the episodes)
+            no_grad_after_eps_gap = 3;
+        }
+        else{
+            int selected_action_idx = 0;
+            if (exploration_sampler(mt) < exp.get_float_param("epsilon")*100){
+                int rnd_action = rnd_action_sampler(mt);
+                //for prediction problem, allow choosing only between two actions at junction
+                if (exp.get_bool_param("prediction_problem") && current_obs.state == env.junction_state)
+                    rnd_action <= 1 ? selected_action_idx = 0 : selected_action_idx = 3;
+                //always go west in junction
+                else if (exp.get_bool_param("prediction_problem"))
+                    selected_action_idx = 2;
+                else
+                    selected_action_idx = rnd_action_sampler(mt);
             }
             else{
-                float err = my_network.introduce_targets(targets, no_grad);//, (state_cur!=state_old));
+                if (exp.get_bool_param("prediction_problem") && current_obs.state == env.junction_state)
+                    qvalues[0] > qvalues[3] ? selected_action_idx = 0 : selected_action_idx = 3;
+                else if (exp.get_bool_param("prediction_problem"))
+                    selected_action_idx = 2;
+                else
+                    selected_action_idx = std::distance(qvalues.begin(), std::max_element(qvalues.begin(), qvalues.end()));
             }
-            if (current_obs.is_terminal){
+            action[selected_action_idx] = 1;
+            targets[selected_action_idx_old] = R_old + gamma * qvalues[selected_action_idx];
+            if (no_op_step != 0)
+                selected_action_idx_old = selected_action_idx;
+
+            if(isnan(qvalues[selected_action_idx])){
+              run_state = "killed";
+              run_state_comments = "nan_prediction";
+              std::cout << "killing due to nans" << std::endl;
+              break;
+            }
+        }
+
+        if (counter > 0){
+            if (no_op_step == 0 || no_grad_after_eps_gap > 0)
+               no_grad = std::vector<bool>(qvalues.size(), true);
+            my_network.introduce_targets(targets, no_grad);
+            if (current_obs.is_terminal && state_old != state_cur){
                 prev_was_terminal = true;
                 if (accuracy == -1){
                     average_reward = current_obs.cmltv_reward;
@@ -198,7 +210,7 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
-        if (current_obs.is_terminal){
+        if (current_obs.is_terminal && state_old != state_cur && current_obs.episode % 10 == 9){
             std::vector<std::string> episode_data;
             episode_data.push_back(std::to_string(exp.get_int_param("run")));
             episode_data.push_back(std::to_string(counter));
@@ -208,11 +220,11 @@ int main(int argc, char *argv[]) {
             episode_data.push_back(std::to_string(accuracy));
             episode_logger.push_back(episode_data);
         }
-        //if(counter % 300000 == 299998){
-        //    episodic_metric.add_values(episode_logger);
-        //    episode_logger.clear();
-        //}
-        if(counter % 50000 < 50000 && current_obs.is_terminal)
+        if(counter % 300000 == 299998){
+            episodic_metric.add_values(episode_logger);
+            episode_logger.clear();
+        }
+        if(counter % 50000 < 50000 && current_obs.is_terminal && state_old != state_cur)
         {
             std::vector<float> cur_state = current_obs.state;
             cur_state.push_back(current_obs.episode);
@@ -236,12 +248,6 @@ int main(int argc, char *argv[]) {
         state_old = state_cur;
         state_cur = current_obs.state;
 
-        if(isnan(qvalues[selected_action_idx])){
-          run_state = "killed";
-          run_state_comments = "nan_prediction";
-          std::cout << "killing due to nans" << std::endl;
-          break;
-        }
 
         if(counter < 10){
             std::string g = my_network.get_viz_graph();
@@ -297,21 +303,21 @@ int main(int argc, char *argv[]) {
                             exp.get_int_param("steps")))
               << " fps" << std::endl;
 
-//    episodic_metric.add_values(episode_logger);
-//    std::string g = my_network.get_viz_graph();
-//    std::vector<std::string> graph_data;
-//    std::cout << g << std::endl;
-//    graph_data.push_back(std::to_string(exp.get_int_param("steps")));
-//    graph_data.push_back(std::to_string(exp.get_int_param("run")));
-//    graph_data.push_back(g);
-//    graph_logger.push_back(graph_data);
-//    graph_state.add_values(graph_logger);
-//
-//    std::vector<std::string> run_state_data;
-//    run_state_data.push_back(std::to_string(exp.get_int_param("run")));
-//    run_state_data.push_back(run_state);
-//    run_state_data.push_back(run_state_comments);
-//    run_state_metric.add_value(run_state_data);
+    episodic_metric.add_values(episode_logger);
+    std::string g = my_network.get_viz_graph();
+    std::vector<std::string> graph_data;
+    std::cout << g << std::endl;
+    graph_data.push_back(std::to_string(exp.get_int_param("steps")));
+    graph_data.push_back(std::to_string(exp.get_int_param("run")));
+    graph_data.push_back(g);
+    graph_logger.push_back(graph_data);
+    graph_state.add_values(graph_logger);
+
+    std::vector<std::string> run_state_data;
+    run_state_data.push_back(std::to_string(exp.get_int_param("run")));
+    run_state_data.push_back(run_state);
+    run_state_data.push_back(run_state_comments);
+    run_state_metric.add_value(run_state_data);
 
     return 0;
 }
