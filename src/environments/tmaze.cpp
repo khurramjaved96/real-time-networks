@@ -158,7 +158,7 @@ Observation TMaze::step(std::vector<float> action){
         //if the agent is at junction and picks the wrong action
         //NOTE: this is not the same as paper. Paper uses -0.1 but I use -4 here since we dont
         //have directed exploration. It takes really long to learn without it.
-        this->current_obs.reward = -4;
+        this->current_obs.reward = -0.1;
         this->current_obs.state = this->terminal_state;
         this->current_obs.is_terminal = true;
     }

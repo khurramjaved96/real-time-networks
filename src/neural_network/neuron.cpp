@@ -91,12 +91,15 @@ float neuron::introduce_targets(float target, int time_step, bool no_grad) {
         //}
         //std::cout << "time_step: " << time_step << std::endl;
         //std::cout << "this->past_activations.front().second: " << this->past_activations.front().second << std::endl;
-        float error = target - this->past_activations.front().first;
-        float error_grad = error ;
-        if(this->past_activations.front().first <= 0 and this->activation_type or no_grad){
+        float error = 0;
+        float error_grad = 0;
+        if (!no_grad){
+            error = target - this->past_activations.front().first;
+            error_grad = error ;
+        }
+        if(this->past_activations.front().first <= 0 and this->activation_type){
             error_grad = 0;
         }
-//        std::cout << "Error = " << error << std::endl;
         message m(error_grad, time_step);
         this->error_gradient.push(m);
         this->past_activations.pop();

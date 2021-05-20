@@ -144,6 +144,7 @@ int main(int argc, char *argv[]) {
         std::vector<float> qvalues = my_network.read_output_values();
         std::vector<float> action(qvalues.size(), 0.0);
         std::vector<float> targets(qvalues.size(), 0.0);
+        std::vector<bool> no_grad(qvalues.size(), true);
         int selected_action_idx = 0;
         if (exploration_sampler(mt) < exp.get_float_param("epsilon")*100){
             int rnd_action = rnd_action_sampler(mt);
@@ -166,6 +167,7 @@ int main(int argc, char *argv[]) {
         }
         action[selected_action_idx] = 1;
         //update the gradient for only the old action since current one is for bootstrap
+        no_grad[selected_action_idx_old] = false;
         if (prev_was_terminal){
             // if previous state was terminal state, we dont want next episode's values to propagate into it
             targets[selected_action_idx_old] = R_old;
@@ -177,10 +179,13 @@ int main(int argc, char *argv[]) {
             selected_action_idx_old = selected_action_idx;
 
         if (counter > 0){
-            if (no_op_step == 0)
-                float err = my_network.introduce_targets(qvalues);//, true);//, (state_cur!=state_old));
-            else
-                my_network.introduce_targets(targets);//, (state_cur!=state_old));
+            if (no_op_step == 0){
+                std::vector<bool> no_grad(qvalues.size(), true);
+                float err = my_network.introduce_targets(qvalues, no_grad);//, true);//, (state_cur!=state_old));
+            }
+            else{
+                float err = my_network.introduce_targets(targets, no_grad);//, (state_cur!=state_old));
+            }
             if (current_obs.is_terminal){
                 prev_was_terminal = true;
                 if (accuracy == -1){
@@ -203,10 +208,10 @@ int main(int argc, char *argv[]) {
             episode_data.push_back(std::to_string(accuracy));
             episode_logger.push_back(episode_data);
         }
-        if(counter % 300000 == 299998 || current_obs.episode % 1000 == 998){
-            episodic_metric.add_values(episode_logger);
-            episode_logger.clear();
-        }
+        //if(counter % 300000 == 299998){
+        //    episodic_metric.add_values(episode_logger);
+        //    episode_logger.clear();
+        //}
         if(counter % 50000 < 50000 && current_obs.is_terminal)
         {
             std::vector<float> cur_state = current_obs.state;
@@ -292,22 +297,21 @@ int main(int argc, char *argv[]) {
                             exp.get_int_param("steps")))
               << " fps" << std::endl;
 
-    //observations_metric.add_values(obs_logger);
-    episodic_metric.add_values(episode_logger);
-    std::string g = my_network.get_viz_graph();
-    std::vector<std::string> graph_data;
-    std::cout << g << std::endl;
-    graph_data.push_back(std::to_string(exp.get_int_param("steps")));
-    graph_data.push_back(std::to_string(exp.get_int_param("run")));
-    graph_data.push_back(g);
-    graph_logger.push_back(graph_data);
-    graph_state.add_values(graph_logger);
-
-    std::vector<std::string> run_state_data;
-    run_state_data.push_back(std::to_string(exp.get_int_param("run")));
-    run_state_data.push_back(run_state);
-    run_state_data.push_back(run_state_comments);
-    run_state_metric.add_value(run_state_data);
+//    episodic_metric.add_values(episode_logger);
+//    std::string g = my_network.get_viz_graph();
+//    std::vector<std::string> graph_data;
+//    std::cout << g << std::endl;
+//    graph_data.push_back(std::to_string(exp.get_int_param("steps")));
+//    graph_data.push_back(std::to_string(exp.get_int_param("run")));
+//    graph_data.push_back(g);
+//    graph_logger.push_back(graph_data);
+//    graph_state.add_values(graph_logger);
+//
+//    std::vector<std::string> run_state_data;
+//    run_state_data.push_back(std::to_string(exp.get_int_param("run")));
+//    run_state_data.push_back(run_state);
+//    run_state_data.push_back(run_state_comments);
+//    run_state_metric.add_value(run_state_data);
 
     return 0;
 }

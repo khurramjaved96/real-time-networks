@@ -40,7 +40,8 @@ public:
     void step();
     std::vector<float> read_output_values();
     std::vector<float> read_all_values();
-    float introduce_targets(std::vector<float> targets, bool no_grad=false);
+    float introduce_targets(std::vector<float> targets);
+    float introduce_targets(std::vector<float> targets, std::vector<bool> no_grad);
     int get_input_size();
     int get_total_synapses();
     void add_memory(float step_size);
