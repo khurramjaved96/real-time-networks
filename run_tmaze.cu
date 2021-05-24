@@ -210,7 +210,7 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
-        if (current_obs.is_terminal && state_old != state_cur){// && current_obs.episode % 10 == 9){
+        if (current_obs.is_terminal && state_old != state_cur && current_obs.episode % 10 == 9){
             std::vector<std::string> episode_data;
             episode_data.push_back(std::to_string(exp.get_int_param("run")));
             episode_data.push_back(std::to_string(counter));
