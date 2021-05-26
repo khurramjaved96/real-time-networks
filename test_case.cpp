@@ -27,7 +27,7 @@
 //    TestCase my_network = TestCase(0.0, 5, 5);
 ////    my_network.set_print_bool();
 //    long long int time_step = 0;
-////    for(auto &it : my_network.input_neurons)
+////    for(auto &it : my_network.is_input_neuron)
 ////        my_network.print_graph(it);
 //    std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
 //    auto start = std::chrono::steady_clock::now();

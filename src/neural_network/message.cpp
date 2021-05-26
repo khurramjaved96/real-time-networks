@@ -14,6 +14,7 @@ message::message(float m, int t) : time_step(t) {
     this->distance_travelled = 0;
     this->lambda=0;
     this->gamma=0;
+    this->error = 0;
 }
 
 //void message::increment_distance() {

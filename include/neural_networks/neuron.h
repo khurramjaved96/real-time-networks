@@ -24,14 +24,16 @@ class neuron {
 
 public:
     static int neuron_id;
-    bool input_neuron;
+    bool is_input_neuron;
     static normal_random normal_dist;
     float value;
     float temp_value;
     int memory_made;
     bool activation_type;
-    bool output_neuron;
+    bool is_output_neuron;
     bool useless_neuron;
+    int sucesses;
+    int failures;
     int id;
     float average_activation;
     void forward_gradients();
@@ -43,6 +45,7 @@ public:
 //    std::vector<std::reference_wrapper<neuron>> output_nodes;
     neuron(bool activation);
     neuron(bool activation, bool output_n);
+    neuron(bool activation, bool output_n, int id);
     neuron(bool activation, bool output_n, bool input_n) ;
     void fire(int time_step);
     float introduce_targets(float target, int timestep);

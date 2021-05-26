@@ -22,11 +22,10 @@ neuron::neuron(bool activation) {
     neuron_id++;
     useless_neuron = false;
     this->average_activation = 0;
-    this->output_neuron = false;
+    this->is_output_neuron = false;
     this->activation_type = activation;
-    input_neuron = false;
+    is_input_neuron = false;
     memory_made = 0;
-
 }
 
 neuron::neuron(bool activation, bool output_n) {
@@ -36,11 +35,23 @@ neuron::neuron(bool activation, bool output_n) {
     useless_neuron = false;
     this->average_activation = 0;
     neuron_id++;
-    this->output_neuron = output_n;
+    this->is_output_neuron = output_n;
     this->activation_type = activation;
-    input_neuron = false;
+    is_input_neuron = false;
     memory_made = 0;
+}
 
+neuron::neuron(bool activation, bool output_n, int id) {
+    value = 0;
+    temp_value = 0;
+    this->id = id;
+    useless_neuron = false;
+    this->average_activation = 0;
+    neuron_id++;
+    this->is_output_neuron = output_n;
+    this->activation_type = activation;
+    is_input_neuron = false;
+    memory_made = 0;
 }
 
 neuron::neuron(bool activation, bool output_n, bool input_n) {
@@ -50,36 +61,30 @@ neuron::neuron(bool activation, bool output_n, bool input_n) {
     useless_neuron = false;
     this->average_activation = 0;
     neuron_id++;
-    this->output_neuron = false;
+    this->is_output_neuron = false;
     this->activation_type = true;
-    input_neuron = input_n;
+    is_input_neuron = input_n;
     memory_made = 0;
 
-}
-
-
-void neuron::init_incoming_synapses() {
-    if (this->incoming_synapses.size() > 0) {
-        // goal here is to make w1x1 + w2x2 == target_activation_val (which is N(1,0.1))
-        float target_activation_val = normal_dist.get_random_number();
-        for (auto &it : this->incoming_synapses) {
-            it->weight = target_activation_val / (this->incoming_synapses.size() * it->input_neuron->value);
-            //std::cout << "id: " << id << " w: " << it->weight << std::endl;
-        }
-        this->update_value();
-        this->fire(0);
-    }
 }
 
 void neuron::update_value() {
     if(memory_made>0)
         memory_made--;
-    float temp_val = 0;
+    this->temp_value = 0;
     for (auto &it : this->incoming_synapses) {
         it->age++;
-        temp_val += it->weight * it->input_neuron->value;
+        if(it->age == 19999){
+            if(it->input_neuron->average_activation > 0){
+                float scale = 1/it->input_neuron->average_activation;
+                for(auto it_in: it->input_neuron->incoming_synapses){
+                    it_in->weight = it_in->weight*scale;
+                }
+                it->weight = it->weight*it->input_neuron->average_activation;
+            }
+        }
+        this->temp_value += it->weight * it->input_neuron->value;
     }
-    this->temp_value = temp_val;
 }
 
 
@@ -92,34 +97,27 @@ bool to_delete_ss(synapse* s)
 void neuron::mark_useless_weights(){
 
     for(auto &it : this->outgoing_synapses){
-        if(it->age > 10000){
+        if(it->age > 50000){
             if( this->average_activation * std::abs(it->weight) < 0.01)
             {
-//                Delete this synapses
                 it->useless = true;
-//                std::cout << "Deleting useless synapse\n";
-
             }
             else if(it->output_neuron->useless_neuron)
             {
-                // Delete this synapses
-//                std::cout << "Deleting useless synapse\n";
-//                std::cout << "Shouldn't get here\n";
-//                exit(1);
                 it->useless = true;
             }
         }
     }
 
 
-    if(this->outgoing_synapses.empty() and !this->output_neuron)
+    if(this->outgoing_synapses.empty() and !this->is_output_neuron)
     {
-//        std::cout << "Deleting useless neuron\n";
         this->useless_neuron = true;
         for(auto it : this->incoming_synapses)
             it->useless = true;
     }
-    if(this->input_neuron)
+
+    if(this->is_input_neuron)
         this->useless_neuron = false;
 }
 
@@ -133,11 +131,6 @@ void neuron::prune_useless_weights(){
         this->memory_made = false;
 }
 
-//void neuron::prune_useless_weights(){
-//    std::remove_if(this->outgoing_synapses.begin(), this->outgoing_synapses.end(), to_delete);
-//    std::remove_if(this->incoming_synapses.begin(), this->incoming_synapses.end(), to_delete);
-//}
-
 void neuron::fire(int time_step) {
     this->value = temp_value;
     if (this->activation_type && this->value <= 0)
@@ -147,15 +140,17 @@ void neuron::fire(int time_step) {
         this->average_activation = this->average_activation * 0.95 + 0.05 * std::abs(this->value);
     }
     temp_value = 0;
-    this->past_activations.push(std::pair<float, int>(this->value, time_step));
-    //std::cout << "n: " << id << "avg_activation_val: " << this->value << std::endl;
+    auto activation_val = std::pair<float, int>(this->value, time_step);
+    this->past_activations.push(activation_val);
+    for(auto it: this->outgoing_synapses)
+        it->weight_assignment_past_activations.push(activation_val);
 }
 
 void neuron::forward_gradients() {
 
     if (!this->error_gradient.empty()) {
         for (auto &it : this->incoming_synapses) {
-            if(it->pass_gradients) {
+
                 float message_value;
 
                 message_value = this->error_gradient.front().gradient;
@@ -163,9 +158,12 @@ void neuron::forward_gradients() {
                 message grad_temp(message_value, this->error_gradient.front().time_step);
                 grad_temp.lambda = this->error_gradient.front().lambda;
                 grad_temp.gamma = this->error_gradient.front().gamma;
+                grad_temp.error = this->error_gradient.front().error;
                 grad_temp.distance_travelled = this->error_gradient.front().distance_travelled + 1;
-                it->grad_queue.push(grad_temp);
-            }
+                if(it->pass_gradients)
+                    it->grad_queue.push(grad_temp);
+                it->grad_queue_weight_assignment.push(grad_temp);
+
 
         }
         this->error_gradient.pop();
@@ -180,8 +178,8 @@ float neuron::introduce_targets(float target, int time_step) {
         if (this->past_activations.front().first <= 0 and this->activation_type) {
             error_grad = 0;
         }
-//        std::cout << "Error = " << error << std::endl;
-        message m(error_grad, time_step);
+        message m(1, time_step);
+        m.error = error_grad;
         this->error_gradient.push(m);
         this->past_activations.pop();
         return error * error;
@@ -199,17 +197,19 @@ float neuron::introduce_targets(float target, int time_step, float gamma, float 
             exit(1);
             error_grad = 0;
         }
-//        std::cout << "Error = " << error << std::endl;
-        message m(error_grad, time_step);
+
+        message m(1, time_step);
         m.lambda = lambda;
         m.gamma = gamma;
+        m.error = error_grad;
+
         this->error_gradient.push(m);
         this->past_activations.pop();
         return error * error;
     }
     return 0;
 }
-
+//
 
 void neuron::propogate_error() {
 
@@ -218,6 +218,8 @@ void neuron::propogate_error() {
     std::vector<int> distance_vector;
     std::vector<int> activation_time_required_list;
     std::vector<int> queue_len_vector;
+    std::vector<float> error_vector;
+    std::vector<message> messages_q;
     int time_check = 99999;
 
     if (!this->incoming_synapses.empty() or
@@ -232,18 +234,29 @@ void neuron::propogate_error() {
 
                     int activation_time_required = output_synapses_iterator->grad_queue.front().time_step -
                                                    output_synapses_iterator->grad_queue.front().distance_travelled - 1;
-                    while (!output_synapses_iterator->grad_queue.empty() and this->past_activations.front().second >
-                                                                             activation_time_required) {
+                    while (!output_synapses_iterator->grad_queue.empty() and !this->past_activations.empty() and this->past_activations.front().second >
+                                                                                                                         (output_synapses_iterator->grad_queue.front().time_step -
+                                                                                                                         output_synapses_iterator->grad_queue.front().distance_travelled - 1)) {
 //                        Activation for this gradient is not stored; this can happen in the beginning of the network initalization, or if new paths are introduced at run time. We just drop this gradient.
-                        output_synapses_iterator->grad_queue.pop();
-                    }
+//                        if(this->past_activations.front().second > (output_synapses_iterator->grad_queue.front().time_step -
+//                                                                   output_synapses_iterator->grad_queue.front().distance_travelled - 1))
+//                        {
+//                            this->past_activations.pop();
+//                        }
+//                        else{
+                            output_synapses_iterator->grad_queue.pop();
+//                        }
 
+                    }
+                    if( this->past_activations.empty())
+                        return;
+                    bool temp_flag = true;
                     if (output_synapses_iterator->grad_queue.empty()) {
 //                        "Waiting for gradient from other paths; skipping propagation"
-                        flag = true;
+                        temp_flag = false;
                     }
 
-                    if (!flag) {
+                    if (temp_flag) {
                         assert(!output_synapses_iterator->grad_queue.empty());
                         activation_time_required = output_synapses_iterator->grad_queue.front().time_step -
                                                    output_synapses_iterator->grad_queue.front().distance_travelled - 1;
@@ -257,6 +270,8 @@ void neuron::propogate_error() {
                             time_vector.push_back(output_synapses_iterator->grad_queue.front().time_step);
                             distance_vector.push_back(output_synapses_iterator->grad_queue.front().distance_travelled);
                             queue_len_vector.push_back(output_synapses_iterator->grad_queue.size());
+                            error_vector.push_back(output_synapses_iterator->grad_queue.front().error);
+                            messages_q.push_back(output_synapses_iterator->grad_queue.front());
 //                    Only accumulate gradient if activation was non-zero.
                             if (this->past_activations.front().first > 0 or !this->activation_type) {
 //                            std::cout << "Past activation = " << this->past_activations.front().first << std::endl;
@@ -284,35 +299,45 @@ void neuron::propogate_error() {
 
             if (flag or time_vector.empty())
                 return;
-            for (auto &it : this->outgoing_synapses) {
-                if (it->grad_queue.size() > 0 and !wait) {
-                    if (it->output_neuron->output_neuron) {
-//                        if(it->trace > 0 or it->grad_queue.front().gradient > 0){
-//                            std::cout << it->trace << "\t" << it->grad_queue.front().gradient << std::endl;
-//                        }
-                        it->trace = it->trace * it->grad_queue.front().gamma * it->grad_queue.front().lambda + this->past_activations.front().first;
-//                        if(it->trace > 0)
-//                        std::cout << it->trace  <<std::endl;
-//                        if(this->id == 1 and it->trace > 0)
-//                        std::cout << it->trace << std::endl;
-                        it->credit = it->grad_queue.front().gradient * it->trace;
-
-                        it->credit_activation_idbd = this->past_activations.front().first;
-                        it->grad_queue.pop();
-                    } else {
-
-                        it->credit = it->grad_queue.front().gradient *
-                                     this->past_activations.front().first;
-                        it->credit_activation_idbd = this->past_activations.front().first;
-                        it->grad_queue.pop();
-                    }
-                } else {
-                    it->credit = 0;
+            for(auto &it: this->outgoing_synapses){
+                if (!it->grad_queue.empty() and !wait) {
+                    it->grad_queue.pop();
                 }
             }
+//            for (auto &it : this->outgoing_synapses) {
+//                if (it->grad_queue.size() > 0 and !wait) {
+//                    if (it->is_output_neuron->is_output_neuron) {
+//                        it->trace = it->trace * it->grad_queue.front().gamma * it->grad_queue.front().lambda + this->past_activations.front().first;
+//
+//                        it->credit = it->grad_queue.front().gradient * it->trace;
+//
+//                        it->credit_activation_idbd = this->past_activations.front().first;
+//                        it->grad_queue.pop();
+//                    } else {
+//
+//                        it->credit = it->grad_queue.front().gradient *
+//                                     this->past_activations.front().first;
+//                        it->credit_activation_idbd = this->past_activations.front().first;
+//                        it->grad_queue.pop();
+//                    }
+//                } else {
+//                    it->credit = 0;
+//                }
+//            }
 
-
+            float err = error_vector[0];
+            for(int a = 0; a<error_vector.size(); a++){
+                if(error_vector[a]!= err){
+                    std::cout << "Neuron.cpp : Shouldn't happen\n";
+                    exit(1);
+                }
+            }
+//            if(accumulate_gradient > 0)
+//            std::cout << accumulate_gradient << " accum grad\n";
             message n_message(accumulate_gradient, time_vector[0]);
+            n_message.error = error_vector[0];
+            n_message.gamma = messages_q[0].gamma;
+            n_message.lambda = messages_q[0].lambda;
             auto it = std::max_element(distance_vector.begin(), distance_vector.end());
             n_message.distance_travelled = *it;
             this->past_activations.pop();

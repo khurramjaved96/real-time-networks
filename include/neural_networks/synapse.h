@@ -34,7 +34,10 @@ public:
     float beta_step_size;
     float h_step_size;
     float idbd;
+    bool log;
     std::queue<message> grad_queue;
+    std::queue<message> grad_queue_weight_assignment;
+    std::queue<std::pair<float, int>> weight_assignment_past_activations;
     neuron *input_neuron;
     neuron *output_neuron;
 
@@ -54,6 +57,7 @@ public:
 
     void update_weight();
     void turn_on_idbd();
+    void assign_credit();
 
 };
 
@@ -64,7 +68,7 @@ public:
 
     explicit no_grad_synapse(neuron *input, neuron *output);
 
-    void copy_activation();
+    void copy_activation(int time_step);
 };
 
 #endif //BENCHMARKS_SYNAPSE_H

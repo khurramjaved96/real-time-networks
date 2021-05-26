@@ -13,6 +13,7 @@ public:
     int distance_travelled;
     float lambda;
     float gamma;
+    float error;
     message(float m, int t);
 };
 

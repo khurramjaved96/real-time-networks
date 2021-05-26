@@ -51,7 +51,7 @@
 //
 ////    my_network.set_print_bool();
 ////
-////    for(auto &it : my_network.input_neurons)
+////    for(auto &it : my_network.is_input_neuron)
 ////        my_network.print_graph(it);
 //    std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
 //    my_network.viz_graph();

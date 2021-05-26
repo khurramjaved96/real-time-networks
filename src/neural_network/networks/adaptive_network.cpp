@@ -22,7 +22,7 @@
 CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
     this->time_step = 0;
 
-    int input_neuron = 10;
+    int input_neuron = 5;
     for (int counter = 0; counter < input_neuron; counter++) {
         auto n = new neuron(false, false, true);
         this->input_neurons.push_back(n);
@@ -47,34 +47,33 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
 
     std::mt19937 mt(seed);
     mt.seed(seed);
-    float top_range = sqrt(2.0/float(width));
+    float top_range = sqrt(2.0 / float(width));
     std::normal_distribution<float> dist(0, 1);
-    std::uniform_int_distribution<int>  sparse_generator = std::uniform_int_distribution<int>(0, 1000);
+    std::uniform_int_distribution<int> sparse_generator = std::uniform_int_distribution<int>(0, 1000);
 
-    std::vector<neuron*> neurons_so_far;
-    for(int layer=0; layer < 0; layer++)
-    {
-        std::vector<neuron*> this_layer;
-        for(int this_layer_neuron = 0; this_layer_neuron < width; this_layer_neuron++) {
-            auto* n = new neuron(true);
+    std::vector<neuron *> neurons_so_far;
+    for (int layer = 0; layer < 0; layer++) {
+        std::vector<neuron *> this_layer;
+        for (int this_layer_neuron = 0; this_layer_neuron < width; this_layer_neuron++) {
+            auto *n = new neuron(true);
             this->all_neurons.push_back(n);
             this_layer.push_back(n);
 //            adding connections from input
-            if(layer==0)
-            {
+            if (layer == 0) {
                 for (auto &it : this->input_neurons) {
                     this->all_synapses.push_back(new synapse(it, n, 0, step_size));
                 }
             }
 //            Output weights should be initaliezd to be zero.bash
-            for(auto &it : this->output_neuros){
-                auto s = new synapse(n, it,  0, step_size*10);
+            for (auto &it : this->output_neuros) {
+                auto s = new synapse(n, it, 0, step_size * 10);
                 this->all_synapses.push_back(s);
                 this->output_synapses.push_back(s);
+                s->turn_on_idbd();
             }
             for (auto &it : neurons_so_far) {
 //                if(sparse_generator(mt) >= -10)
-                    this->all_synapses.push_back(new synapse(it, n, 0, step_size));
+                this->all_synapses.push_back(new synapse(it, n, 0, step_size));
             }
         }
         // if(sparsity == 0){
@@ -82,14 +81,13 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
             neurons_so_far.pop_back();
 //         }
 
-        for(auto &it : this_layer){
+        for (auto &it : this_layer) {
             neurons_so_far.push_back(it);
         }
     }
 
-    for(auto& n : this->all_neurons)
-    {
-        if(n->outgoing_synapses.size()>0) {
+    for (auto &n : this->all_neurons) {
+        if (n->outgoing_synapses.size() > 0) {
             int total_incoming = n->incoming_synapses.size();
             double scale = sqrt(2.0 / float(total_incoming));
             for (auto s : n->incoming_synapses) {
@@ -140,51 +138,60 @@ void CustomNetwork::add_memory(float step_size) {
     float largest_weight = -10;
     synapse *large_s = nullptr;
     for (auto &s : this->output_synapses) {
-//        std::cout << s->input_neuron->id << "\t" << s->output_neuron->id << "\t" << std::abs(s->weight) * s->input_neuron->average_activation  << std::endl;
-        if (std::abs(s->weight) * s->input_neuron->average_activation > largest_weight and s->input_neuron->memory_made==0) {
+//        std::cout << s->is_input_neuron->id << "\t" << s->is_output_neuron->id << "\t" << std::abs(s->weight) * s->is_input_neuron->average_activation  << std::endl;
+        if (std::abs(s->weight) * s->input_neuron->average_activation > largest_weight and
+            s->input_neuron->memory_made == 0 and s->age > 20000) {
             largest_weight = std::abs(s->weight) * s->input_neuron->average_activation;
-//            std::cout << std::abs(s->weight) << "\t" << s->input_neuron->average_activation <<std::endl;
+//            std::cout << std::abs(s->weight) << "\t" << s->is_input_neuron->average_activation <<std::endl;
             large_s = s;
         }
     }
 //    std::cout << "FROM \t TO \t Importance \n";
-//    std::cout << large_s->input_neuron->id << "\t" << large_s->output_neuron->id << "\t" << std::abs(large_s->weight) * large_s->input_neuron->average_activation << std::endl;
-    if (large_s != nullptr and largest_weight>0.05) {
-        large_s->input_neuron->memory_made = 200000;
+//    std::cout << large_s->is_input_neuron->id << "\t" << large_s->is_output_neuron->id << "\t" << std::abs(large_s->weight) * large_s->is_input_neuron->average_activation << std::endl;
+    if (large_s != nullptr and largest_weight > 0.05) {
+
+        large_s->input_neuron->memory_made = 2000000;
+//        neuron *bridge_neuron = new neuron(true);
+//        bridge_neuron->memory_made = 20000000;
+//        this->all_neurons.push_back(bridge_neuron);
+//        this->all_synapses.push_back(new synapse(large_s->is_input_neuron, last_neuron))
+//        memories.push_back(new no_grad_synapse(large_s->is_input_neuron, bridge_neuron));
         neuron *last_neuron = new neuron(true);
+//        last_neuron->memory_made = 20000;
+//        std::cout << "Last neuron val \n" << last_neuron->id << std::endl;
         this->all_neurons.push_back(last_neuron);
-//        this->all_synapses.push_back(new synapse(large_s->input_neuron, last_neuron))
-//        memories.push_back(new no_grad_synapse(large_s->input_neuron, last_neuron));
-        auto s = new synapse(large_s->input_neuron, last_neuron, 1, 0);
+        auto s = new synapse(large_s->input_neuron, last_neuron, 0.5, step_size);
+        s->log = false;
+//        auto s = new synapse(bridge_neuron, last_neuron, 1, step_size);
         s->block_gradients();
         this->all_synapses.push_back(s);
         new_features.push_back(last_neuron);
-        for (int a = 0; a < 0; a++) {
-            for (auto &output_n : this->output_neuros) {
-                synapse *output_s_temp = new synapse(last_neuron, output_n, 0, step_size*10);
-//                std::cout << "Added step_size = " << step_size << std::endl;
-                memory_feature_weights.push_back(output_s_temp);
-                this->all_synapses.push_back(output_s_temp);
-                this->output_synapses.push_back(output_s_temp);
-                output_s_temp->turn_on_idbd();
-                std::cout << "Memory added\n";
-            }
-            neuron *n = new neuron(true);
-            this->all_neurons.push_back(n);
-            synapse *s = new synapse(last_neuron, n, 1, 1e-20);
-            this->all_synapses.push_back(s);
-            last_neuron = n;
-        }
+//        for (int a = 0; a < 0; a++) {
+//            for (auto &output_n : this->output_neuros) {
+//                synapse *output_s_temp = new synapse(last_neuron, output_n, 0, step_size*10);
+////                std::cout << "Added step_size = " << step_size << std::endl;
+//                memory_feature_weights.push_back(output_s_temp);
+//                this->all_synapses.push_back(output_s_temp);
+//                this->output_synapses.push_back(output_s_temp);
+//                output_s_temp->turn_on_idbd();
+//                std::cout << "Memory added\n";
+//            }
+//            neuron *n = new neuron(true);
+//            this->all_neurons.push_back(n);
+//            synapse *s = new synapse(last_neuron, n, 1, 1e-20);
+//            this->all_synapses.push_back(s);
+//            last_neuron = n;
+//        }
         for (auto &output_n : this->output_neuros) {
-            synapse *output_s_temp = new synapse(last_neuron, output_n, 0, step_size*10);
+            synapse *output_s_temp = new synapse(last_neuron, output_n, 0, step_size*10 );
 //                std::cout << "Added step_size = " << step_size << std::endl;
-            memory_feature_weights.push_back(output_s_temp);
+//            memory_feature_weights.push_back(output_s_temp);
             this->all_synapses.push_back(output_s_temp);
             output_s_temp->turn_on_idbd();
             this->output_synapses.push_back(output_s_temp);
         }
-    }
-    else{
+
+    } else {
         std::cout << "No more features to add\n";
 //        exit(1);
     }
@@ -228,22 +235,18 @@ CustomNetwork::~CustomNetwork() {
 void CustomNetwork::set_input_values(std::vector<float> const &input_values) {
 //    assert(input_values.size() == this->input_neurons.size());
     for (int i = 0; i < input_values.size(); i++) {
-        if(i<this->input_neurons.size())
+        if (i < this->input_neurons.size())
             this->input_neurons[i]->temp_value = input_values[i];
     }
 }
 
-bool to_delete_s(synapse* s)
-{
+bool to_delete_s(synapse *s) {
     return s->useless;
 }
 
-bool to_delete_n(neuron* s)
-{
+bool to_delete_n(neuron *s) {
     return s->useless_neuron;
 }
-
-
 
 
 void CustomNetwork::step() {
@@ -253,16 +256,19 @@ void CustomNetwork::step() {
 // Verify if correct
 //    this->set_print_bool();
 //    std::cout << "Copying memory\n";
+
+//    std::cout << "Fire neuron\n";
+
+
     std::for_each(
             std::execution::par_unseq,
             memories.begin(),
             memories.end(),
             [&](no_grad_synapse *s) {
-                s->copy_activation();
+                s->copy_activation(this->time_step);
             });
 
 
-//    std::cout << "Fire neuron\n";
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -270,6 +276,9 @@ void CustomNetwork::step() {
             [&](neuron *n) {
                 n->fire(this->time_step);
             });
+
+
+
 
 //    std::cout << "Update value\n";
     std::for_each(
@@ -300,6 +309,15 @@ void CustomNetwork::step() {
             });
 
 //    std::cout << "Updating weights\n";
+
+    std::for_each(
+            std::execution::par_unseq,
+            all_synapses.begin(),
+            all_synapses.end(),
+            [&](synapse *s) {
+                s->assign_credit();
+            });
+
     std::for_each(
             std::execution::par_unseq,
             all_synapses.begin(),
@@ -342,8 +360,6 @@ void CustomNetwork::step() {
 
 
 }
-
-
 
 
 std::vector<float> CustomNetwork::read_output_values() {

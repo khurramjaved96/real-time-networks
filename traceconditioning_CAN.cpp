@@ -23,11 +23,11 @@ int main(int argc, char *argv[]) {
     std::cout << "Program started \n";
     float gamma = 1 - 1.0 / (20.0);
     float lambda = 0.90;
-    TraceConditioning tc1 = TraceConditioning(std::pair<int, int>(20, 20), std::pair<int, int>(20, 20),
+    TraceConditioning tc1 = TraceConditioning(std::pair<int, int>(16, 24), std::pair<int, int>(20, 20),
                                               std::pair<int, int>(60, 100), 5, 2);
-    TraceConditioning tc2 = TraceConditioning(std::pair<int, int>(4, 4), std::pair<int, int>(4, 4),
+    TraceConditioning tc2 = TraceConditioning(std::pair<int, int>(16, 24), std::pair<int, int>(4, 4),
                                               std::pair<int, int>(60, 100), 5, 2);
-    TraceConditioning tc = TraceConditioning(std::pair<int, int>(20, 20), std::pair<int, int>(20, 20),
+    TraceConditioning tc = TraceConditioning(std::pair<int, int>(16, 24), std::pair<int, int>(20, 20),
                                              std::pair<int, int>(60, 100), 5, 2);
     for (int temp = 0; temp < 200; temp++) {
         std::vector<float> cur_state = tc.step();
@@ -163,6 +163,11 @@ int main(int argc, char *argv[]) {
             tc = tc1;
         }
         if (counter % 15000 == 14999) {
+//            std::vector<float> new_features;
+//            std::cout << "NEW FEATURES \n\n";
+//            for(auto it: my_network.new_features)
+//                new_features.push_back(it->value);
+//            print_vector(new_features);
             for (int a = 0; a < 1; a++)
                 my_network.add_memory(my_experiment.get_float_param("step_size"));
 
