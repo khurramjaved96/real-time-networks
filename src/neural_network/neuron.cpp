@@ -26,6 +26,8 @@ neuron::neuron(bool activation) {
     this->activation_type = activation;
     is_input_neuron = false;
     memory_made = 0;
+    neuron_age = 0;
+    mature=false;
 }
 
 neuron::neuron(bool activation, bool output_n) {
@@ -39,6 +41,8 @@ neuron::neuron(bool activation, bool output_n) {
     this->activation_type = activation;
     is_input_neuron = false;
     memory_made = 0;
+    neuron_age = 0;
+    mature=false;
 }
 
 neuron::neuron(bool activation, bool output_n, int id) {
@@ -52,6 +56,8 @@ neuron::neuron(bool activation, bool output_n, int id) {
     this->activation_type = activation;
     is_input_neuron = false;
     memory_made = 0;
+    neuron_age = 0;
+    mature=false;
 }
 
 neuron::neuron(bool activation, bool output_n, bool input_n) {
