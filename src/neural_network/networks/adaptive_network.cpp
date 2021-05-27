@@ -19,7 +19,7 @@
 #include <vector>
 #include <utility>
 
-CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
+CustomNetwork::CustomNetwork(float step_size, int width, int seed): mt(seed) {
     this->time_step = 0;
 
     int input_neuron = 5;
@@ -45,8 +45,7 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed) {
         }
     }
 
-    std::mt19937 mt(seed);
-    mt.seed(seed);
+
     float top_range = sqrt(2.0 / float(width));
     std::normal_distribution<float> dist(0, 1);
     std::uniform_int_distribution<int> sparse_generator = std::uniform_int_distribution<int>(0, 1000);
