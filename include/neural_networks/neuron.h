@@ -35,6 +35,8 @@ public:
     int sucesses;
     int failures;
     int id;
+    bool mature;
+    int neuron_age;
     float average_activation;
     void forward_gradients();
     void update_value();
