@@ -119,7 +119,7 @@ bool to_delete_ss(synapse* s)
 void neuron::mark_useless_weights(){
 
     for(auto &it : this->outgoing_synapses){
-        if(it->age > 50000){
+        if(it->age > 69999){
             if( this->average_activation * std::abs(it->weight) < 0.01)
             {
                 it->useless = true;
@@ -132,7 +132,7 @@ void neuron::mark_useless_weights(){
     }
 
 
-    if(this->outgoing_synapses.empty() and !this->is_output_neuron)
+    if(this->outgoing_synapses.empty() and !this->is_output_neuron and !this->is_input_neuron)
     {
         this->useless_neuron = true;
         for(auto it : this->incoming_synapses)
@@ -350,6 +350,7 @@ void neuron::propogate_error() {
             float err = error_vector[0];
             for(int a = 0; a<error_vector.size(); a++){
                 if(error_vector[a]!= err){
+                    std::cout << "Weight = " << this->average_activation << std::endl;
                     std::cout << "Neuron.cpp : Shouldn't happen\n";
                     exit(1);
                 }
