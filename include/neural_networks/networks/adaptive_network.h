@@ -13,6 +13,7 @@
 #include "../neuron.h"
 #include <vector>
 #include <map>
+#include <random>
 
 
 
@@ -24,6 +25,7 @@ class CustomNetwork{
     std::vector<synapse*> all_synapses;
     std::vector<synapse*> output_synapses;
     std::vector<no_grad_synapse*> memories;
+    std::mt19937 mt;
     std::vector<synapse*> memory_feature_weights;
 public:
     std::vector<neuron*> all_neurons;
@@ -46,6 +48,7 @@ public:
     int get_input_size();
     int get_total_synapses();
     void add_memory(float step_size);
+    void add_feature(float step_size);
     std::vector<float> get_memory_weights();
 };
 
