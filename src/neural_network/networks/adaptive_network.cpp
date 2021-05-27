@@ -201,7 +201,7 @@ void CustomNetwork::add_memory(float step_size) {
 
 void CustomNetwork::add_feature(float step_size) {
 
-    if(this->all_synapses.size() < 300) {
+    if(this->all_synapses.size() < 1000) {
         std::normal_distribution<float> dist(0, 1);
 
         neuron *last_neuron = new neuron(true);
@@ -219,7 +219,13 @@ void CustomNetwork::add_feature(float step_size) {
 
 
         for (auto &output_n : this->output_neuros) {
-            synapse *output_s_temp = new synapse(last_neuron, output_n, 1, step_size * 10);
+            synapse *output_s_temp;
+            if(dist(this->mt) > 0) {
+                output_s_temp = new synapse(last_neuron, output_n, 1, step_size * 10);
+            }
+            else{
+                output_s_temp = new synapse(last_neuron, output_n, -1, step_size * 10);
+            }
             this->all_synapses.push_back(output_s_temp);
             output_s_temp->turn_on_idbd();
             this->output_synapses.push_back(output_s_temp);
