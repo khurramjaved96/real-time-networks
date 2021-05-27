@@ -199,6 +199,47 @@ void CustomNetwork::add_memory(float step_size) {
 
 }
 
+
+void CustomNetwork::add_feature(float step_size) {
+
+    if(this->all_synapses.size() < 300) {
+        std::normal_distribution<float> dist(0, 1);
+
+        neuron *last_neuron = new neuron(true);
+        this->all_neurons.push_back(last_neuron);
+        new_features.push_back(last_neuron);
+
+        for (auto &n : this->all_neurons) {
+            if (!n->is_output_neuron and n->mature) {
+                auto syn = new synapse(n, last_neuron, 0.000001, step_size);
+                syn->log = false;
+                syn->block_gradients();
+                this->all_synapses.push_back(syn);
+            }
+        }
+
+
+        for (auto &output_n : this->output_neuros) {
+            synapse *output_s_temp = new synapse(last_neuron, output_n, 1, step_size * 10);
+            this->all_synapses.push_back(output_s_temp);
+            output_s_temp->turn_on_idbd();
+            this->output_synapses.push_back(output_s_temp);
+        }
+    }
+
+
+//    if (last_neuron->outgoing_synapses.size() > 0) {
+//        int total_incoming = last_neuron->incoming_synapses.size();
+//        double scale = sqrt(2.0 / float(total_incoming));
+//        for (auto s : last_neuron->incoming_synapses) {
+//            s->weight = dist(mt) * scale;
+//        }
+//    }
+
+
+
+}
+
 std::vector<float> CustomNetwork::get_memory_weights() {
     std::vector<float> my_vec;
     for (auto &s : memory_feature_weights) {
