@@ -71,24 +71,40 @@ neuron::neuron(bool activation, bool output_n, bool input_n) {
     this->activation_type = true;
     is_input_neuron = input_n;
     memory_made = 0;
+    neuron_age = 0;
+    mature=false;
 
 }
 
 void neuron::update_value() {
+    if(this->neuron_age == 19999 and !this->is_output_neuron){
+        this->mature = true;
+    }
+    this->neuron_age ++;
     if(memory_made>0)
         memory_made--;
     this->temp_value = 0;
+    if(this->neuron_age == 19999 and !this->is_input_neuron and this->average_activation > 0 and this->outgoing_synapses.size()>0){
+        float scale = 1/this->average_activation;
+        std::cout << scale << std::endl;
+        for(auto it : this->incoming_synapses)
+        {
+            it->weight = it->weight*scale;
+        }
+//
+        if(this->outgoing_synapses.size()==0){
+            std::cout << "Too many outgoing synapses; shouldn't happen\t" << this->outgoing_synapses.size() << "\n";
+            std::cout << "ID\t" << this->neuron_id << " Age \t" << this->neuron_age << std::endl;
+            exit(1);
+        }
+        for(auto out_g : this->outgoing_synapses) {
+            out_g->weight = out_g->weight * this->average_activation;
+        }
+        this->average_activation = 1;
+    }
+
     for (auto &it : this->incoming_synapses) {
         it->age++;
-        if(it->age == 19999){
-            if(it->input_neuron->average_activation > 0){
-                float scale = 1/it->input_neuron->average_activation;
-                for(auto it_in: it->input_neuron->incoming_synapses){
-                    it_in->weight = it_in->weight*scale;
-                }
-                it->weight = it->weight*it->input_neuron->average_activation;
-            }
-        }
         this->temp_value += it->weight * it->input_neuron->value;
     }
 }
