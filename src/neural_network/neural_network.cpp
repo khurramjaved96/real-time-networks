@@ -38,7 +38,7 @@
 //                this->all_synapses.push_back(s);
 ////                this->all_synapses.push_back(synapse(all_neurons[temp_n], n, (float(rand()%100))/100 - 0.5));
 //            }
-//            if(layer == 0)this->input_neurons.push_back(n);
+//            if(layer == 0)this->is_input_neuron.push_back(n);
 //            if(layer == total_layers -1)this->output_neuros.push_back(n);
 //        }
 //        for(auto temp_n : temp_list)
@@ -60,11 +60,11 @@
 //
 //    for(auto & all_synapse : this->all_synapses)
 //    {
-//        this->adjacency_matric[all_synapse->input_neurons->id][all_synapse->output_neurons->id] = 1;
+//        this->adjacency_matric[all_synapse->is_input_neuron->id][all_synapse->is_output_neuron->id] = 1;
 //    }
-////    std::cout << "Before index " << all_synapses[0].input_neurons->id << std::endl;
+////    std::cout << "Before index " << all_synapses[0].is_input_neuron->id << std::endl;
 ////    std::random_shuffle ( all_synapses.begin(), all_synapses.end() , myrandom);
-////    std::cout << "After index " << all_synapses[0].input_neurons->id << std::endl;
+////    std::cout << "After index " << all_synapses[0].is_input_neuron->id << std::endl;
 //}
 //
 //
@@ -78,15 +78,15 @@
 //{
 //    for(auto & all_synapse : this->all_synapses)
 //    {
-//        this->adjacency_matric[all_synapse->input_neurons->id][all_synapse->output_neurons->id] = all_synapse->output_neurons->depth;
+//        this->adjacency_matric[all_synapse->is_input_neuron->id][all_synapse->is_output_neuron->id] = all_synapse->is_output_neuron->depth;
 //    }
 //}
 //void NeuralNetwork::set_input_values(std::vector<float> const &input_values) {
-////    assert(input_values.size() == this->input_neurons.size());
+////    assert(input_values.size() == this->is_input_neuron.size());
 //    for(int i = 0; i<input_values.size(); i++)
 //    {
-////        std::cout << "Input neuron incoming synapses = " << this->input_neurons[i]->incoming_synapses.size() << " " <<  this->input_neurons[i]->outgoing_synapses.size() <<  std::endl;
-//        this->input_neurons[i]->value = input_values[i];
+////        std::cout << "Input neuron incoming synapses = " << this->is_input_neuron[i]->incoming_synapses.size() << " " <<  this->is_input_neuron[i]->outgoing_synapses.size() <<  std::endl;
+//        this->is_input_neuron[i]->value = input_values[i];
 //    }
 //}
 //
