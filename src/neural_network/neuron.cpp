@@ -321,42 +321,22 @@ void neuron::propogate_error() {
 
             if (flag or time_vector.empty())
                 return;
-            for(auto &it: this->outgoing_synapses){
+            for (auto &it: this->outgoing_synapses) {
                 if (!it->grad_queue.empty() and !wait) {
                     it->grad_queue.pop();
                 }
             }
-//            for (auto &it : this->outgoing_synapses) {
-//                if (it->grad_queue.size() > 0 and !wait) {
-//                    if (it->is_output_neuron->is_output_neuron) {
-//                        it->trace = it->trace * it->grad_queue.front().gamma * it->grad_queue.front().lambda + this->past_activations.front().first;
-//
-//                        it->credit = it->grad_queue.front().gradient * it->trace;
-//
-//                        it->credit_activation_idbd = this->past_activations.front().first;
-//                        it->grad_queue.pop();
-//                    } else {
-//
-//                        it->credit = it->grad_queue.front().gradient *
-//                                     this->past_activations.front().first;
-//                        it->credit_activation_idbd = this->past_activations.front().first;
-//                        it->grad_queue.pop();
-//                    }
-//                } else {
-//                    it->credit = 0;
-//                }
-//            }
+
 
             float err = error_vector[0];
-            for(int a = 0; a<error_vector.size(); a++){
-                if(error_vector[a]!= err){
+            for (int a = 0; a < error_vector.size(); a++) {
+                if (error_vector[a] != err) {
                     std::cout << "Weight = " << this->average_activation << std::endl;
                     std::cout << "Neuron.cpp : Shouldn't happen\n";
                     exit(1);
                 }
             }
-//            if(accumulate_gradient > 0)
-//            std::cout << accumulate_gradient << " accum grad\n";
+
             message n_message(accumulate_gradient, time_vector[0]);
             n_message.error = error_vector[0];
             n_message.gamma = messages_q[0].gamma;
