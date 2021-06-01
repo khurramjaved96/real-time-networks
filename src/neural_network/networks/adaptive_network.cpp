@@ -9,6 +9,7 @@
 #include "../../../include/neural_networks/networks/adaptive_network.h"
 #include "../../../include/neural_networks/neuron.h"
 #include "../../../include/neural_networks/synapse.h"
+#include "../../../include/neural_networks/dynamic_elem.h"
 #include "../../../include/utils.h"
 #include <assert.h>
 #include <random>
@@ -286,34 +287,85 @@ void ContinuallyAdaptingNetwork::step() {
                 n->prune_useless_weights();
             });
 
-//    std::cout << "Remving activation\n";
+
+    std::for_each(
+            std::execution::par_unseq,
+            this->all_synapses.begin(),
+            this->all_synapses.end(),
+            [&](synapse *s) {
+                if(s->useless) {
+                    s->decrement_reference();
+                }
+            });
     auto it = std::remove_if(this->all_synapses.begin(), this->all_synapses.end(), to_delete_s);
     this->all_synapses.erase(it, this->all_synapses.end());
+
+
+    std::for_each(
+            std::execution::par_unseq,
+            this->output_synapses.begin(),
+            this->output_synapses.end(),
+            [&](synapse *s) {
+                if(s->useless) {
+                    s->decrement_reference();
+                }
+            });
     it = std::remove_if(this->output_synapses.begin(), this->output_synapses.end(), to_delete_s);
     this->output_synapses.erase(it, this->output_synapses.end());
 
 
+    std::for_each(
+            std::execution::par_unseq,
+            this->all_neurons.begin(),
+            this->all_neurons.end(),
+            [&](neuron *s) {
+                if(s->useless_neuron) {
+                    s->decrement_reference();
+                }
+            });
+
     auto it_n = std::remove_if(this->all_neurons.begin(), this->all_neurons.end(), to_delete_n);
     this->all_neurons.erase(it_n, this->all_neurons.end());
 
-    it_n = std::remove_if(this->new_features.begin(), this->new_features.end(), to_delete_n);
-    this->new_features.erase(it_n, this->new_features.end());
+
     this->time_step++;
 
 
 }
 
+bool is_null_ptr(dynamic_elem* elem)
+{
+//    return true;
+    if(elem== nullptr)
+        return true;
+    return false;
+}
 
-std::vector<float> CustomNetwork::read_output_values() {
+void ContinuallyAdaptingNetwork::college_garbage() {
+
+    for(int temp = 0; temp < this->all_heap_elements.size(); temp++){
+        if(all_heap_elements[temp]->references == 0 ){
+            std::cout << "Deleting element\n";
+            delete all_heap_elements[temp];
+            all_heap_elements[temp] = nullptr;
+        }
+    }
+
+    auto it = std::remove_if(this->all_heap_elements.begin(), this->all_heap_elements.end(), is_null_ptr);
+    this->all_heap_elements.erase(it, this->all_heap_elements.end());
+
+}
+
+std::vector<float> ContinuallyAdaptingNetwork::read_output_values() {
     std::vector<float> output_vec;
-    output_vec.reserve(this->output_neuros.size());
-    for (auto &output_neuro : this->output_neuros) {
+    output_vec.reserve(this->output_neurons.size());
+    for (auto &output_neuro : this->output_neurons) {
         output_vec.push_back(output_neuro->value);
     }
     return output_vec;
 }
 
-std::vector<float> CustomNetwork::read_all_values() {
+std::vector<float> ContinuallyAdaptingNetwork::read_all_values() {
     std::vector<float> output_vec;
     output_vec.reserve(this->all_neurons.size());
     for (auto &output_neuro : this->all_neurons) {
@@ -323,18 +375,18 @@ std::vector<float> CustomNetwork::read_all_values() {
 }
 
 
-float CustomNetwork::introduce_targets(std::vector<float> targets) {
+float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets) {
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
-        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1);
+        error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1);
     }
     return error;
 }
 
-float CustomNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
+float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
-        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
+        error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
     }
     return error;
 }
