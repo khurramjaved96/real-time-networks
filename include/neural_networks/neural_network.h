@@ -11,12 +11,14 @@
 #include "neuron.h"
 #include <vector>
 #include <map>
+#include "dynamic_elem.h"
 
 
 
 class NeuralNetwork
 {
 public:
+
     std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
     std::vector<neuron*> output_neuros;

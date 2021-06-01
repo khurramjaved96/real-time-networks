@@ -85,7 +85,7 @@ std::vector<float> TracePatterning::step(){
     }
     if(this->remaining_until_US_long == 1 and this->valid)
     {
-        this->current_state[7] = 1;
+        this->current_state[7] = 0;
     }
     else{
         this->current_state[7] = 0;
