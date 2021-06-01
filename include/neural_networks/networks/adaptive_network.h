@@ -14,25 +14,32 @@
 #include <vector>
 #include <map>
 #include <random>
+#include "../dynamic_elem.h"
 
 
 
-class CustomNetwork{
+class ContinuallyAdaptingNetwork{
 
-    std::vector<neuron*> output_neuros;
+
 
     long long int time_step;
+
+    std::mt19937 mt;
+
+
+public:
+    std::vector<neuron*> output_neurons;
     std::vector<synapse*> all_synapses;
     std::vector<synapse*> output_synapses;
-    std::vector<no_grad_synapse*> memories;
-    std::mt19937 mt;
-    std::vector<synapse*> memory_feature_weights;
-public:
+    std::vector<dynamic_elem *> all_heap_elements;
+//    std::vector<neuron *> all_heap_neurons;
+//    std::vector<synapse *> all_heap_synapses;
+    void college_garbage();
     std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
-    std::vector<neuron*> new_features;
-    CustomNetwork(float step_size, int width, int seed);
-    ~CustomNetwork();
+//    std::vector<neuron*> new_features;
+    ContinuallyAdaptingNetwork(float step_size, int width, int seed);
+    ~ContinuallyAdaptingNetwork();
     void print_graph(neuron* root);
     void viz_graph();
     void set_print_bool();
@@ -47,9 +54,9 @@ public:
     float introduce_targets(std::vector<float> targets, float gamma, float lambda);
     int get_input_size();
     int get_total_synapses();
-    void add_memory(float step_size);
+//    void add_memory(float step_size);
     void add_feature(float step_size);
-    std::vector<float> get_memory_weights();
+//    std::vector<float> get_memory_weights();
 };
 
 
