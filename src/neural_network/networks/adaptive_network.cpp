@@ -165,15 +165,8 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 
 }
 
-std::vector<float> CustomNetwork::get_memory_weights() {
-    std::vector<float> my_vec;
-    for (auto &s : memory_feature_weights) {
-        my_vec.push_back(s->weight);
-    }
-    return my_vec;
-}
 
-void CustomNetwork::set_print_bool() {
+void ContinuallyAdaptingNetwork::set_print_bool() {
     std::cout
             << "From\tTo\tGrad_queue_size\tFrom activations_size\tTo activations_size\tError grad_queue From\tCredit\n";
     for (auto &s : this->all_synapses)
@@ -181,24 +174,21 @@ void CustomNetwork::set_print_bool() {
 }
 
 
-int CustomNetwork::get_input_size() {
+int ContinuallyAdaptingNetwork::get_input_size() {
     return this->input_neurons.size();
 }
 
-int CustomNetwork::
-get_total_synapses() {
+int ContinuallyAdaptingNetwork::get_total_synapses() {
     return this->all_synapses.size();
 }
 
-CustomNetwork::~CustomNetwork() {
-    for (auto &it : this->all_neurons)
-        delete it;
-    for (auto &it : this->all_synapses)
+ContinuallyAdaptingNetwork::~ContinuallyAdaptingNetwork() {
+    for (auto &it : this->all_heap_elements)
         delete it;
 }
 
 
-void CustomNetwork::set_input_values(std::vector<float> const &input_values) {
+void ContinuallyAdaptingNetwork::set_input_values(std::vector<float> const &input_values) {
 //    assert(input_values.size() == this->input_neurons.size());
     for (int i = 0; i < input_values.size(); i++) {
         if (i < this->input_neurons.size())
@@ -215,24 +205,16 @@ bool to_delete_n(neuron *s) {
 }
 
 
-void CustomNetwork::step() {
+void ContinuallyAdaptingNetwork::step() {
 
 
-//    Making copies of features and storing them for a while (for structural credit-assignment problem
-// Verify if correct
-//    this->set_print_bool();
-//    std::cout << "Copying memory\n";
-
-//    std::cout << "Fire neuron\n";
-
-
-    std::for_each(
-            std::execution::par_unseq,
-            memories.begin(),
-            memories.end(),
-            [&](no_grad_synapse *s) {
-                s->copy_activation(this->time_step);
-            });
+//    std::for_each(
+//            std::execution::par_unseq,
+//            memories.begin(),
+//            memories.end(),
+//            [&](no_grad_synapse *s) {
+//                s->copy_activation(this->time_step);
+//            });
 
 
     std::for_each(
@@ -244,9 +226,6 @@ void CustomNetwork::step() {
             });
 
 
-
-
-//    std::cout << "Update value\n";
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -255,7 +234,6 @@ void CustomNetwork::step() {
                 n->update_value();
             });
 
-//    std::cout << "Forward gradients\n";
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -265,7 +243,6 @@ void CustomNetwork::step() {
             });
 
 
-//    std::cout << "Propogate error\n";
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -274,7 +251,6 @@ void CustomNetwork::step() {
                 n->propogate_error();
             });
 
-//    std::cout << "Updating weights\n";
 
     std::for_each(
             std::execution::par_unseq,
@@ -292,7 +268,7 @@ void CustomNetwork::step() {
                 s->update_weight();
             });
 
-//    std::cout << "Making useless weights\n";
+
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
