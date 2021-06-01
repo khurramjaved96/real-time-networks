@@ -15,11 +15,11 @@
 #include "message.h"
 #include "utils.h"
 #include <utility>
-
+#include "dynamic_elem.h"
 //class synapse;
 
 
-class neuron {
+class neuron : public dynamic_elem  {
     bool cycle_check;
 
 public:
@@ -55,8 +55,8 @@ public:
     void propogate_error();
     void mark_useless_weights();
     void prune_useless_weights();
-    void activation();
-    void init_incoming_synapses();
+
+    ~neuron()=default;
 };
 
 #endif //BENCHMARKS_NEURON_H
