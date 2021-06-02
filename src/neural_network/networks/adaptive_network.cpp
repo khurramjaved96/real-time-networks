@@ -27,9 +27,9 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int widt
     for (int counter = 0; counter < input_neuron; counter++) {
         auto n = new neuron(false, false, true);
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
-        n->references++;
+        n->increment_reference();
         this->input_neurons.push_back(n);
-        n->references++;
+        n->increment_reference();
         this->all_neurons.push_back(n);
     }
 
@@ -37,9 +37,9 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int widt
     for (int counter = 0; counter < output_neuros; counter++) {
         auto n = new neuron(false, true);
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
-        n->references++;
+        n->increment_reference();
         this->output_neurons.push_back(n);
-        n->references++;
+        n->increment_reference();
         this->all_neurons.push_back(n);
     }
 
@@ -47,9 +47,9 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int widt
         for (auto &output: this->output_neurons) {
             synapse *s = new synapse(input, output, 0, step_size);
             this->all_heap_elements.push_back(static_cast<dynamic_elem *>(s));
-            s->references++;
+            s->increment_reference();
             this->all_synapses.push_back(s);
-            s->references++;
+            s->increment_reference();
             this->output_synapses.push_back(s);
             s->turn_on_idbd();
         }
@@ -118,7 +118,7 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
         std::uniform_real_distribution<float> dist_u(0, 1);
 
         neuron *last_neuron = new neuron(true);
-        last_neuron->references++;
+        last_neuron->increment_reference();
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(last_neuron));
         this->all_neurons.push_back(last_neuron);
 
@@ -130,7 +130,7 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
                     auto syn = new synapse(n, last_neuron, 0.001 * dist(this->mt), step_size);
                     syn->enable_logging = false;
                     syn->block_gradients();
-                    syn->references++;
+                    syn->increment_reference();
                     this->all_synapses.push_back(syn);
                     this->all_heap_elements.push_back(static_cast<dynamic_elem *>(syn));
                 }
@@ -145,9 +145,9 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
             } else {
                 output_s_temp = new synapse(last_neuron, output_n, -1, 0);
             }
-            output_s_temp->references++;
+            output_s_temp->increment_reference();
             this->all_synapses.push_back(output_s_temp);
-            output_s_temp->references++;
+            output_s_temp->increment_reference();
             this->output_synapses.push_back(output_s_temp);
             this->all_heap_elements.push_back(static_cast<dynamic_elem *>(output_s_temp));
         }
@@ -161,6 +161,7 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 //            s->weight = dist(mt) * scale;
 //        }
 //    }
+
 
 
 
@@ -208,14 +209,6 @@ bool to_delete_n(neuron *s) {
 
 void ContinuallyAdaptingNetwork::step() {
 
-
-//    std::for_each(
-//            std::execution::par_unseq,
-//            memories.begin(),
-//            memories.end(),
-//            [&](no_grad_synapse *s) {
-//                s->copy_activation(this->time_step);
-//            });
 
 
     std::for_each(
@@ -280,7 +273,7 @@ void ContinuallyAdaptingNetwork::step() {
 
 //    std::cout << "Pruning wieghts in queues\n";
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
@@ -344,10 +337,15 @@ bool is_null_ptr(dynamic_elem* elem)
 void ContinuallyAdaptingNetwork::college_garbage() {
 
     for(int temp = 0; temp < this->all_heap_elements.size(); temp++){
+//        if(all_heap_elements[temp]->references < 2) {
+//            std::cout << all_heap_elements[temp]->references << std::endl;
+//            exit(1);
+//        }
         if(all_heap_elements[temp]->references == 0 ){
-            std::cout << "Deleting element\n";
+//            std::cout << "Deleting element\n";
             delete all_heap_elements[temp];
             all_heap_elements[temp] = nullptr;
+//            exit(1);
         }
     }
 
