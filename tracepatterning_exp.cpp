@@ -28,15 +28,15 @@ int main(int argc, char *argv[]) {
     float gamma = 1.0 - 1.0 / double(interval_up);
     float lambda = my_experiment.get_float_param("lambda");
 //
-    TracePatterning tc1 = TracePatterning(std::pair<int, int>(interval, interval_up),
-                                          std::pair<int, int>(interval, interval_up),
-                                          std::pair<int, int>(80, 120), 5, 2);
-    TracePatterning tc2 = TracePatterning(std::pair<int, int>(interval, interval_up),
-                                          std::pair<int, int>(interval, interval_up),
-                                          std::pair<int, int>(80, 120), 5, 2);
     TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
-                                         std::pair<int, int>(interval, interval_up),
-                                         std::pair<int, int>(80, 120), 5, 2);
+                                          std::pair<int, int>(interval, interval_up),
+                                          std::pair<int, int>(80, 120), 5, my_experiment.get_int_param("seed"));
+//    TracePatterning tc2 = TracePatterning(std::pair<int, int>(interval, interval_up),
+//                                          std::pair<int, int>(interval, interval_up),
+//                                          std::pair<int, int>(80, 120), 5, 2);
+//    TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
+//                                         std::pair<int, int>(interval, interval_up),
+//                                         std::pair<int, int>(80, 120), 5, 2);
     for (int temp = 0; temp < 200; temp++) {
         std::vector<float> cur_state = tc.step();
         cur_state[2] = tc.get_target(gamma);
@@ -73,11 +73,11 @@ int main(int argc, char *argv[]) {
 
 
     std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
-    my_network.viz_graph();
+//    my_network.viz_graph();
     auto start = std::chrono::steady_clock::now();
     std::vector<float> running_error;
-    running_error.push_back(-1);
-    running_error.push_back(-1);
+    running_error.push_back(0);
+    running_error.push_back(0);
     std::vector<std::vector<std::string>> error_logger;
     std::vector<std::vector<std::string>> state_logger;
     std::vector<std::vector<std::string>> network_size_logger;
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
 
     for (int counter = 0; counter < my_experiment.get_int_param("steps"); counter++) {
 
-
+//        std::cout << "Counter = " << counter << std::endl;
         std::vector<float> temp_target;
 
         auto state_current = tc.step();
@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
                 running_error[0] = error_short;
 //                running_error[1] = error_long;
             } else {
-                running_error[0] = running_error[0] * 0.99999 + 0.00001 * error_short;
+                running_error[0] = running_error[0] * 0.9999 + 0.0001 * error_short;
 //                running_error[1] = running_error[1] * 0.999 + 0.001 *error_long;
             }
         }
@@ -167,12 +167,13 @@ int main(int argc, char *argv[]) {
             cur_state.push_back(target);
             print_vector(cur_state);
         }
-        if (counter % 5000000 == 4999999) {
-            tc = tc2;
-        }
+//        if (counter % 5000000 == 4999999) {
+//            tc = tc2;
+//        }
 
         if (counter % 80000 == 79999) {
-// Generaging new features 
+// Generaging new features
+            my_network.college_garbage();
             for (int a = 0; a < 20; a++)
                 my_network.add_feature(my_experiment.get_float_param("step_size"));
 
@@ -240,13 +241,13 @@ int main(int argc, char *argv[]) {
                             my_experiment.get_int_param("steps"))
               << " fps" << std::endl;
 
-
-    std::string g = my_network.get_viz_graph();
-    std::vector<std::string> graph_data;
-    graph_data.push_back(std::to_string(my_experiment.get_int_param("steps")));
-    graph_data.push_back(std::to_string(my_experiment.get_int_param("run")));
-    graph_data.push_back(g);
-    graph_state_metric.add_value(graph_data);
+//
+//    std::string g = my_network.get_viz_graph();
+//    std::vector<std::string> graph_data;
+//    graph_data.push_back(std::to_string(my_experiment.get_int_param("steps")));
+//    graph_data.push_back(std::to_string(my_experiment.get_int_param("run")));
+//    graph_data.push_back(g);
+//    graph_state_metric.add_value(graph_data);
 
     return 0;
 }
