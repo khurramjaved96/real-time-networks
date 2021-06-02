@@ -17,10 +17,10 @@ long long int synapse::synapse_id = 0;
 synapse::synapse(neuron *input, neuron *output, float w, float step_size) {
     references = 0;
     input_neuron = input;
-    input->references++;
+    input->increment_reference();
     input_neuron->sucesses++;
     output_neuron = output;
-    output->references++;
+    output->increment_reference();
     credit = 0;
     mark_delete = false;
     enable_logging = false;
@@ -29,9 +29,9 @@ synapse::synapse(neuron *input, neuron *output, float w, float step_size) {
     credit_activation_idbd = 0;
     weight = w;
     this->step_size = step_size;
-    this->references++;
+    this->increment_reference();
     input_neuron->outgoing_synapses.push_back(this);
-    this->references++;
+    this->increment_reference();
     output_neuron->incoming_synapses.push_back(this);
     print_status = false;
     this->idbd = false;
@@ -68,6 +68,7 @@ void synapse::assign_credit() {
 
         this->grad_queue_weight_assignment.pop();
     }
+
     if(!this->grad_queue_weight_assignment.empty() and this->weight_assignment_past_activations.front().second !=  (this->grad_queue_weight_assignment.front().time_step -
                                                                     this->grad_queue_weight_assignment.front().distance_travelled - 1))
     {
