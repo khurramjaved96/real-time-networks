@@ -83,16 +83,16 @@ std::string NetworkVisualizer::get_graph(int time_step) {
     dot_string = "digraph network{\n"
                  "\tnode [shape = circle];\n";
 
-    for(auto &it : all_neurons) {
-        for (auto &os: it->outgoing_synapses) {
-            if(os->input_neuron->mature and os->output_neuron->mature) {
-                auto current_n = os;
-                dot_string += "\t" + std::to_string(current_n->input_neuron->id)
-                              + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
-                              + "[label = \"" + std::to_string(os->weight) + "\"];\n";
-            }
-        }
-    }
+//    for(auto &it : all_neurons) {
+//        for (auto &os: it->outgoing_synapses) {
+//            if(os->input_neuron->mature and os->output_neuron->mature) {
+//                auto current_n = os;
+//                dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+//                              + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
+//                              + "[label = \"" + std::to_string(os->weight) + "\"];\n";
+//            }
+//        }
+//    }
     dot_string += "\n}";
     return dot_string;
 }
