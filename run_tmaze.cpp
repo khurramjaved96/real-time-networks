@@ -10,15 +10,12 @@
 #include <random>
 
 #include "include/utils.h"
-#include "include/neural_networks/networks/test_network.h"
+#include "include/neural_networks/networks/adaptive_network.h"
 #include "include/neural_networks/neural_network.h"
 #include "include/experiment/Experiment.h"
 #include "include/neural_networks/utils.h"
 #include "include/experiment/Metric.h"
-#include "src/hybrid_code/queue.cu"
 #include "include/environments/tmaze.h"
-#include "include/animal_learning/tracecondioning.h"
-#include "include/neural_networks/networks/test_network.h"
 
 volatile sig_atomic_t someone_killed_me = 0;
 void sigint(int sig){
@@ -72,23 +69,19 @@ int main(int argc, char *argv[]) {
                                      std::vector<std::string>{"run", "step", "episode", "timestep", "avg_reward", "accuracy"},
                                      std::vector<std::string>{"int", "int", "int", "int", "real", "real"},
                                      std::vector<std::string>{"run", "episode"});
-    Metric observations_metric = Metric(exp.database_name, "run_metrics",
-                                        std::vector<std::string>{"run", "step", "episode", "eps_step", "avg_reward",
-                                                                 "corridor_len", "corridor_pos", "state", "qvalues",
-                                                                 "reward", "new_features"},
-                                        std::vector<std::string>{"int", "int", "int", "int", "real", "int", "int",
-                                                                 "JSON", "JSON", "real", "int"},
-                                        std::vector<std::string>{"run", "step"});
     Metric graph_state = Metric(exp.database_name, "network_graphs",
-                                std::vector<std::string>{"run", "step", "graph_data"},
-                                std::vector<std::string>{"int", "int", "MEDIUMTEXT"},
-                                std::vector<std::string>{"run", "step"});
+                                std::vector<std::string>{"run", "step", "episode", "graph_data"},
+                                std::vector<std::string>{"int", "int", "int", "MEDIUMTEXT"},
+                                std::vector<std::string>{"run", "step", "episode"});
+
+    Metric network_size_metric = Metric(exp.database_name, "network_metrics",
+                                        std::vector<std::string>{"step", "episode", "run", "total_synapses", "new_features"},
+                                        std::vector<std::string>{"int", "int", "int", "int", "int"},
+                                        std::vector<std::string>{"step", "episode", "run"});
 
     //TODO add num inp and out as params here fixed for env
     CustomNetwork my_network = CustomNetwork(exp.get_float_param("step_size"),
                                              exp.get_int_param("width"),
-                                             exp.get_int_param("num_layers"),
-                                             exp.get_int_param("sparsity"),
                                              exp.get_int_param("seed"));
 
     TMaze env = TMaze(exp.get_int_param("seed"),
@@ -98,6 +91,14 @@ int main(int argc, char *argv[]) {
                       exp.get_bool_param("prediction_problem"));
 
     std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
+    my_network.viz_graph();
+    std::vector<std::string> graph_data;
+    graph_data.push_back(std::to_string(exp.get_int_param("run")));
+    graph_data.push_back(std::to_string(0));
+    graph_data.push_back(std::to_string(0));
+    graph_data.push_back(my_network.get_viz_graph());
+    graph_state.add_value(graph_data);
+
     auto start = std::chrono::steady_clock::now();
 
     float R = 0;
@@ -106,6 +107,8 @@ int main(int argc, char *argv[]) {
     float accuracy = -1;
     int selected_action_idx_old = 0;
     float gamma = exp.get_float_param("gamma");
+// TODO new param
+    float lambda = exp.get_float_param("lambda");
     bool prev_was_terminal = false;
     int no_op_step = 0;
     int no_grad_after_eps_gap = 0;
@@ -114,10 +117,9 @@ int main(int argc, char *argv[]) {
 
     int max_episodes = exp.get_int_param("max_episodes");
     int timestep_since_feat_added = exp.get_int_param("features_min_timesteps");
-    int total_new_features = 0;
     std::string run_state = "finished";
     std::string run_state_comments = "";
-    std::vector<std::vector<std::string>> metric_logger;
+    std::vector<std::vector<std::string>> network_logger;
     std::vector<std::vector<std::string>> episode_logger;
     std::vector<std::vector<std::string>> graph_logger;
     std::mt19937 mt(exp.get_int_param("seed"));
@@ -132,13 +134,12 @@ int main(int argc, char *argv[]) {
         }
         no_op_step -= 1;
         no_grad_after_eps_gap -= 1;
-
-        //TODO consider whether we want to add feats from start
         timestep_since_feat_added -= 1;
 
         Observation current_obs = env.get_current_obs();
         if(max_episodes != -1 && current_obs.episode > max_episodes)
             break;
+
         R_old = R;
         R = current_obs.reward;
 
@@ -160,6 +161,8 @@ int main(int argc, char *argv[]) {
             // if we areinside the gap between the episodes)
             no_grad_after_eps_gap = 3;
         }
+        if (no_grad_after_eps_gap == 2)
+            my_network.reset_trace();
         else{
             int selected_action_idx = 0;
             if (exploration_sampler(mt) < exp.get_float_param("epsilon")*100){
@@ -186,7 +189,7 @@ int main(int argc, char *argv[]) {
             if (no_op_step != 0)
                 selected_action_idx_old = selected_action_idx;
 
-            if(isnan(qvalues[selected_action_idx])){
+            if(std::isnan(qvalues[selected_action_idx])){
               run_state = "killed";
               run_state_comments = "nan_prediction";
               std::cout << "killing due to nans" << std::endl;
@@ -196,8 +199,8 @@ int main(int argc, char *argv[]) {
 
         if (counter > 0){
             if (no_op_step == 0 || no_grad_after_eps_gap > 0)
-               no_grad = std::vector<bool>(qvalues.size(), true);
-            my_network.introduce_targets(targets, no_grad);
+                no_grad = std::vector<bool>(qvalues.size(), true);
+            my_network.introduce_targets(targets, gamma, lambda, no_grad);
             if (current_obs.is_terminal && state_old != state_cur){
                 prev_was_terminal = true;
                 if (accuracy == -1){
@@ -210,6 +213,10 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
+
+        if(current_obs.is_terminal && state_old != state_cur)
+            std::cout<< "EP:" << current_obs.episode << "\t\tSteps:" << current_obs.timestep <<  "\t\tR:" << average_reward << "\t\tAcc:" << accuracy << "\t\tSyn:" << my_network.get_total_synapses() << "\t\tF:" << my_network.new_features.size() <<  std::endl;
+
         if (current_obs.is_terminal && state_old != state_cur && current_obs.episode % 10 == 9){
             std::vector<std::string> episode_data;
             episode_data.push_back(std::to_string(exp.get_int_param("run")));
@@ -219,24 +226,40 @@ int main(int argc, char *argv[]) {
             episode_data.push_back(std::to_string(average_reward));
             episode_data.push_back(std::to_string(accuracy));
             episode_logger.push_back(episode_data);
+
+            std::vector<std::string> network_data;
+            network_data.push_back(std::to_string(counter));
+            network_data.push_back(std::to_string(current_obs.episode));
+            network_data.push_back(std::to_string(exp.get_int_param("run")));
+            network_data.push_back(std::to_string(my_network.get_total_synapses()));
+            network_data.push_back(std::to_string(my_network.new_features.size()));
+            network_logger.push_back(network_data);
         }
+
+        if(exp.get_bool_param("add_features") && timestep_since_feat_added < 1)
+        {
+            timestep_since_feat_added = exp.get_int_param("features_min_timesteps");
+            for (int i = 0; i < exp.get_int_param("num_new_features"); i++)
+                my_network.add_feature(exp.get_float_param("step_size"));
+
+            std::cout << "\n Adding features..." << std::endl;
+
+            std::vector<std::string> graph_data;
+            graph_data.push_back(std::to_string(exp.get_int_param("run")));
+            graph_data.push_back(std::to_string(counter));
+            graph_data.push_back(std::to_string(current_obs.episode));
+            graph_data.push_back(my_network.get_viz_graph());
+            graph_logger.push_back(graph_data);
+        }
+
         if(counter % 300000 == 299998){
             episodic_metric.add_values(episode_logger);
+            graph_state.add_values(graph_logger);
+            network_size_metric.add_values(network_logger);
+
             episode_logger.clear();
-        }
-        if(counter % 50000 < 50000 && current_obs.is_terminal && state_old != state_cur)
-        {
-            std::vector<float> cur_state = current_obs.state;
-            cur_state.push_back(current_obs.episode);
-            cur_state.push_back(current_obs.timestep);
-            cur_state.push_back(current_obs.reward);
-            cur_state.push_back(current_obs.cmltv_reward);
-            cur_state.push_back(average_reward);
-            cur_state.push_back(accuracy);
-            cur_state.push_back(env.get_current_pos_in_corridor());
-            //print_vector(cur_state);
-            std::cout<< "EP:" << current_obs.episode << "\t\tSteps:" << current_obs.timestep <<  "\t\tR:" << average_reward << "\t\tAcc:" << accuracy << std::endl;
-            //print_vector(qvalues);
+            graph_logger.clear();
+            network_logger.clear();
         }
 
         if (state_old != state_cur && !current_obs.is_terminal){
@@ -247,54 +270,6 @@ int main(int argc, char *argv[]) {
             current_obs = env.step(action);
         state_old = state_cur;
         state_cur = current_obs.state;
-
-
-        if(counter < 10){
-            std::string g = my_network.get_viz_graph();
-            std::vector<std::string> graph_data;
-            graph_data.push_back(std::to_string(counter));
-            graph_data.push_back(std::to_string(exp.get_int_param("run")));
-            graph_data.push_back(g);
-            graph_logger.push_back(graph_data);
-        }
-
-
-        if(exp.get_bool_param("add_features") &&
-           timestep_since_feat_added < 1)
-        {
-            total_new_features += exp.get_int_param("num_new_features");
-            timestep_since_feat_added = exp.get_int_param("features_min_timesteps");
-            for (int i = 0; i < exp.get_int_param("num_new_features"); i++)
-                my_network.add_memory(exp.get_float_param("step_size"));
-
-            std::cout << "\n Adding features..." << std::endl;
-
-            std::string g = my_network.get_viz_graph();
-            std::vector<std::string> graph_data;
-            graph_data.push_back(std::to_string(counter));
-            graph_data.push_back(std::to_string(exp.get_int_param("run")));
-            graph_data.push_back(g);
-            graph_logger.push_back(graph_data);
-        }
-
-//        if(counter % 300000 == 299998)
-//        {
-//            if(exp.get_bool_param("add_features"))
-//                print_vector(my_network.get_memory_weights());
-//            std::cout << "Pushing results" << std::endl;
-//            observations_metric.add_values(obs_logger);
-//            graph_state.add_values(graph_logger);
-//            std::cout << "Results added " << std::endl;
-//            std::cout << "Len = " << error_logger.size() << std::endl;
-//            error_logger.clear();
-//            obs_logger.clear();
-//            graph_logger.clear();
-//        }
-//        if (counter % 10000 == 0 || counter % 10000 == 999 || counter % 10000 == 998) {
-//            std::cout << "### STEP = " << counter << std::endl;
-//            std::cout << "Running error = " << running_error << std::endl;
-//            std::cout << "Running accuracy = " << running_accuracy << std::endl;
-//        }
     }
 
     auto end = std::chrono::steady_clock::now();
@@ -303,15 +278,16 @@ int main(int argc, char *argv[]) {
                             exp.get_int_param("steps")))
               << " fps" << std::endl;
 
-    episodic_metric.add_values(episode_logger);
-    std::string g = my_network.get_viz_graph();
-    std::vector<std::string> graph_data;
-    std::cout << g << std::endl;
-    graph_data.push_back(std::to_string(exp.get_int_param("steps")));
+    graph_data.clear();
     graph_data.push_back(std::to_string(exp.get_int_param("run")));
-    graph_data.push_back(g);
+    graph_data.push_back(std::to_string(exp.get_int_param("steps")));
+    graph_data.push_back(std::to_string(env.get_current_obs().episode));
+    graph_data.push_back(my_network.get_viz_graph());
     graph_logger.push_back(graph_data);
+
+    episodic_metric.add_values(episode_logger);
     graph_state.add_values(graph_logger);
+    network_size_metric.add_values(network_logger);
 
     std::vector<std::string> run_state_data;
     run_state_data.push_back(std::to_string(exp.get_int_param("run")));

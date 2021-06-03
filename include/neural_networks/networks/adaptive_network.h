@@ -31,7 +31,6 @@ public:
     std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
     std::vector<neuron*> new_features;
-    #TODO CustomNetwork(float step_size, int width, int num_layers, int sparsity, int seed);
     CustomNetwork(float step_size, int width, int seed);
     ~CustomNetwork();
     void print_graph(neuron* root);
@@ -41,12 +40,13 @@ public:
     long long int get_timestep();
 
     void set_input_values(std::vector<float> const &input_values);
+    void reset_trace();
     void step();
     std::vector<float> read_output_values();
     std::vector<float> read_all_values();
     float introduce_targets(std::vector<float> targets);
-    #TODO float introduce_targets(std::vector<float> targets, std::vector<bool> no_grad);
     float introduce_targets(std::vector<float> targets, float gamma, float lambda);
+    float introduce_targets(std::vector<float> targets, float gamma, float lambda, std::vector<bool> no_grad);
     int get_input_size();
     int get_total_synapses();
     void add_memory(float step_size);

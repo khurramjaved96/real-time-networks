@@ -192,26 +192,6 @@ void neuron::forward_gradients() {
     }
 }
 
-float neuron::introduce_targets(float target, int time_step, bool no_grad) {
-    //no_grad = false by default
-    if (!this->past_activations.empty()) {
-        float error = 0;
-        if (!no_grad)
-            error = target - this->past_activations.front().first;
-        float error_grad = error;
-//        If activation was zero, we applied relu. Gradients don't flow back
-        if (this->past_activations.front().first <= 0 and this->activation_type) {
-            error_grad = 0;
-        }
-        message m(1, time_step);
-        m.error = error_grad;
-        this->error_gradient.push(m);
-        this->past_activations.pop();
-        return error * error;
-    }
-    return 0;
-}
-
 float neuron::introduce_targets(float target, int time_step, float gamma, float lambda) {
     if (!this->past_activations.empty()) {
         float error = target - this->past_activations.front().first;
@@ -235,6 +215,32 @@ float neuron::introduce_targets(float target, int time_step, float gamma, float 
     return 0;
 }
 //
+
+float neuron::introduce_targets(float target, int time_step, float gamma, float lambda, bool no_grad) {
+    //no_grad = false for actions taken
+    if (!this->past_activations.empty()) {
+        float error = 0;
+        if (!no_grad)
+            error = target - this->past_activations.front().first;
+        float error_grad = error;
+//        If activation was zero, we applied relu. Gradients don't flow back
+        if (this->past_activations.front().first <= 0 and this->activation_type) {
+            std::cout << "Should never get here\n";
+            exit(1);
+            error_grad = 0;
+        }
+
+        message m(int(!no_grad), time_step);
+        m.lambda = lambda;
+        m.gamma = gamma;
+        m.error = error_grad;
+
+        this->error_gradient.push(m);
+        this->past_activations.pop();
+        return error * error;
+    }
+    return 0;
+}
 
 void neuron::propogate_error() {
 
@@ -350,14 +356,16 @@ void neuron::propogate_error() {
 //                }
 //            }
 
-            float err = error_vector[0];
-            for(int a = 0; a<error_vector.size(); a++){
-                if(error_vector[a]!= err){
-                    std::cout << "Weight = " << this->average_activation << std::endl;
-                    std::cout << "Neuron.cpp : Shouldn't happen\n";
-                    exit(1);
-                }
-            }
+//            float err = error_vector[0];
+//            for(int a = 0; a<error_vector.size(); a++){
+//                if(error_vector[a]!= err){
+//                    print_vector(error_vector);
+//                    std::cout << "Weight = " << this->average_activation << std::endl;
+//                    std::cout << "Neuron.cpp : Shouldn't happen\n";
+//                    exit(1);
+//                }
+//            }
+
 //            if(accumulate_gradient > 0)
 //            std::cout << accumulate_gradient << " accum grad\n";
             message n_message(accumulate_gradient, time_vector[0]);

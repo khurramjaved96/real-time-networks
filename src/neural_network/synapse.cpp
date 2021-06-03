@@ -87,6 +87,10 @@ void synapse::assign_credit() {
     }
 }
 
+void synapse::reset_trace() {
+    this->trace = 0;
+}
+
 void synapse::block_gradients() {
     pass_gradients = false;
 }
@@ -97,6 +101,7 @@ void synapse::zero_gradient() {
 
 void synapse::turn_on_idbd() {
     this->step_size = this->step_size*10;
+    return;
 //    std::cout << "STEP SIZE = " << this->step_size << std::endl;
 //    exit(1);
 //    this->idbd = true;

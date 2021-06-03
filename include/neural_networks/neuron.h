@@ -52,7 +52,7 @@ public:
     void fire(int time_step);
     float introduce_targets(float target, int timestep);
     float introduce_targets(float target, int timestep, float gamma, float lambda);
-    #TODO float introduce_targets(float target, int timestep, bool no_grad=false);
+    float introduce_targets(float target, int timestep, float gamma, float lambda, bool no_grad);
     void propogate_error();
     void mark_useless_weights();
     void prune_useless_weights();

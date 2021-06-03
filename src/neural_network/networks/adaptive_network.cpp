@@ -22,14 +22,14 @@
 CustomNetwork::CustomNetwork(float step_size, int width, int seed): mt(seed) {
     this->time_step = 0;
 
-    int input_neuron = 5;
+    int input_neuron = 3;
     for (int counter = 0; counter < input_neuron; counter++) {
         auto n = new neuron(false, false, true);
         this->input_neurons.push_back(n);
         this->all_neurons.push_back(n);
     }
 
-    int output_neuros = 1;
+    int output_neuros = 4;
     for (int counter = 0; counter < output_neuros; counter++) {
         auto n = new neuron(false, true);
         this->output_neuros.push_back(n);
@@ -90,6 +90,7 @@ CustomNetwork::CustomNetwork(float step_size, int width, int seed): mt(seed) {
             int total_incoming = n->incoming_synapses.size();
             double scale = sqrt(2.0 / float(total_incoming));
             for (auto s : n->incoming_synapses) {
+                std::cout << "WEIGHT SET\n";
                 s->weight = dist(mt) * scale;
             }
         }
@@ -294,6 +295,15 @@ bool to_delete_n(neuron *s) {
     return s->useless_neuron;
 }
 
+void CustomNetwork::reset_trace(){
+    std::for_each(
+            std::execution::par_unseq,
+            all_synapses.begin(),
+            all_synapses.end(),
+            [&](synapse *s) {
+                s->reset_trace();
+            });
+}
 
 void CustomNetwork::step() {
 
@@ -427,18 +437,26 @@ std::vector<float> CustomNetwork::read_all_values() {
 }
 
 
-float CustomNetwork::introduce_targets(std::vector<float> targets) {
-    float error = 0;
-    for (int counter = 0; counter < targets.size(); counter++) {
-        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1);
-    }
-    return error;
-}
+//float CustomNetwork::introduce_targets(std::vector<float> targets) {
+//    float error = 0;
+//    for (int counter = 0; counter < targets.size(); counter++) {
+//        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1);
+//    }
+//    return error;
+//}
 
 float CustomNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
         error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
+    }
+    return error;
+}
+
+float CustomNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda, std::vector<bool> no_grad) {
+    float error = 0;
+    for (int counter = 0; counter < targets.size(); counter++) {
+        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda, no_grad[counter]);
     }
     return error;
 }

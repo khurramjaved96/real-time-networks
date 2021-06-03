@@ -20,6 +20,7 @@ class NetworkVisualizer{
     std::vector<no_grad_synapse *> no_grad_synapses;
 
 public:
+    NetworkVisualizer(std::vector<neuron *> all_neurons);
     NetworkVisualizer(std::vector<neuron *> all_neurons, std::vector<no_grad_synapse*> no_grad_synapses);
     void generate_dot(int time_step);
     std::string get_graph(int time_step);

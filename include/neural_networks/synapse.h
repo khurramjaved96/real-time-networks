@@ -58,6 +58,7 @@ public:
     void update_weight();
     void turn_on_idbd();
     void assign_credit();
+    void reset_trace();
 
 };
 

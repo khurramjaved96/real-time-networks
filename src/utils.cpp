@@ -56,6 +56,10 @@ void print_matrix(std::vector<std::vector<int>> const &v) {
     std::cout << "\n";
 }
 
+NetworkVisualizer::NetworkVisualizer(std::vector<neuron *> all_neurons) {
+    this->all_neurons = all_neurons;
+}
+
 NetworkVisualizer::NetworkVisualizer(std::vector<neuron *> all_neurons, std::vector<no_grad_synapse *> no_grad_synapses) {
     this->all_neurons = all_neurons;
     this->no_grad_synapses = no_grad_synapses;
@@ -69,17 +73,22 @@ void NetworkVisualizer::generate_dot(int time_step) {
     for(auto &it : all_neurons) {
         for (auto &os: it->outgoing_synapses) {
             auto current_n = os;
-            dot_string += "\t" + std::to_string(current_n->input_neuron->id)
-                          + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
-                          + "[label = \"" + std::to_string(os->weight) + "\"];\n";
+            if (current_n->pass_gradients)
+                dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+                              + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
+                              + "[label = \"" + std::to_string(os->weight) + "\"];\n";
+            else
+                dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+                              + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
+                              + "[label = \"" + std::to_string(os->weight) + "\", style=dashed, color=red];\n";
         }
     }
-    for (auto &os: this->no_grad_synapses) {
-        auto current_n = os;
-        dot_string += "\t" + std::to_string(current_n->input_neurons->id)
-                      + "->" + std::to_string(current_n->output_neurons->id) //+ ";\n";
-                      + "[style=dashed];\n";
-    }
+//    for (auto &os: this->no_grad_synapses) {
+//        auto current_n = os;
+//        dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+//                      + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
+//                      + "[style=dashed];\n";
+//    }
     dot_string += "\n}";
     std::ofstream dot_file("vis/" + std::to_string(time_step) + "_simple" + ".gv");
     dot_file << dot_string;
@@ -95,18 +104,23 @@ std::string NetworkVisualizer::get_graph(int time_step) {
     for(auto &it : all_neurons) {
         for (auto &os: it->outgoing_synapses) {
             auto current_n = os;
-            fabs(os->weight) < 0.005 ? edge_color="darkgrey" : edge_color="black";
-            dot_string += "\t" + std::to_string(current_n->input_neurons->id)
-                          + "->" + std::to_string(current_n->output_neurons->id) //+ ";\n";
-                          + "[label = \"" + std::to_string(os->weight) + "\", color=" + edge_color + "];\n";
+            fabs(os->weight) < 0.0005 ? edge_color="darkgrey" : edge_color="black";
+            if (current_n->pass_gradients)
+                dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+                              + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
+                              + "[label = \"" + std::to_string(os->weight) + "\", color=" + edge_color + "];\n";
+            else
+                dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+                              + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
+                              + "[label = \"" + std::to_string(os->weight) + "\", style=dashed, color=red];\n";
         }
     }
-    for (auto &os: this->no_grad_synapses) {
-        auto current_n = os;
-        dot_string += "\t" + std::to_string(current_n->input_neurons->id)
-                      + "->" + std::to_string(current_n->output_neurons->id) //+ ";\n";
-                      + "[style=dashed, color=red];\n";
-    }
+//    for (auto &os: this->no_grad_synapses) {
+//        auto current_n = os;
+//        dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+//                      + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
+//                      + "[style=dashed, color=red];\n";
+//    }
     dot_string += "\n}";
     return dot_string;
 }
@@ -136,12 +150,12 @@ std::string NetworkVisualizer::get_graph_detailed(int time_step) {
             // + "[label = \"" + std::to_string(os->weight) + "\"];\n";
         }
     }
-    for (auto &os: this->no_grad_synapses) {
-        auto current_n = os;
-        dot_string += "\t" + std::to_string(current_n->input_neurons->id)
-                      + "->" + std::to_string(current_n->output_neurons->id) //+ ";\n";
-                      + "[style=dashed];\n";
-    }
+//    for (auto &os: this->no_grad_synapses) {
+//        auto current_n = os;
+//        dot_string += "\t" + std::to_string(current_n->input_neurons->id)
+//                      + "->" + std::to_string(current_n->output_neurons->id) //+ ";\n";
+//                      + "[style=dashed];\n";
+//    }
     dot_string += "\n}";
     return dot_string;
 }
@@ -172,12 +186,12 @@ void NetworkVisualizer::generate_dot_detailed(int time_step) {
                          // + "[label = \"" + std::to_string(os->weight) + "\"];\n";
         }
     }
-    for (auto &os: this->no_grad_synapses) {
-        auto current_n = os;
-        dot_string += "\t" + std::to_string(current_n->input_neurons->id)
-                      + "->" + std::to_string(current_n->output_neurons->id) //+ ";\n";
-                      + "[style=dashed];\n";
-    }
+//    for (auto &os: this->no_grad_synapses) {
+//        auto current_n = os;
+//        dot_string += "\t" + std::to_string(current_n->input_neurons->id)
+//                      + "->" + std::to_string(current_n->output_neurons->id) //+ ";\n";
+//                      + "[style=dashed];\n";
+//    }
     dot_string += "\n}";
     std::ofstream dot_file("vis/" + std::to_string(time_step) + "_detailed" + ".gv");
     dot_file << dot_string;
