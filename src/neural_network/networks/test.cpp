@@ -214,8 +214,8 @@ void TestCase::step() {
 //
 //    std::for_each(
 //            std::execution::par_unseq,
-//            output_neuros.begin(),
-//            output_neuros.end(),
+//            output_neurons.begin(),
+//            output_neurons.end(),
 //            [&](neuron* n)
 //            {
 //                n->update_value();

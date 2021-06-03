@@ -11,11 +11,12 @@
 #include "message.h"
 #include <queue>
 #include <utility>
+#include "dynamic_elem.h"
 
 class neuron;
 
 
-class synapse {
+class synapse : public dynamic_elem {
 public:
     long long int id;
     static long long int synapse_id;
@@ -29,12 +30,13 @@ public:
     float step_size;
     bool print_status;
     bool pass_gradients;
+    float idbd_local_gradient;
     float b1;
     float b2;
     float beta_step_size;
     float h_step_size;
     float idbd;
-    bool log;
+    bool enable_logging;
     std::queue<message> grad_queue;
     std::queue<message> grad_queue_weight_assignment;
     std::queue<std::pair<float, int>> weight_assignment_past_activations;
@@ -59,6 +61,7 @@ public:
     void turn_on_idbd();
     void assign_credit();
     void reset_trace();
+    ~synapse()=default;
 
 };
 
