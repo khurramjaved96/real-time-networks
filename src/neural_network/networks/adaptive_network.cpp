@@ -62,8 +62,6 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int widt
 
 //    std::vector<neuron *> neurons_so_far;
 
-
-
 }
 
 void ContinuallyAdaptingNetwork::print_graph(neuron *root) {
@@ -103,7 +101,7 @@ long long int ContinuallyAdaptingNetwork::get_timestep() {
 
 void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 
-    if (this->all_synapses.size() < 1000000) {
+    if (this->all_synapses.size() < 100000) {
         std::normal_distribution<float> dist(0, 1);
         std::uniform_real_distribution<float> dist_u(0, 1);
 
@@ -196,7 +194,7 @@ bool to_delete_n(neuron *s) {
     return s->useless_neuron;
 }
 
-void CustomNetwork::reset_trace(){
+void ContinuallyAdaptingNetwork::reset_trace(){
     std::for_each(
             std::execution::par_unseq,
             all_synapses.begin(),
@@ -372,40 +370,26 @@ std::vector<float> ContinuallyAdaptingNetwork::read_all_values() {
 }
 
 
-<<<<<<< HEAD
-//float CustomNetwork::introduce_targets(std::vector<float> targets) {
+//float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets) {
 //    float error = 0;
 //    for (int counter = 0; counter < targets.size(); counter++) {
-//        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1);
+//        error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1);
 //    }
 //    return error;
 //}
 
-float CustomNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
-    float error = 0;
-    for (int counter = 0; counter < targets.size(); counter++) {
-        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
-=======
-float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets) {
-    float error = 0;
-    for (int counter = 0; counter < targets.size(); counter++) {
-        error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1);
->>>>>>> step_size_adaptation
-    }
-    return error;
-}
-
-<<<<<<< HEAD
-float CustomNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda, std::vector<bool> no_grad) {
-    float error = 0;
-    for (int counter = 0; counter < targets.size(); counter++) {
-        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda, no_grad[counter]);
-=======
 float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
         error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
->>>>>>> step_size_adaptation
+    }
+    return error;
+}
+
+float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda, std::vector<bool> no_grad) {
+    float error = 0;
+    for (int counter = 0; counter < targets.size(); counter++) {
+        error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda, no_grad[counter]);
     }
     return error;
 }

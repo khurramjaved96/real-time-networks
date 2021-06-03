@@ -75,14 +75,14 @@ int main(int argc, char *argv[]) {
                                 std::vector<std::string>{"run", "step", "episode"});
 
     Metric network_size_metric = Metric(exp.database_name, "network_metrics",
-                                        std::vector<std::string>{"step", "episode", "run", "total_synapses", "new_features"},
-                                        std::vector<std::string>{"int", "int", "int", "int", "int"},
+                                        std::vector<std::string>{"step", "episode", "run", "total_synapses"},
+                                        std::vector<std::string>{"int", "int", "int", "int"},
                                         std::vector<std::string>{"step", "episode", "run"});
 
     //TODO add num inp and out as params here fixed for env
-    CustomNetwork my_network = CustomNetwork(exp.get_float_param("step_size"),
-                                             exp.get_int_param("width"),
-                                             exp.get_int_param("seed"));
+    ContinuallyAdaptingNetwork my_network = ContinuallyAdaptingNetwork(exp.get_float_param("step_size"),
+                                                                       exp.get_int_param("width"),
+                                                                       exp.get_int_param("seed"));
 
     TMaze env = TMaze(exp.get_int_param("seed"),
                       exp.get_int_param("tmaze_corridor_length"),
@@ -145,26 +145,24 @@ int main(int argc, char *argv[]) {
 
         my_network.set_input_values(current_obs.state);
         my_network.step();
+        float target = 0.0;
+        int selected_action_idx = 10000;
         std::vector<float> qvalues = my_network.read_output_values();
         std::vector<float> action(qvalues.size(), 0.0);
-        std::vector<float> targets(qvalues.size(), 0.0);
         std::vector<bool> no_grad(qvalues.size(), true);
         //update the gradient for only the old action since current one is for bootstrap
         no_grad[selected_action_idx_old] = false;
         if (prev_was_terminal){
             // if previous state was terminal state, we dont want next episode's values to propagate into it
             // this is the update for last state of the episode
-            targets[selected_action_idx_old] = R_old;
+            target = R_old;
             prev_was_terminal = false;
         }
         else if (state_old == state_cur && current_obs.is_terminal){
             // if we areinside the gap between the episodes)
             no_grad_after_eps_gap = 3;
         }
-        if (no_grad_after_eps_gap == 2)
-            my_network.reset_trace();
         else{
-            int selected_action_idx = 0;
             if (exploration_sampler(mt) < exp.get_float_param("epsilon")*100){
                 int rnd_action = rnd_action_sampler(mt);
                 //for prediction problem, allow choosing only between two actions at junction
@@ -185,7 +183,7 @@ int main(int argc, char *argv[]) {
                     selected_action_idx = std::distance(qvalues.begin(), std::max_element(qvalues.begin(), qvalues.end()));
             }
             action[selected_action_idx] = 1;
-            targets[selected_action_idx_old] = R_old + gamma * qvalues[selected_action_idx];
+            target = R_old + gamma * qvalues[selected_action_idx];
             if (no_op_step != 0)
                 selected_action_idx_old = selected_action_idx;
 
@@ -197,10 +195,24 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        if (no_grad_after_eps_gap == 2)
+            my_network.reset_trace();
+
         if (counter > 0){
             if (no_op_step == 0 || no_grad_after_eps_gap > 0)
                 no_grad = std::vector<bool>(qvalues.size(), true);
-            my_network.introduce_targets(targets, gamma, lambda, no_grad);
+//            std::cout << "{\tq:";
+//            print_vector(qvalues);
+//            std::cout << ",\to:";
+//            print_vector(current_obs.state);
+//            std::cout << ",\ta:"<< selected_action_idx;
+//            std::cout << ",\ta_old:"<< selected_action_idx_old;
+//            std::cout << ",\tT:"<< target;
+//            std::cout << ",\tG:";
+//            print_vector(no_grad);
+//            std::cout << "\t}\n";
+            //print_vector(std::vector<float>(qvalues.size(), target));
+            my_network.introduce_targets(std::vector<float>(qvalues.size(), target), gamma, lambda, no_grad);
             if (current_obs.is_terminal && state_old != state_cur){
                 prev_was_terminal = true;
                 if (accuracy == -1){
@@ -215,7 +227,7 @@ int main(int argc, char *argv[]) {
         }
 
         if(current_obs.is_terminal && state_old != state_cur)
-            std::cout<< "EP:" << current_obs.episode << "\t\tSteps:" << current_obs.timestep <<  "\t\tR:" << average_reward << "\t\tAcc:" << accuracy << "\t\tSyn:" << my_network.get_total_synapses() << "\t\tF:" << my_network.new_features.size() <<  std::endl;
+            std::cout<< "EP:" << current_obs.episode << "\t\tSteps:" << current_obs.timestep <<  "\t\tR:" << average_reward << "\t\tAcc:" << accuracy << "\t\tSyn:" << my_network.get_total_synapses() << std::endl;
 
         if (current_obs.is_terminal && state_old != state_cur && current_obs.episode % 10 == 9){
             std::vector<std::string> episode_data;
@@ -232,13 +244,13 @@ int main(int argc, char *argv[]) {
             network_data.push_back(std::to_string(current_obs.episode));
             network_data.push_back(std::to_string(exp.get_int_param("run")));
             network_data.push_back(std::to_string(my_network.get_total_synapses()));
-            network_data.push_back(std::to_string(my_network.new_features.size()));
             network_logger.push_back(network_data);
         }
 
         if(exp.get_bool_param("add_features") && timestep_since_feat_added < 1)
         {
             timestep_since_feat_added = exp.get_int_param("features_min_timesteps");
+            my_network.college_garbage();
             for (int i = 0; i < exp.get_int_param("num_new_features"); i++)
                 my_network.add_feature(exp.get_float_param("step_size"));
 

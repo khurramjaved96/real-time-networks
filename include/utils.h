@@ -11,6 +11,7 @@
 #include "neural_networks/synapse.h"
 
 void print_vector(std::vector<int> const &v);
+void print_vector(std::vector<bool> const &v);
 void print_vector(std::vector<float> const &v);
 void print_matrix(std::vector<std::vector <int>> const &v);
 void print_matrix(std::vector<std::vector <float>> const &v);

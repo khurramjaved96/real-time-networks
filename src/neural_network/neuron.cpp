@@ -387,14 +387,16 @@ void neuron::propogate_error() {
             }
 
 
-            float err = error_vector[0];
-            for (int a = 0; a < error_vector.size(); a++) {
-                if (error_vector[a] != err) {
-                    std::cout << "Weight = " << this->average_activation << std::endl;
-                    std::cout << "Neuron.cpp : Shouldn't happen\n";
-                    exit(1);
-                }
-            }
+            //print_vector(error_vector);
+//            float err = error_vector[0];
+//            for (int a = 0; a < error_vector.size(); a++) {
+//                if (error_vector[a] != err) {
+//                    std::cout << "ID: " << this->id << std::endl;
+//                    std::cout << "Weight = " << this->average_activation << std::endl;
+//                    std::cout << "Neuron.cpp : Shouldn't happen\n";
+//                    exit(1);
+//                }
+//            }
 
             message n_message(accumulate_gradient, time_vector[0]);
             n_message.error = error_vector[0];

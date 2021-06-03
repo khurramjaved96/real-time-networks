@@ -17,7 +17,8 @@ void print_vector(std::vector<float> const &v) {
         if (counter % 50 == 49) std::cout << "\n";
         counter++;
     }
-    std::cout << "]\n";
+    //std::cout << "]\n";
+    std::cout << " ]";
 }
 
 void print_vector(std::vector<int> const &v) {
@@ -28,9 +29,22 @@ void print_vector(std::vector<int> const &v) {
         if (counter % 100 == 99) std::cout << "\n";
         counter++;
     }
-    std::cout << "]\n";
+    //std::cout << "]\n";
+    std::cout << " ]";
 }
 
+
+void print_vector(std::vector<bool> const &v) {
+    std::cout << "[";
+    int counter = 0;
+    for (auto i = v.begin(); i != v.end(); ++i) {
+        std::cout << " "  << std::setw(3) << *i << ",";
+        if (counter % 100 == 99) std::cout << "\n";
+        counter++;
+    }
+    //std::cout << "]\n";
+    std::cout << " ]";
+}
 
 void print_matrix(std::vector<std::vector<int>> const &v) {
     int counter = 0;
@@ -98,19 +112,20 @@ std::string NetworkVisualizer::get_graph(int time_step) {
                  "\tedge [fontsize=8];\n"
                  "\tnode [shape = circle];\n";
 
-<<<<<<< HEAD
     for(auto &it : all_neurons) {
         for (auto &os: it->outgoing_synapses) {
-            auto current_n = os;
-            fabs(os->weight) < 0.0005 ? edge_color="darkgrey" : edge_color="black";
-            if (current_n->pass_gradients)
-                dot_string += "\t" + std::to_string(current_n->input_neuron->id)
-                              + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
-                              + "[label = \"" + std::to_string(os->weight) + "\", color=" + edge_color + "];\n";
-            else
-                dot_string += "\t" + std::to_string(current_n->input_neuron->id)
-                              + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
-                              + "[label = \"" + std::to_string(os->weight) + "\", style=dashed, color=red];\n";
+            if (os->input_neuron->mature and os->output_neuron->mature) {
+              auto current_n = os;
+              fabs(os->weight) < 0.0005 ? edge_color="darkgrey" : edge_color="black";
+              if (current_n->pass_gradients)
+                  dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+                                + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
+                                + "[label = \"" + std::to_string(os->weight) + "\", color=" + edge_color + "];\n";
+              else
+                  dot_string += "\t" + std::to_string(current_n->input_neuron->id)
+                                + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
+                                + "[label = \"" + std::to_string(os->weight) + "\", style=dashed, color=red];\n";
+            }
         }
     }
     dot_string += "\n}";
