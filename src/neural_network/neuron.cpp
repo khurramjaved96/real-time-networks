@@ -4,16 +4,11 @@
 
 #include "../../include/neural_networks/neuron.h"
 #include <iostream>
-#include "../../include/neural_networks/message.h"
 #include <utility>
-#include <cassert>
 #include <algorithm>
 #include <vector>
-#include "../../include/neural_networks/utils.h"
 #include "../../include/utils.h"
 #include <assert.h>
-#include <cmath>
-
 
 neuron::neuron(bool activation) {
     value = 0;
@@ -91,11 +86,10 @@ void neuron::update_value() {
     if (this->neuron_age == 19999 and !this->is_input_neuron and this->average_activation > 0 and
         this->outgoing_synapses.size() > 0) {
         float scale = 1 / this->average_activation;
-//        std::cout << scale << std::endl;
         for (auto it : this->incoming_synapses) {
             it->weight = it->weight * scale;
         }
-//
+
         if (this->outgoing_synapses.size() == 0) {
             std::cout << "Too many outgoing synapses; shouldn't happen\t" << this->outgoing_synapses.size() << "\n";
             std::cout << "ID\t" << this->neuron_id << " Age \t" << this->neuron_age << std::endl;
@@ -152,13 +146,13 @@ void neuron::prune_useless_weights() {
             this->outgoing_synapses.begin(),
             this->outgoing_synapses.end(),
             [&](synapse *s) {
-                if(s->useless) {
+                if (s->useless) {
                     s->decrement_reference();
-                    if(s->input_neuron != nullptr) {
+                    if (s->input_neuron != nullptr) {
                         s->input_neuron->decrement_reference();
                         s->input_neuron = nullptr;
                     }
-                    if(s->output_neuron != nullptr) {
+                    if (s->output_neuron != nullptr) {
                         s->output_neuron->decrement_reference();
                         s->output_neuron = nullptr;
                     }
@@ -173,13 +167,13 @@ void neuron::prune_useless_weights() {
             this->incoming_synapses.begin(),
             this->incoming_synapses.end(),
             [&](synapse *s) {
-                if(s->useless) {
+                if (s->useless) {
                     s->decrement_reference();
-                    if(s->input_neuron != nullptr) {
+                    if (s->input_neuron != nullptr) {
                         s->input_neuron->decrement_reference();
                         s->input_neuron = nullptr;
                     }
-                    if(s->output_neuron != nullptr) {
+                    if (s->output_neuron != nullptr) {
                         s->output_neuron->decrement_reference();
                         s->output_neuron = nullptr;
                     }
@@ -189,19 +183,14 @@ void neuron::prune_useless_weights() {
     this->incoming_synapses.erase(it, this->incoming_synapses.end());
 
 }
-//neuron::~neuron() {
-//
-//    std::cout << "Calling neuron destructor\n";
-//    exit(1);
-//}
+
 void neuron::fire(int time_step) {
 //    Temp hack
-    if(this->past_activations.size() > 50){
+    if (this->past_activations.size() > 50) {
         this->past_activations.pop();
-//        std::cout << "Too many past activations\t" << this->neuron_id << std::endl;
-//        exit(1);
+
     }
-    if(this->error_gradient.size() > 50){
+    if (this->error_gradient.size() > 50) {
         this->error_gradient.pop();
     }
     this->value = temp_value;
@@ -309,16 +298,8 @@ void neuron::propogate_error() {
                            this->past_activations.front().second >
                            (output_synapses_iterator->grad_queue.front().time_step -
                             output_synapses_iterator->grad_queue.front().distance_travelled - 1)) {
-//                        Activation for this gradient is not stored; this can happen in the beginning of the network initalization, or if new paths are introduced at run time. We just drop this gradient.
-//                        if(this->past_activations.front().second > (output_synapses_iterator->grad_queue.front().time_step -
-//                                                                   output_synapses_iterator->grad_queue.front().distance_travelled - 1))
-//                        {
-//                            this->past_activations.pop();
-//                        }
-//                        else{
-                        output_synapses_iterator->grad_queue.pop();
-//                        }
 
+                        output_synapses_iterator->grad_queue.pop();
                     }
                     if (this->past_activations.empty())
                         return;
