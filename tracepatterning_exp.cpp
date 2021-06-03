@@ -7,6 +7,7 @@
 #include "include/utils.h"
 #include <map>
 #include <string>
+#include <math.h>
 
 #include "include/neural_networks/networks/adaptive_network.h"
 #include "include/neural_networks/neural_network.h"
@@ -78,6 +79,7 @@ int main(int argc, char *argv[]) {
     std::vector<float> running_error;
     running_error.push_back(0);
     running_error.push_back(0);
+
     std::vector<std::vector<std::string>> error_logger;
     std::vector<std::vector<std::string>> state_logger;
     std::vector<std::vector<std::string>> network_size_logger;
@@ -125,19 +127,23 @@ int main(int argc, char *argv[]) {
 //            temp_target.push_back(target_long);
 //            temp_target.push_back(0);
             my_network.introduce_targets(temp_target, gamma, lambda);
-            if (running_error[0] == -1) {
-                running_error[0] = error_short;
-//                running_error[1] = error_long;
-            } else {
-                running_error[0] = running_error[0] * 0.9999 + 0.0001 * error_short;
+
+            float beta = 0.9999;
+            running_error[0] = running_error[0] * beta + (1- beta) * error_short;
+//            std::cout << "Pow " << pow(beta, counter) << std::endl;
+            running_error[1] = running_error[0]/(1-pow(beta, counter));
+//            std::cout << "Error = " << running_error[1] << std::endl;
 //                running_error[1] = running_error[1] * 0.999 + 0.001 *error_long;
-            }
+//if(counter == 500)
+//            exit(1);
+
         }
+
         if (counter % 300 == 0) {
             std::vector<std::string> error;
             error.push_back(std::to_string(counter));
             error.push_back(std::to_string(my_experiment.get_int_param("run")));
-            error.push_back(std::to_string(running_error[0]));
+            error.push_back(std::to_string(running_error[1]));
             error.push_back(std::to_string(0));
             error_logger.push_back(error);
 
