@@ -66,8 +66,8 @@ int main(int argc, char *argv[]) {
                                      std::vector<std::string>{"int", "VARCHAR(10)", "VARCHAR(30)"},
                                      std::vector<std::string>{"run"});
     Metric episodic_metric = Metric(exp.database_name, "episodic_metrics",
-                                     std::vector<std::string>{"run", "step", "episode", "timestep", "avg_reward", "accuracy"},
-                                     std::vector<std::string>{"int", "int", "int", "int", "real", "real"},
+                                     std::vector<std::string>{"run", "step", "episode", "timestep", "avg_reward", "accuracy", "error"},
+                                     std::vector<std::string>{"int", "int", "int", "int", "real", "real", "real"},
                                      std::vector<std::string>{"run", "episode"});
     Metric graph_state = Metric(exp.database_name, "network_graphs",
                                 std::vector<std::string>{"run", "step", "episode", "graph_data"},
@@ -105,6 +105,8 @@ int main(int argc, char *argv[]) {
     float R_old = 0;
     float average_reward = -1;
     float accuracy = -1;
+    float error = -1;
+    float ep_error = 0;
     int selected_action_idx_old = 0;
     float gamma = exp.get_float_param("gamma");
 // TODO new param
@@ -127,6 +129,7 @@ int main(int argc, char *argv[]) {
     auto rnd_action_sampler = std::uniform_int_distribution<int>(0,3);
 
     for (int counter = 0; counter < exp.get_int_param("steps"); counter++) {
+        bool rndact = false;
         if(someone_killed_me){
             run_state = "killed";
             run_state_comments = "interrupt_sig";
@@ -146,7 +149,7 @@ int main(int argc, char *argv[]) {
         my_network.set_input_values(current_obs.state);
         my_network.step();
         float target = 0.0;
-        int selected_action_idx = 10000;
+        int selected_action_idx = -1;
         std::vector<float> qvalues = my_network.read_output_values();
         std::vector<float> action(qvalues.size(), 0.0);
         std::vector<bool> no_grad(qvalues.size(), true);
@@ -162,11 +165,12 @@ int main(int argc, char *argv[]) {
             // if we areinside the gap between the episodes)
             no_grad_after_eps_gap = 3;
         }
-        else{
+        else if (no_op_step != 0) {
             if (exploration_sampler(mt) < exp.get_float_param("epsilon")*100){
+                rndact = true;
                 int rnd_action = rnd_action_sampler(mt);
                 //for prediction problem, allow choosing only between two actions at junction
-                if (exp.get_bool_param("prediction_problem") && current_obs.state == env.junction_state)
+                if (exp.get_bool_param("prediction_problem") && state_old == env.junction_state)
                     rnd_action <= 1 ? selected_action_idx = 0 : selected_action_idx = 3;
                 //always go west in junction
                 else if (exp.get_bool_param("prediction_problem"))
@@ -175,7 +179,7 @@ int main(int argc, char *argv[]) {
                     selected_action_idx = rnd_action_sampler(mt);
             }
             else{
-                if (exp.get_bool_param("prediction_problem") && current_obs.state == env.junction_state)
+                if (exp.get_bool_param("prediction_problem") && state_old == env.junction_state)
                     qvalues[0] > qvalues[3] ? selected_action_idx = 0 : selected_action_idx = 3;
                 else if (exp.get_bool_param("prediction_problem"))
                     selected_action_idx = 2;
@@ -184,8 +188,8 @@ int main(int argc, char *argv[]) {
             }
             action[selected_action_idx] = 1;
             target = R_old + gamma * qvalues[selected_action_idx];
-            if (no_op_step != 0)
-                selected_action_idx_old = selected_action_idx;
+            //TODO change here
+            //if (no_op_step != 0)
 
             if(std::isnan(qvalues[selected_action_idx])){
               run_state = "killed";
@@ -201,33 +205,41 @@ int main(int argc, char *argv[]) {
         if (counter > 0){
             if (no_op_step == 0 || no_grad_after_eps_gap > 0)
                 no_grad = std::vector<bool>(qvalues.size(), true);
-//            std::cout << "{\tq:";
-//            print_vector(qvalues);
-//            std::cout << ",\to:";
-//            print_vector(current_obs.state);
-//            std::cout << ",\ta:"<< selected_action_idx;
-//            std::cout << ",\ta_old:"<< selected_action_idx_old;
-//            std::cout << ",\tT:"<< target;
-//            std::cout << ",\tG:";
-//            print_vector(no_grad);
-//            std::cout << "\t}\n";
+            if (current_obs.episode > 10000){
+                std::cout << "{\tq:";
+                print_vector(qvalues);
+                std::cout << ",\to:";
+                print_vector(current_obs.state);
+                std::cout << ",\ta:"<< selected_action_idx;
+                std::cout << ",\ta_old:"<< selected_action_idx_old;
+                std::cout << ",\tt:"<< target;
+                std::cout << ",\tr:"<< R_old;
+                std::cout << ",\tg:";
+                print_vector(no_grad);
+                std::cout << ",\trnd:" << rndact;
+                std::cout << ",\terr:" << ep_error;
+                std::cout << ",\top:" << no_op_step;
+                std::cout << "\t}\n";
+            }
             //print_vector(std::vector<float>(qvalues.size(), target));
-            my_network.introduce_targets(std::vector<float>(qvalues.size(), target), gamma, lambda, no_grad);
+            ep_error += my_network.introduce_targets(std::vector<float>(qvalues.size(), target), gamma, lambda, no_grad);
             if (current_obs.is_terminal && state_old != state_cur){
                 prev_was_terminal = true;
                 if (accuracy == -1){
                     average_reward = current_obs.cmltv_reward;
                     accuracy = int(R==4);
+                    error = ep_error;
                 }
                 else{
                     average_reward = 0.999 * average_reward + 0.001 * current_obs.cmltv_reward;
                     accuracy = 0.999 * accuracy + 0.001 * int(R==4);
+                    error = 0.999 * error + 0.001 * ep_error;
                 }
+                ep_error = 0;
             }
         }
-
         if(current_obs.is_terminal && state_old != state_cur)
-            std::cout<< "EP:" << current_obs.episode << "\t\tSteps:" << current_obs.timestep <<  "\t\tR:" << average_reward << "\t\tAcc:" << accuracy << "\t\tSyn:" << my_network.get_total_synapses() << std::endl;
+            std::cout<< "EP:" << current_obs.episode << "\t\tSteps:" << current_obs.timestep <<  "\t\tR:" << average_reward << "\t\tAcc:" << accuracy << "\t\tErr:" << error << "\t\tSyn:" << my_network.get_total_synapses() << std::endl;
 
         if (current_obs.is_terminal && state_old != state_cur && current_obs.episode % 10 == 9){
             std::vector<std::string> episode_data;
@@ -237,6 +249,7 @@ int main(int argc, char *argv[]) {
             episode_data.push_back(std::to_string(current_obs.timestep));
             episode_data.push_back(std::to_string(average_reward));
             episode_data.push_back(std::to_string(accuracy));
+            episode_data.push_back(std::to_string(error));
             episode_logger.push_back(episode_data);
 
             std::vector<std::string> network_data;
@@ -247,7 +260,7 @@ int main(int argc, char *argv[]) {
             network_logger.push_back(network_data);
         }
 
-        if(exp.get_bool_param("add_features") && timestep_since_feat_added < 1)
+        if(exp.get_bool_param("add_features") && timestep_since_feat_added < 1)// && current_obs.episode <= 35000)
         {
             timestep_since_feat_added = exp.get_int_param("features_min_timesteps");
             my_network.college_garbage();
@@ -264,7 +277,7 @@ int main(int argc, char *argv[]) {
             graph_logger.push_back(graph_data);
         }
 
-        if(counter % 300000 == 299998){
+        if(counter % 100000 == 99998){
             episodic_metric.add_values(episode_logger);
             graph_state.add_values(graph_logger);
             network_size_metric.add_values(network_logger);
@@ -274,12 +287,16 @@ int main(int argc, char *argv[]) {
             network_logger.clear();
         }
 
+        if (selected_action_idx != -1)// and current_obs.state != env.terminal_state)
+            selected_action_idx_old = selected_action_idx;
         if (state_old != state_cur && !current_obs.is_terminal){
-            current_obs = env.step(env.get_no_op_action());
-            no_op_step = 2;
-        }
-        else
+            //current_obs = env.step(env.get_no_op_action());
+            //no_op_step = 2;
             current_obs = env.step(action);
+        }
+        else{
+            current_obs = env.step(action);
+        }
         state_old = state_cur;
         state_cur = current_obs.state;
     }

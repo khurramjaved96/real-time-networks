@@ -114,7 +114,7 @@ std::string NetworkVisualizer::get_graph(int time_step) {
 
     for(auto &it : all_neurons) {
         for (auto &os: it->outgoing_synapses) {
-            if (os->input_neuron->mature and os->output_neuron->mature) {
+            if (os->input_neuron->mature and (os->output_neuron->mature or os->output_neuron->is_output_neuron)) {
               auto current_n = os;
               fabs(os->weight) < 0.0005 ? edge_color="darkgrey" : edge_color="black";
               if (current_n->pass_gradients)

@@ -103,7 +103,7 @@ void neuron::update_value() {
         }
         for (auto out_g : this->outgoing_synapses) {
             out_g->weight = out_g->weight * this->average_activation;
-            out_g->step_size = 1e-4;
+            out_g->step_size = 3e-4;
             out_g->turn_on_idbd();
         }
         this->average_activation = 1;
@@ -126,7 +126,7 @@ void neuron::mark_useless_weights() {
     for (auto &it : this->outgoing_synapses) {
         if (it->age > 69999) {
             if (!(it->input_neuron->is_input_neuron and it->output_neuron->is_output_neuron)) {
-                if (this->average_activation * std::abs(it->weight) < 0.01) {
+                if (this->average_activation * std::abs(it->weight) < 0.05) {
                     it->useless = true;
                 } else if (it->output_neuron->useless_neuron) {
                     it->useless = true;

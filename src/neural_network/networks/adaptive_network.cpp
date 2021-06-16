@@ -101,7 +101,7 @@ long long int ContinuallyAdaptingNetwork::get_timestep() {
 
 void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 
-    if (this->all_synapses.size() < 100000) {
+    if (this->all_synapses.size() < 10000) {
         std::normal_distribution<float> dist(0, 1);
         std::uniform_real_distribution<float> dist_u(0, 1);
 
