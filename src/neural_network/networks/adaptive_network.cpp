@@ -19,10 +19,24 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
-
+/**
+ * Continually adapting neural network.
+ * Essentially a neural network with the ability to add and remove neurons
+ * based on a generate and test approach.
+ * Check the corresponding header file for a description of the variables.
+ *
+ * As a quick note as to how this NN works - it essentially fires all neurons once
+ * per step, unlike a usual NN that does a full forward pass per output needed.
+ *
+ * @param step_size: neural network step size.
+ * @param width: [NOT CURRENTLY USED] neural network width
+ * @param seed: random seed to initialize.
+ */
 ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int width, int seed) : mt(seed) {
     this->time_step = 0;
 
+//  Initialize the neural network input neurons.
+//  Currently we fix an input size of 10.
     int input_neuron = 10;
     for (int counter = 0; counter < input_neuron; counter++) {
         auto n = new neuron(false, false, true);
@@ -33,6 +47,8 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int widt
         this->all_neurons.push_back(n);
     }
 
+//  Initialize all output neurons.
+//  Similarly, we fix an output size to 1.
     int output_neuros = 1;
     for (int counter = 0; counter < output_neuros; counter++) {
         auto n = new neuron(false, true);
@@ -43,6 +59,8 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int widt
         this->all_neurons.push_back(n);
     }
 
+
+//  Connect our input and output neurons with synapses.
     for (auto &input: this->input_neurons) {
         for (auto &output: this->output_neurons) {
             synapse *s = new synapse(input, output, 0, step_size);
@@ -206,11 +224,16 @@ bool to_delete_n(neuron *s) {
     return s->useless_neuron;
 }
 
-
+/**
+ * Step function after putting in the inputs to the neural network.
+ * This function takes a step in the NN by firing all neurons.
+ * Afterwards, it calculates gradients based on previous error and
+ * propagates it back. Currently backprop is truncated at 1 step.
+ * Finally, it updates its weights and prunes useless neurons and synapses.
+ */
 void ContinuallyAdaptingNetwork::step() {
 
-
-
+//  Fire all neurons
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -219,7 +242,7 @@ void ContinuallyAdaptingNetwork::step() {
                 n->fire(this->time_step);
             });
 
-
+//  Calculate and temporarily hold our next neuron values.
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -228,6 +251,8 @@ void ContinuallyAdaptingNetwork::step() {
                 n->update_value();
             });
 
+//  Contrary to the name, this function passes gradients BACK to the incoming synapses
+//  of each neuron.
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -236,13 +261,13 @@ void ContinuallyAdaptingNetwork::step() {
                 n->forward_gradients();
             });
 
-
+//  now we propagate our error backwards one step
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
-                n->propogate_error();
+                n->propagate_error();
             });
 
 

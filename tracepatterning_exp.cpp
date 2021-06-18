@@ -17,27 +17,40 @@
 #include "include/animal_learning/tracecondioning.h"
 #include "include/neural_networks/networks/adaptive_network.h"
 
-
+/**
+ * Our main entry function for running all experiments.
+ * @param argc Number of arguments
+ * @param argv This needs to include the following parameters:
+ *  --run (int, 0), the run number
+ *  --ISI_low (int, 14), the ISI is sampled based on a uniform distribution. What is the lower bound for this distribution?
+ *  --ISI_high (int, 26), what is the upper bound for this distribution?
+ *  --lambda (float, 0.0), parameter for an eligibility trace. What is our trace parameter?
+ *  --seed (int, 2021), what is the seed we use?
+ *  --width (int, 6), [NOT CURRENTLY USED] what is the width of our neural network?
+ *  --step_size (float, 0.0001), step size parameter.
+ *  --steps (int, 5000000), total number of steps to take in the experiment.
+ * @return void
+ */
 int main(int argc, char *argv[]) {
 
 //    std::string default_config = "--name test --width 10 --seed 0 --steps 100 --run 0 --step_size 0.0001";
 
+    // Initialize everything
     Experiment my_experiment = Experiment(argc, argv);
     std::cout << "Program started \n";
     int interval = my_experiment.get_int_param("ISI_low");
     int interval_up = my_experiment.get_int_param("ISI_high");
     float gamma = 1.0 - 1.0 / double(interval_up);
     float lambda = my_experiment.get_float_param("lambda");
-//
+
+    // Initialize our dataset
     TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
                                           std::pair<int, int>(interval, interval_up),
                                           std::pair<int, int>(80, 120), 5, my_experiment.get_int_param("seed"));
 //    TracePatterning tc2 = TracePatterning(std::pair<int, int>(interval, interval_up),
 //                                          std::pair<int, int>(interval, interval_up),
 //                                          std::pair<int, int>(80, 120), 5, 2);
-//    TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
-//                                         std::pair<int, int>(interval, interval_up),
-//                                         std::pair<int, int>(80, 120), 5, 2);
+
     for (int temp = 0; temp < 200; temp++) {
         std::vector<float> cur_state = tc.step();
         cur_state[2] = tc.get_target(gamma);
@@ -65,9 +78,8 @@ int main(int argc, char *argv[]) {
                                         std::vector<std::string>{"step", "run", "total_synapses"},
                                         std::vector<std::string>{"int", "int", "int"},
                                         std::vector<std::string>{"step", "run"});
-//    std::cout << "Database stuff done \n";
-//    ContinuallyAdaptingNetwork my_network = ContinuallyAdaptingNetwork(my_experiment.get_float_param("step_size"),
-//                                             my_experiment.get_int_param("width"), my_experiment.get_int_param("seed"));
+
+    // Initialize our network
     ContinuallyAdaptingNetwork my_network = ContinuallyAdaptingNetwork(my_experiment.get_float_param("step_size"),
                                                                        my_experiment.get_int_param("width"),
                                                                        my_experiment.get_int_param("seed"));
@@ -85,39 +97,40 @@ int main(int argc, char *argv[]) {
     std::vector<std::vector<std::string>> network_size_logger;
     std::vector<std::vector<std::string>> graph_data_logger;
 
-//
     float prediction = 0;
     float real_target = 0;
     float R = 0;
     float old_R = 0;
 
-
+//  start taking steps!
     for (int counter = 0; counter < my_experiment.get_int_param("steps"); counter++) {
 
 //        std::cout << "Counter = " << counter << std::endl;
         std::vector<float> temp_target;
 
+//      Get our current state
         auto state_current = tc.step();
         std::vector<float> new_vec;
         for (auto &it: state_current) {
             new_vec.push_back(it);
         }
 
+//      Set our input into our NN
         my_network.set_input_values(state_current);
 
-
+//      "reward" in this case is our unconditioned stimulus
         old_R = R;
         R = tc.get_US();
 
-
+//      THIS is the main call for this network - fire our neurons a step, calculate gradients, backprop and update.
         my_network.step();
 
+//      Get the predictions from our output neurons
         prediction = my_network.read_output_values()[0];
 
+//      Now we calculate our TD error
         real_target = tc.get_target(gamma);
-//        real_target_long = tc.get_target_long(gamma);
         float target = prediction * gamma + old_R;
-//        float target_long = prediction_long * gamma + old_R_long;
         if (counter > 0) {
             float error_short = (my_network.read_output_values()[0] - real_target) *
                                 (my_network.read_output_values()[0] - real_target);
