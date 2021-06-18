@@ -75,6 +75,11 @@ neuron::neuron(bool activation, bool output_n, bool input_n) {
 
 }
 
+/**
+ * Fire a neuron. Use the update_value calculated value to set this->value to
+ * the activation by applying an activation function (in this case ReLU) to the calculated value.
+ * @param time_step: time step that this neuron fires. Used for recording our activation value firing time.
+ */
 void neuron::fire(int time_step) {
 //   Temp hack
     if (this->past_activations.size() > 50) {
@@ -108,6 +113,13 @@ void neuron::fire(int time_step) {
         it->weight_assignment_past_activations.push(activation_val);
 }
 
+/**
+ * For this neuron, calculate the outgoing value (pre activation function) for this time step and set it to
+ * temp_value.
+ * Additionally, when the neuron reaches maturity (age >= 20k), scale the
+ * incoming weights so the current node's incoming activation is on average 1, and scale
+ * the outgoing weights so that the outgoing activation stays the same.
+ */
 void neuron::update_value() {
 //  If our neuron hasn't been pruned in 20k steps, it's mature and stays.
     if (this->neuron_age == 19999 and !this->is_output_neuron) {
@@ -149,6 +161,11 @@ void neuron::update_value() {
     }
 }
 
+/**
+ * For each incoming synapse of a neuron, add the gradient from the error in this
+ * neuron to its grad_queue for weight assignment. If we do pass gradients backwards,
+ * also pass the gradient from the error to grad_queue for use in back propagation.
+ */
 void neuron::forward_gradients() {
 //  If this neuron has gradients to pass back
     if (!this->error_gradient.empty()) {
@@ -317,9 +334,11 @@ void neuron::propagate_error() {
     }
 }
 
+/**
+ * Mark synapses and neurons for deletion. Synapses will only get deleted if its age is > 70k.
+ * Neurons will only be deleted if there are no outgoing synapses (and it's not an output neuron of course!)
+ */
 void neuron::mark_useless_weights() {
-//  Mark synapses and neurons for deletion
-
     for (auto &it : this->outgoing_synapses) {
 //      Only delete weights if they're older than 70k steps
         if (it->age > 69999) {
@@ -349,6 +368,9 @@ bool to_delete_ss(synapse *s) {
     return s->useless;
 }
 
+/**
+ * Delete outgoing and incoming synapses that were marked earlier as useless.
+ */
 void neuron::prune_useless_weights() {
     std::for_each(
 //            std::execution::seq,
@@ -393,10 +415,15 @@ void neuron::prune_useless_weights() {
 
 }
 
-
+/**
+ * Introduce a target to a neuron and calculate its error.
+ * In this case, target should be our TD target, and the neuron should be an outgoing neuron.
+ * @param target: target value to calculate our error.
+ * @param time_step: time step that we calculate this error. Use for backprop purposes.
+ * @return: squared error
+ */
 float neuron::introduce_targets(float target, int time_step) {
-//  Introduce a target to a neuron and calculate its error.
-//  In this case, target should be our TD target.
+//
 
     if (!this->past_activations.empty()) {
 //      The activation is the output of our NN.
@@ -418,6 +445,15 @@ float neuron::introduce_targets(float target, int time_step) {
     return 0;
 }
 
+/**
+ * Introduce a target to a neuron and calculate its error.
+ * In this case, target should be our TD target, and the neuron should be an outgoing neuron.
+ * @param target: target value to calculate our error.
+ * @param time_step: time step that we calculate this error. Use for backprop purposes.
+ * @param gamma: discount factor
+ * @param lambda: eligibility trace decay parameter
+ * @return: squared error
+ */
 float neuron::introduce_targets(float target, int time_step, float gamma, float lambda) {
 //  Introduce a target to a neuron and calculate its error.
 //  In this case, target should be our TD target.

@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
+
 /**
  * Continually adapting neural network.
  * Essentially a neural network with the ability to add and remove neurons
@@ -129,6 +130,12 @@ long long int ContinuallyAdaptingNetwork::get_timestep() {
     return this->time_step;
 }
 
+/**
+ * Add a feature by adding a neuron to the neural network. This neuron is connected
+ * to each (non-output) neuron w.p. perc ~ U(0, 1) and connected to each output neuron
+ * with either a -1 and 1 weight.
+ * @param step_size: step size of the input synapse added. Step size of the output synapse added starts as 0.
+ */
 void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 //  Limit our number of synapses to 1m
     if (this->all_synapses.size() < 1000000) {
@@ -359,8 +366,10 @@ bool is_null_ptr(dynamic_elem* elem)
     return false;
 }
 
+/**
+ * Find all synapses and neurons with 0 references to them and delete them.
+ */
 void ContinuallyAdaptingNetwork::collect_garbage() {
-//  Find all synapses and neurons with 0 references to them and delete.
     for(int temp = 0; temp < this->all_heap_elements.size(); temp++){
 //        if(all_heap_elements[temp]->references < 2) {
 //            std::cout << all_heap_elements[temp]->references << std::endl;

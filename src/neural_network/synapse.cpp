@@ -43,6 +43,9 @@ synapse::synapse(neuron *input, neuron *output, float w, float step_size) {
     pass_gradients = true;
 }
 
+/**
+ * Calculate and set credit based on gradients in the current synapse.
+ */
 void synapse::assign_credit() {
 //  Another temp hack
     if(this->grad_queue.size() > 50) {
@@ -94,6 +97,10 @@ void synapse::assign_credit() {
     }
 }
 
+/**
+ * Update our synapse's weight based on the credit calculated earlier.
+ * This function will either use an IDBD update or a normal weight update
+ */
 void synapse::update_weight() {
 //  Update our weights based on calculated credit
     if(this->idbd)
