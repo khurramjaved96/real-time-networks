@@ -122,29 +122,35 @@ int main(int argc, char *argv[]) {
         old_R = R;
         R = tc.get_US();
 
-//      THIS is the main call for this network - fire our neurons a step, calculate gradients, backprop and update.
+//      THIS is the main call for this network - fire our neurons a step, calculate gradients, backprop, update and
+//      prune if necessary.
         my_network.step();
 
 //      Get the predictions from our output neurons
         prediction = my_network.read_output_values()[0];
 
-//      Now we calculate our TD error
+//      Now we calculate our bootstrapped TD target
         real_target = tc.get_target(gamma);
         float target = prediction * gamma + old_R;
         if (counter > 0) {
             float error_short = (my_network.read_output_values()[0] - real_target) *
                                 (my_network.read_output_values()[0] - real_target);
+
 //            float error_long = (my_network.read_output_values()[1] - real_target_long) *
 //                               (my_network.read_output_values()[1] - real_target_long);
+
             temp_target.push_back(target);
 //            temp_target.push_back(target_long);
 //            temp_target.push_back(0);
+
+//          Here we put our targets into our output neurons and calculate our TD error.
             my_network.introduce_targets(temp_target, gamma, lambda);
 
             float beta = 0.9999;
-            running_error[0] = running_error[0] * beta + (1- beta) * error_short;
+            running_error[0] = running_error[0] * beta + (1 - beta) * error_short;
+            running_error[1] = running_error[0] / (1 - pow(beta, counter));
+
 //            std::cout << "Pow " << pow(beta, counter) << std::endl;
-            running_error[1] = running_error[0]/(1-pow(beta, counter));
 //            std::cout << "Error = " << running_error[1] << std::endl;
 //                running_error[1] = running_error[1] * 0.999 + 0.001 *error_long;
 //if(counter == 500)
@@ -152,6 +158,7 @@ int main(int argc, char *argv[]) {
 
         }
 
+//      For logging purposes
         if (counter % 300 == 0) {
             std::vector<std::string> error;
             error.push_back(std::to_string(counter));
@@ -190,16 +197,18 @@ int main(int argc, char *argv[]) {
 //            tc = tc2;
 //        }
 
+//      Generating new features every 80000 steps
         if (counter % 80000 == 79999) {
-// Generaging new features
-            my_network.college_garbage();
+//          First remove all references to useless nodes and neurons
+            my_network.collect_garbage();
+
+//          Add 20 new features
             for (int a = 0; a < 20; a++)
                 my_network.add_feature(my_experiment.get_float_param("step_size"));
 
-
-
         }
 
+//      visualizations
         if (counter % 1000000 == 999999) {
             std::string g = my_network.get_viz_graph();
             std::vector<std::string> graph_data;
@@ -217,7 +226,7 @@ int main(int argc, char *argv[]) {
             std::cout << "Len = " << error_logger.size() << std::endl;
 //            exit(1);
             error_logger.clear();
-            my_network.college_garbage();
+            my_network.collect_garbage();
 
             network_size_metric.add_values(network_size_logger);
             network_size_logger.clear();

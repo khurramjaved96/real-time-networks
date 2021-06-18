@@ -130,16 +130,18 @@ long long int ContinuallyAdaptingNetwork::get_timestep() {
 }
 
 void ContinuallyAdaptingNetwork::add_feature(float step_size) {
-
+//  Limit our number of synapses to 1m
     if (this->all_synapses.size() < 1000000) {
         std::normal_distribution<float> dist(0, 1);
         std::uniform_real_distribution<float> dist_u(0, 1);
 
+//      Create our new neuron
         neuron *last_neuron = new neuron(true);
         last_neuron->increment_reference();
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(last_neuron));
         this->all_neurons.push_back(last_neuron);
 
+//      w.p. perc, attach a random neuron (that's not an output neuron) to this neuron
         float perc = dist_u(mt);
         for (auto &n : this->all_neurons) {
             if (!n->is_output_neuron and n->mature) {
@@ -155,7 +157,8 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
             }
         }
 
-
+//      Attach this neuron to all output neurons.
+//      Set its weight to either 1 or -1
         for (auto &output_n : this->output_neurons) {
             synapse *output_s_temp;
             if (dist(this->mt) > 0) {
@@ -171,7 +174,6 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
         }
     }
 
-
 //    if (last_neuron->outgoing_synapses.size() > 0) {
 //        int total_incoming = last_neuron->incoming_synapses.size();
 //        double scale = sqrt(2.0 / float(total_incoming));
@@ -179,9 +181,6 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 //            s->weight = dist(mt) * scale;
 //        }
 //    }
-
-
-
 
 }
 
@@ -261,7 +260,7 @@ void ContinuallyAdaptingNetwork::step() {
                 n->forward_gradients();
             });
 
-//  now we propagate our error backwards one step
+//  Now we propagate our error backwards one step
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -270,7 +269,7 @@ void ContinuallyAdaptingNetwork::step() {
                 n->propagate_error();
             });
 
-
+//  Calculate our credit
     std::for_each(
             std::execution::par_unseq,
             all_synapses.begin(),
@@ -279,6 +278,7 @@ void ContinuallyAdaptingNetwork::step() {
                 s->assign_credit();
             });
 
+//  Update our weights (based on either normal update or IDBD update
     std::for_each(
             std::execution::par_unseq,
             all_synapses.begin(),
@@ -287,7 +287,7 @@ void ContinuallyAdaptingNetwork::step() {
                 s->update_weight();
             });
 
-
+//  Mark all useless weights and neurons for deletion
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -296,7 +296,7 @@ void ContinuallyAdaptingNetwork::step() {
                 n->mark_useless_weights();
             });
 
-//    std::cout << "Pruning wieghts in queues\n";
+//  Delete our useless weights and neurons
     std::for_each(
 //            std::execution::par_unseq,
             all_neurons.begin(),
@@ -305,7 +305,7 @@ void ContinuallyAdaptingNetwork::step() {
                 n->prune_useless_weights();
             });
 
-
+//  For all synapses, if the synapse is useless set it has 0 references. We remove it.
     std::for_each(
             std::execution::par_unseq,
             this->all_synapses.begin(),
@@ -318,7 +318,7 @@ void ContinuallyAdaptingNetwork::step() {
     auto it = std::remove_if(this->all_synapses.begin(), this->all_synapses.end(), to_delete_s);
     this->all_synapses.erase(it, this->all_synapses.end());
 
-
+//  Similarly for all outgoing synapses and neurons.
     std::for_each(
             std::execution::par_unseq,
             this->output_synapses.begin(),
@@ -359,8 +359,8 @@ bool is_null_ptr(dynamic_elem* elem)
     return false;
 }
 
-void ContinuallyAdaptingNetwork::college_garbage() {
-
+void ContinuallyAdaptingNetwork::collect_garbage() {
+//  Find all synapses and neurons with 0 references to them and delete.
     for(int temp = 0; temp < this->all_heap_elements.size(); temp++){
 //        if(all_heap_elements[temp]->references < 2) {
 //            std::cout << all_heap_elements[temp]->references << std::endl;
@@ -407,6 +407,7 @@ float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets) 
 }
 
 float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
+//  Put all targets into our neurons.
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
         error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);

@@ -33,7 +33,7 @@ public:
     std::vector<synapse*> output_synapses;
 //  all_heap_elements collects all neurons and synapses for easier garbage collection.
     std::vector<dynamic_elem *> all_heap_elements;
-    void college_garbage();
+    void collect_garbage();
     std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
 //    std::vector<neuron*> new_features;
