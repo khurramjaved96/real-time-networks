@@ -19,8 +19,8 @@ set(CMAKE_CXX_FLAGS "-O3 \
 #include_directories(/usr/local/include/tbb)
 #link_directories(/usr/local/lib)
 
-add_executable(FlexibleNN src/utils.cpp include/utils.h include/neural_networks/synapse.h src/neural_network/synapse.cpp include/neural_networks/neuron.h src/neural_network/neuron.cpp include/neural_networks/neural_network.h include/experiment/Experiment.h src/experiment/Experiment.cpp include/experiment/Database.h src/experiment/Database.cpp include/experiment/Metric.h src/experiment/Metric.cpp  include/neural_networks/utils.h src/neural_network/utils.cpp include/neural_networks/message.h src/neural_network/message.cpp include/neural_networks/networks/adaptive_network.h src/neural_network/networks/adaptive_network.cpp include/animal_learning/tracecondioning.h src/animal_learning/traceconditioning.cpp test_case.cpp include/neural_networks/networks/test.h src/neural_network/networks/test.cpp src/animal_learning/tracepatterning.cpp tracepatterning_exp.cpp include/neural_networks/dynamic_elem.h src/neural_network/dynamic_elem.cpp)
-
+add_executable(FlexibleNN src/utils.cpp include/utils.h include/neural_networks/synapse.h src/neural_network/synapse.cpp include/neural_networks/neuron.h src/neural_network/neuron.cpp include/neural_networks/neural_network.h include/experiment/Experiment.h src/experiment/Experiment.cpp include/experiment/Database.h src/experiment/Database.cpp include/experiment/Metric.h src/experiment/Metric.cpp  include/neural_networks/utils.h src/neural_network/utils.cpp include/neural_networks/message.h src/neural_network/message.cpp include/neural_networks/networks/adaptive_network.h src/neural_network/networks/adaptive_network.cpp include/animal_learning/tracecondioning.h src/animal_learning/traceconditioning.cpp include/neural_networks/networks/test.h src/neural_network/networks/test.cpp src/animal_learning/tracepatterning.cpp tracepatterning_exp.cpp include/neural_networks/dynamic_elem.h src/neural_network/dynamic_elem.cpp)
+add_executable(FlexibleNN_test src/utils.cpp include/utils.h include/neural_networks/synapse.h src/neural_network/synapse.cpp include/neural_networks/neuron.h src/neural_network/neuron.cpp include/neural_networks/neural_network.h include/experiment/Experiment.h src/experiment/Experiment.cpp include/experiment/Database.h src/experiment/Database.cpp include/experiment/Metric.h src/experiment/Metric.cpp  include/neural_networks/utils.h src/neural_network/utils.cpp include/neural_networks/message.h src/neural_network/message.cpp include/neural_networks/networks/adaptive_network.h src/neural_network/networks/adaptive_network.cpp include/animal_learning/tracecondioning.h src/animal_learning/traceconditioning.cpp include/neural_networks/networks/test.h src/neural_network/networks/test.cpp src/animal_learning/tracepatterning.cpp include/neural_networks/dynamic_elem.h src/neural_network/dynamic_elem.cpp test_case.cpp)
 #Cedar
 #target_link_libraries(FlexibleNN PRIVATE mariadb)
 
@@ -30,7 +30,9 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
 # For linking locally
 target_link_libraries(FlexibleNN PUBLIC tbb)
+target_link_libraries(FlexibleNN_test PUBLIC tbb)
 target_link_libraries(FlexibleNN PUBLIC mariadb)
+target_link_libraries(FlexibleNN_test PUBLIC mariadb)
 
 project(FlexibleNN LANGUAGES CXX)
 

@@ -33,6 +33,7 @@ public:
     void step();
     std::vector<float> read_output_values();
     std::vector<float> read_all_values();
+    std::vector<float> read_all_temp_values();
     float introduce_targets(std::vector<float> targets);
     int get_input_size();
     int get_total_synapses();
