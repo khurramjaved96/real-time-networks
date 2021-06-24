@@ -58,6 +58,9 @@ public:
 //    std::vector<float> get_memory_weights();
 };
 
+bool to_delete_s(synapse *s);
+bool to_delete_n(neuron *n);
+
 
 
 #endif //FLEXIBLENN_ADAPTIVE_NETWORK_H

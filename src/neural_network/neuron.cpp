@@ -224,9 +224,6 @@ void neuron::propagate_error() {
 //              Currently, b/c of grad_temp.distance_travelled = error_gradient.front().distance_travelled + 1
 //              this means this will always be this->past_activations.front().second - 2.
 
-                std::cout << "past_activation front time_steps: " << this->past_activations.front().second << "\n";
-                std::cout << "os grad time_step: " << output_synapses_iterator->grad_queue.front().time_step << " os grad dist: " << output_synapses_iterator->grad_queue.front().distance_travelled << "\n";
-
 //              So now we need to match the right past activation with the activation time required.
 //              Since we always truncate gradients after 1 step, this corresponds to having a past activation time
 //              the same as the time step the gradient was calculated - 2. grad distance_travelled is always 1 in this case.
@@ -420,6 +417,7 @@ void neuron::prune_useless_weights() {
  * In this case, target should be our TD target, and the neuron should be an outgoing neuron.
  * @param target: target value to calculate our error.
  * @param time_step: time step that we calculate this error. Use for backprop purposes.
+ *
  * @return: squared error
  */
 float neuron::introduce_targets(float target, int time_step) {

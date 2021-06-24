@@ -15,8 +15,8 @@
 
 
 class TestCase{
-
-    std::vector<neuron*> output_neuros;
+protected:
+    std::vector<neuron*> output_neurons;
     std::vector<neuron*> all_neurons;
 
     long long int time_step;
@@ -24,7 +24,7 @@ class TestCase{
 public:
     std::vector<float> sum_of_gradients;
     std::vector<neuron*> input_neurons;
-    TestCase(float step_size, int width, int seed);
+    TestCase();
     ~TestCase();
     void print_graph(neuron* root);
     void set_print_bool();
@@ -33,6 +33,7 @@ public:
     void step();
     std::vector<float> read_output_values();
     std::vector<float> read_all_values();
+    std::vector<float> read_all_temp_values();
     float introduce_targets(std::vector<float> targets);
     int get_input_size();
     int get_total_synapses();

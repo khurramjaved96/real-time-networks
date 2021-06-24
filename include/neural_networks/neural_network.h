@@ -21,7 +21,7 @@ public:
 
     std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
-    std::vector<neuron*> output_neuros;
+    std::vector<neuron*> output_neurons;
     std::vector<synapse*> all_synapses;
     std::vector<std::vector<int>> adjacency_matric;
     NeuralNetwork(int total_layers, int width);

@@ -50,8 +50,8 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int widt
 
 //  Initialize all output neurons.
 //  Similarly, we fix an output size to 1.
-    int output_neuros = 1;
-    for (int counter = 0; counter < output_neuros; counter++) {
+    int output_neurons = 1;
+    for (int counter = 0; counter < output_neurons; counter++) {
         auto n = new neuron(false, true);
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
         n->increment_reference();

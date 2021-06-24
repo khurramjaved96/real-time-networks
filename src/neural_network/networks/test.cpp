@@ -14,55 +14,9 @@
 #include <execution>
 #include <iostream>
 
-TestCase::TestCase(float step_size, int width, int seed) {
-    this->time_step = 0;
-
-    int input_neuron = 3;
-    for (int counter = 0; counter < input_neuron; counter++) {
-        auto n = new neuron(false);
-        this->input_neurons.push_back(n);
-        this->all_neurons.push_back(n);
-    }
-
-
-    bool relu = true;
-    auto n = new neuron(relu);
-    this->all_neurons.push_back(n);
-
-    n = new neuron(relu);
-    this->all_neurons.push_back(n);
-
-    n = new neuron(relu);
-    this->all_neurons.push_back(n);
-
-    int output_neuros = 1;
-    for (int counter=0; counter < output_neuros; counter++)
-    {
-        auto n = new neuron(false);
-        this->output_neuros.push_back(n);
-        this->all_neurons.push_back(n);
-    }
-
-    this->all_synapses.push_back(new synapse(all_neurons[1 - 1], all_neurons[4 - 1], 0.2, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[1 - 1], all_neurons[6 - 1], 0.5, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[2 - 1], all_neurons[4 - 1], -0.2, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[2 - 1], all_neurons[5 - 1], 0.7, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[3 - 1], all_neurons[4 - 1], 0.65, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[3 - 1], all_neurons[5 - 1], 0.1, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[3 - 1], all_neurons[7 - 1], -0.1, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[4 - 1], all_neurons[6 - 1], 0.2, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[4 - 1], all_neurons[7 - 1], -0.1, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[4 - 1], all_neurons[5 - 1], -0.2, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[5 - 1], all_neurons[7 - 1], 0.2, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[6 - 1], all_neurons[7 - 1], 0.2, step_size));
-
-    for(auto it: this->all_synapses){
-        sum_of_gradients.push_back(0);
-    }
-
-
+TestCase::TestCase()
+{
 }
-
 //    this->all_synapses.push_back(new synapse(all_neurons[1], all_neurons[6], dist(mt), step_size));
 //    this->all_synapses.push_back(new synapse(all_neurons[1], all_neurons[2], dist(mt), step_size));
 //    this->all_synapses.push_back(new synapse(all_neurons[2], all_neurons[3], dist(mt), step_size));
@@ -133,7 +87,8 @@ void TestCase::step() {
 
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
@@ -141,7 +96,8 @@ void TestCase::step() {
             });
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
@@ -149,7 +105,8 @@ void TestCase::step() {
             });
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
@@ -158,13 +115,23 @@ void TestCase::step() {
 
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
                 n->propagate_error();
             });
 
+//  Calculate our credit
+    std::for_each(
+//            std::execution::par_unseq,
+            std::execution::seq,
+            all_synapses.begin(),
+            all_synapses.end(),
+            [&](synapse *s) {
+                s->assign_credit();
+            });
     for(int counter = 0; counter < all_synapses.size(); counter ++)
     {
         this->sum_of_gradients[counter] += all_synapses[counter]->credit;
@@ -225,8 +192,8 @@ void TestCase::step() {
 
 std::vector<float> TestCase::read_output_values() {
     std::vector<float> output_vec;
-    output_vec.reserve(this->output_neuros.size());
-    for (auto &output_neuro : this->output_neuros) {
+    output_vec.reserve(this->output_neurons.size());
+    for (auto &output_neuro : this->output_neurons) {
         output_vec.push_back(output_neuro->value);
     }
     return output_vec;
@@ -241,11 +208,19 @@ std::vector<float> TestCase::read_all_values() {
     return output_vec;
 }
 
+std::vector<float> TestCase::read_all_temp_values() {
+    std::vector<float> output_vec;
+    output_vec.reserve(this->all_neurons.size());
+    for (auto &output_neuro : this->all_neurons) {
+        output_vec.push_back(output_neuro->temp_value);
+    }
+    return output_vec;
+}
 
 float TestCase::introduce_targets(std::vector<float> targets) {
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
-        error += this->output_neuros[counter]->introduce_targets(targets[counter], this->time_step);
+        error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step);
     }
     return error;
 }
