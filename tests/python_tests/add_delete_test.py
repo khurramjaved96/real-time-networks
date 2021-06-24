@@ -43,7 +43,7 @@ def create_dataset():
 
 def parse_args():
     parser = ArgumentParser(description="Add delete test")
-    parser.add_argument('--test', type=str, default='add_neuron', help='Type of test to run (add_neuron | delete_neuron | add_synapse | delete_synapse)')
+    parser.add_argument('test', nargs='?', type=str, default='add_neuron', help='Type of test to run (add_neuron | delete_neuron | add_synapse | delete_synapse)')
 
     return parser
 
