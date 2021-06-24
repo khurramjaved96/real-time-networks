@@ -9,7 +9,7 @@ In order to run this project, you'll need the following things installed:
 * [MariaDB](https://mariadb.com/kb/en/getting-installing-and-upgrading-mariadb/) (and a C++ connector for MariaDB
   found [here](https://mariadb.com/kb/en/mariadb-connector-c/))
   
-For the tests, you'll need Python installed together with `pytorch` and `autograd`.
+For the tests, you'll need Python installed together with `pytorch`.
 
 To compile this project locally, you'll have to link your MariaDB C++ connector locally, as demonstrated
 in `CMakeLists.txt`. You'll also need to uncomment essentially everything under the 
