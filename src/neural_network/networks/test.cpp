@@ -162,7 +162,7 @@ void TestCase::step() {
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
-                n->propogate_error();
+                n->propagate_error();
             });
 
     for(int counter = 0; counter < all_synapses.size(); counter ++)
@@ -196,7 +196,7 @@ void TestCase::step() {
 ////    std::cout << "Propagating gradients from synapses to neuron (Summing with correct time-steps)\n";
 //
 //    for(auto& it : this->all_neurons){
-//        it->propogate_error();
+//        it->propagate_error();
 //    }
 //
 //    for(auto& it: this->all_synapses){
