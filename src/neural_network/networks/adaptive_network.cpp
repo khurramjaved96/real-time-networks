@@ -2,9 +2,6 @@
 // Created by Khurram Javed on 2021-04-01.
 //
 
-//
-// Created by Khurram Javed on 2021-03-30.
-//
 
 #include "../../../include/neural_networks/networks/adaptive_network.h"
 #include "../../../include/neural_networks/neuron.h"
@@ -23,7 +20,7 @@
 ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int width, int seed) : mt(seed) {
     this->time_step = 0;
 
-    int input_neuron = 10;
+    int input_neuron = 12;
     for (int counter = 0; counter < input_neuron; counter++) {
         auto n = new neuron(false, false, true);
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
@@ -54,26 +51,6 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int widt
             s->turn_on_idbd();
         }
     }
-
-//
-//    float top_range = sqrt(2.0 / float(width));
-    std::normal_distribution<float> dist(0, 1);
-//    std::uniform_int_distribution<int> sparse_generator = std::uniform_int_distribution<int>(0, 1000);
-
-//    std::vector<neuron *> neurons_so_far;
-
-//
-//    for (auto &n : this->all_neurons) {
-//        if (n->outgoing_synapses.size() > 0) {
-//            int total_incoming = n->incoming_synapses.size();
-//            double scale = sqrt(2.0 / float(total_incoming));
-//            for (auto s : n->incoming_synapses) {
-//                s->weight = dist(mt) * scale;
-//            }
-//        }
-//    }
-
-
 }
 
 void ContinuallyAdaptingNetwork::print_graph(neuron *root) {
@@ -114,7 +91,8 @@ long long int ContinuallyAdaptingNetwork::get_timestep() {
 void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 
     if (this->all_synapses.size() < 1000000) {
-        std::normal_distribution<float> dist(0, 1);
+//        std::normal_distribution<float> dist(0, 1);
+        std::uniform_real_distribution<float> dist(-2, 2);
         std::uniform_real_distribution<float> dist_u(0, 1);
 
         neuron *last_neuron = new neuron(true);
@@ -128,6 +106,9 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
                 if (dist_u(mt) < perc) {
 
                     auto syn = new synapse(n, last_neuron, 0.001 * dist(this->mt), step_size);
+//                    auto syn = new synapse(n, last_neuron, 0.5 * dist(this->mt), step_size);
+//
+//                    auto syn = new synapse(n, last_neuron, 0.001, step_size);
                     syn->enable_logging = false;
                     syn->block_gradients();
                     syn->increment_reference();
@@ -152,19 +133,6 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
             this->all_heap_elements.push_back(static_cast<dynamic_elem *>(output_s_temp));
         }
     }
-
-
-//    if (last_neuron->outgoing_synapses.size() > 0) {
-//        int total_incoming = last_neuron->incoming_synapses.size();
-//        double scale = sqrt(2.0 / float(total_incoming));
-//        for (auto s : last_neuron->incoming_synapses) {
-//            s->weight = dist(mt) * scale;
-//        }
-//    }
-
-
-
-
 }
 
 
@@ -208,7 +176,6 @@ bool to_delete_n(neuron *s) {
 
 
 void ContinuallyAdaptingNetwork::step() {
-
 
 
     std::for_each(
@@ -262,7 +229,7 @@ void ContinuallyAdaptingNetwork::step() {
                 s->update_weight();
             });
 
-
+//    if(this->time_step%100 == 0) {
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -286,7 +253,7 @@ void ContinuallyAdaptingNetwork::step() {
             this->all_synapses.begin(),
             this->all_synapses.end(),
             [&](synapse *s) {
-                if(s->useless) {
+                if (s->useless) {
                     s->decrement_reference();
                 }
             });
@@ -299,7 +266,7 @@ void ContinuallyAdaptingNetwork::step() {
             this->output_synapses.begin(),
             this->output_synapses.end(),
             [&](synapse *s) {
-                if(s->useless) {
+                if (s->useless) {
                     s->decrement_reference();
                 }
             });
@@ -312,13 +279,14 @@ void ContinuallyAdaptingNetwork::step() {
             this->all_neurons.begin(),
             this->all_neurons.end(),
             [&](neuron *s) {
-                if(s->useless_neuron) {
+                if (s->useless_neuron) {
                     s->decrement_reference();
                 }
             });
 
     auto it_n = std::remove_if(this->all_neurons.begin(), this->all_neurons.end(), to_delete_n);
     this->all_neurons.erase(it_n, this->all_neurons.end());
+//    }
 
 
     this->time_step++;
@@ -326,22 +294,21 @@ void ContinuallyAdaptingNetwork::step() {
 
 }
 
-bool is_null_ptr(dynamic_elem* elem)
-{
+bool is_null_ptr(dynamic_elem *elem) {
 //    return true;
-    if(elem== nullptr)
+    if (elem == nullptr)
         return true;
     return false;
 }
 
 void ContinuallyAdaptingNetwork::college_garbage() {
 
-    for(int temp = 0; temp < this->all_heap_elements.size(); temp++){
+    for (int temp = 0; temp < this->all_heap_elements.size(); temp++) {
 //        if(all_heap_elements[temp]->references < 2) {
 //            std::cout << all_heap_elements[temp]->references << std::endl;
 //            exit(1);
 //        }
-        if(all_heap_elements[temp]->references == 0 ){
+        if (all_heap_elements[temp]->references == 0) {
 //            std::cout << "Deleting element\n";
             delete all_heap_elements[temp];
             all_heap_elements[temp] = nullptr;
