@@ -76,18 +76,19 @@ neuron::neuron(bool activation, bool output_n, bool input_n) {
 }
 
 void neuron::update_value() {
-    if (this->neuron_age == 19999 and !this->is_output_neuron) {
+    if (this->neuron_age == 159999 and !this->is_output_neuron) {
         this->mature = true;
     }
     this->neuron_age++;
     if (memory_made > 0)
         memory_made--;
     this->temp_value = 0;
-    if (this->neuron_age == 19999 and !this->is_input_neuron and this->average_activation > 0 and
+    if (this->neuron_age == 159999 and !this->is_input_neuron and this->average_activation > 0 and
         this->outgoing_synapses.size() > 0) {
         float scale = 1 / this->average_activation;
         for (auto it : this->incoming_synapses) {
             it->weight = it->weight * scale;
+            it->step_size = 0;
         }
 
         if (this->outgoing_synapses.size() == 0) {
@@ -95,9 +96,11 @@ void neuron::update_value() {
             std::cout << "ID\t" << this->neuron_id << " Age \t" << this->neuron_age << std::endl;
             exit(1);
         }
+
         for (auto out_g : this->outgoing_synapses) {
-            out_g->weight = out_g->weight * this->average_activation;
-            out_g->step_size = 1e-4;
+//            out_g->weight = out_g->weight * this->average_activation;
+            out_g->weight = 0;
+            out_g->step_size = 1e-5;
             out_g->turn_on_idbd();
         }
         this->average_activation = 1;
@@ -118,7 +121,8 @@ bool to_delete_ss(synapse *s) {
 void neuron::mark_useless_weights() {
 
     for (auto &it : this->outgoing_synapses) {
-        if (it->age > 69999) {
+        if (it->age > 250000) {
+
             if (!(it->input_neuron->is_input_neuron and it->output_neuron->is_output_neuron)) {
                 if (this->average_activation * std::abs(it->weight) < 0.01) {
                     it->useless = true;
@@ -196,7 +200,11 @@ void neuron::fire(int time_step) {
     this->value = temp_value;
     if (this->activation_type && this->value <= 0) {
         this->value = 0;
-    } else {
+    }
+    else {
+//        if (this->activation_type and this->mature) {
+//            this->value = 1;
+//        }
         this->average_activation = this->average_activation * 0.95 + 0.05 * std::abs(this->value);
     }
     temp_value = 0;
