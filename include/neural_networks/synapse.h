@@ -28,6 +28,9 @@ public:
     float trace;
     float credit_activation_idbd;
     float step_size;
+
+    float tidbd_old_activation;
+    float tidbd_old_error;
     bool print_status;
     bool pass_gradients;
     float idbd_local_gradient;
