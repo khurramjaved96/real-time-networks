@@ -20,7 +20,7 @@ std::vector<float> sum(std::vector<float> &lhs, std::vector<float> &rhs);
 std::vector<int> sum(std::vector<int> &lhs, std::vector<int> &rhs);
 int argmax(std::vector<float>);
 std::vector<float> mean(const std::vector<std::vector<float>>&);
-
+std::vector<float> one_hot_encode(int no, int total_numbers);
 class uniform_random{
     std::mt19937 mt;
     std::uniform_real_distribution<float> dist;
