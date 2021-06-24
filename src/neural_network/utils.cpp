@@ -23,6 +23,16 @@ mytype max(std::vector<mytype> values){
 }
 //
 
+
+std::vector<float> one_hot_encode(int no, int total){
+    std::vector<float> my_vec;
+    my_vec.reserve(total);
+    for(int t = 0; t < total; t++){
+        my_vec.push_back(0);
+    }
+    my_vec[no] = 1;
+    return my_vec;
+}
 std::vector<float> sum(const std::vector<float> &lhs, const std::vector<float> &rhs){
     std::vector<float> ans_vector;
     ans_vector.reserve(lhs.size());
