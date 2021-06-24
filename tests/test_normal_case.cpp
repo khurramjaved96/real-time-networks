@@ -8,23 +8,23 @@
 #include <vector>
 #include <algorithm>
 #include <chrono>
-#include "include/utils.h"
+#include "../include/utils.h"
 #include <map>
 #include <string>
 
-#include "include/neural_networks/networks/test.h"
-#include "include/neural_networks/neural_network.h"
+#include "../include/neural_networks/networks/test_normal.h"
+#include "../include/neural_networks/neural_network.h"
 //#include "include/neural_networks/networks/adaptive_network.h"
-#include "include/experiment/Experiment.h"
-#include "include/neural_networks/utils.h"
-#include "include/experiment/Metric.h"
-#include "include/animal_learning/tracecondioning.h"
+#include "../include/experiment/Experiment.h"
+#include "../include/neural_networks/utils.h"
+#include "../include/experiment/Metric.h"
+#include "../include/animal_learning/tracecondioning.h"
 
 
 int main(int argc, char *argv[]) {
 
 //
-    TestCase my_network = TestCase(0.0, 5, 5);
+    TestNormal my_network = TestNormal(0.0, 5, 5);
 //    my_network.set_print_bool();
     long long int time_step = 0;
 //    for(auto &it : my_network.is_input_neuron)
