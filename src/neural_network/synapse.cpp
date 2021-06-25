@@ -107,10 +107,6 @@ void synapse::zero_gradient() {
 }
 
 void synapse::turn_on_idbd() {
-//    this->step_size = this->step_size*10;
-//    std::cout << "STEP SIZE = " << this->step_size << std::endl;
-//    exit(1);
-//    this->step_size = 1e-4;
     this->idbd = true;
     this->beta_step_size = log(this->step_size);
     this->h_step_size = 0;
