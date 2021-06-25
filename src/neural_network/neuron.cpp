@@ -164,103 +164,6 @@ bool to_delete_ss(synapse *s) {
     return s->useless;
 }
 
-
-void neuron::mark_useless_weights() {
-
-    for (auto &it : this->outgoing_synapses) {
-        if (it->age > 250000) {
-
-            if (!(it->input_neuron->is_input_neuron and it->output_neuron->is_output_neuron)) {
-                if (this->average_activation * std::abs(it->weight) < 0.01) {
-                    it->useless = true;
-                } else if (it->output_neuron->useless_neuron) {
-                    it->useless = true;
-                }
-            }
-        }
-    }
-
-
-    if (this->outgoing_synapses.empty() and !this->is_output_neuron and !this->is_input_neuron) {
-        this->useless_neuron = true;
-        for (auto it : this->incoming_synapses)
-            it->useless = true;
-    }
-
-    if (this->is_input_neuron)
-        this->useless_neuron = false;
-}
-
-void neuron::prune_useless_weights() {
-    std::for_each(
-//            std::execution::seq,
-            this->outgoing_synapses.begin(),
-            this->outgoing_synapses.end(),
-            [&](synapse *s) {
-                if (s->useless) {
-                    s->decrement_reference();
-                    if (s->input_neuron != nullptr) {
-                        s->input_neuron->decrement_reference();
-                        s->input_neuron = nullptr;
-                    }
-                    if (s->output_neuron != nullptr) {
-                        s->output_neuron->decrement_reference();
-                        s->output_neuron = nullptr;
-                    }
-                }
-            });
-
-    auto it = std::remove_if(this->outgoing_synapses.begin(), this->outgoing_synapses.end(), to_delete_ss);
-    this->outgoing_synapses.erase(it, this->outgoing_synapses.end());
-
-    std::for_each(
-//            std::execution::seq,
-            this->incoming_synapses.begin(),
-            this->incoming_synapses.end(),
-            [&](synapse *s) {
-                if (s->useless) {
-                    s->decrement_reference();
-                    if (s->input_neuron != nullptr) {
-                        s->input_neuron->decrement_reference();
-                        s->input_neuron = nullptr;
-                    }
-                    if (s->output_neuron != nullptr) {
-                        s->output_neuron->decrement_reference();
-                        s->output_neuron = nullptr;
-                    }
-                }
-            });
-    it = std::remove_if(this->incoming_synapses.begin(), this->incoming_synapses.end(), to_delete_ss);
-    this->incoming_synapses.erase(it, this->incoming_synapses.end());
-
-}
-
-void neuron::fire(int time_step) {
-//    Temp hack
-    if (this->past_activations.size() > 50) {
-        this->past_activations.pop();
-
-    }
-    if (this->error_gradient.size() > 50) {
-        this->error_gradient.pop();
-    }
-    this->value = temp_value;
-    if (this->activation_type && this->value <= 0) {
-        this->value = 0;
-    }
-    else {
-//        if (this->activation_type and this->mature) {
-//            this->value = 1;
-//        }
-        this->average_activation = this->average_activation * 0.95 + 0.05 * std::abs(this->value);
-    }
-    temp_value = 0;
-    auto activation_val = std::pair<float, int>(this->value, time_step);
-    this->past_activations.push(activation_val);
-    for (auto it: this->outgoing_synapses)
-        it->weight_assignment_past_activations.push(activation_val);
-}
-
 /**
  * For each incoming synapse of a neuron, add the gradient from the error in this
  * neuron to its grad_queue for weight assignment. If we do pass gradients backwards,
@@ -323,9 +226,6 @@ void neuron::propagate_error() {
 //              This diff in time_step and distance_travelled is essentially "how long until I activate this gradient"
 //              Currently, b/c of grad_temp.distance_travelled = error_gradient.front().distance_travelled + 1
 //              this means this will always be this->past_activations.front().second - 2.
-
-                std::cout << "past_activation front time_steps: " << this->past_activations.front().second << "\n";
-                std::cout << "os grad time_step: " << output_synapses_iterator->grad_queue.front().time_step << " os grad dist: " << output_synapses_iterator->grad_queue.front().distance_travelled << "\n";
 
 //              So now we need to match the right past activation with the activation time required.
 //              Since we always truncate gradients after 1 step, this corresponds to having a past activation time
@@ -441,7 +341,7 @@ void neuron::propagate_error() {
 void neuron::mark_useless_weights() {
     for (auto &it : this->outgoing_synapses) {
 //      Only delete weights if they're older than 70k steps
-        if (it->age > 69999) {
+        if (it->age > 250000) {
 //          Don't delete input or output neurons
             if (!(it->input_neuron->is_input_neuron and it->output_neuron->is_output_neuron)) {
 //              If the average output of this synapse is small (< 0.01), mark it for deletion
@@ -462,10 +362,6 @@ void neuron::mark_useless_weights() {
         for (auto it : this->incoming_synapses)
             it->useless = true;
     }
-}
-
-bool to_delete_ss(synapse *s) {
-    return s->useless;
 }
 
 /**
