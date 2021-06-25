@@ -120,7 +120,7 @@ void synapse::turn_on_idbd() {
 void synapse::update_weight() {
 //
     if (this->idbd) {
-        float meta_grad = this->tidbd_old_error * this->tidbd_old_activation * this->h_step_size;
+        float meta_grad = this->tidbd_old_error * this->trace * this->h_step_size;
         this->b2 = this->b2 * 0.99 + (1 - 0.99) * (meta_grad * meta_grad);
 
         if (age > 1000) {
