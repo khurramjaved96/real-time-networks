@@ -53,9 +53,6 @@ int main(int argc, char *argv[]) {
     TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
                                           std::pair<int, int>(interval, interval_up),
                                           std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
-//    TracePatterning tc2 = TracePatterning(std::pair<int, int>(interval, interval_up),
-//                                          std::pair<int, int>(interval, interval_up),
-//                                          std::pair<int, int>(80, 120), 5, 2);
 
     for (int temp = 0; temp < 200; temp++) {
         std::vector<float> cur_state = tc.step();
@@ -111,7 +108,6 @@ int main(int argc, char *argv[]) {
 //  start taking steps!
     for (int counter = 0; counter < my_experiment.get_int_param("steps"); counter++) {
 
-//        std::cout << "Counter = " << counter << std::endl;
         std::vector<float> temp_target;
 
 //      Get our current state
