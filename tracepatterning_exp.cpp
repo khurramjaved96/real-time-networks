@@ -1,5 +1,11 @@
 #define CUB_IGNORE_DEPRECATED_CPP_DIALECT
 
+//
+// Created by Khurram Javed on 2021-04-01.
+//
+
+
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -46,7 +52,7 @@ int main(int argc, char *argv[]) {
     // Initialize our dataset
     TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
                                           std::pair<int, int>(interval, interval_up),
-                                          std::pair<int, int>(80, 120), 5, my_experiment.get_int_param("seed"));
+                                          std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
 //    TracePatterning tc2 = TracePatterning(std::pair<int, int>(interval, interval_up),
 //                                          std::pair<int, int>(interval, interval_up),
 //                                          std::pair<int, int>(80, 120), 5, 2);
@@ -136,12 +142,7 @@ int main(int argc, char *argv[]) {
             float error_short = (my_network.read_output_values()[0] - real_target) *
                                 (my_network.read_output_values()[0] - real_target);
 
-//            float error_long = (my_network.read_output_values()[1] - real_target_long) *
-//                               (my_network.read_output_values()[1] - real_target_long);
-
             temp_target.push_back(target);
-//            temp_target.push_back(target_long);
-//            temp_target.push_back(0);
 
 //          Here we put our targets into our output neurons and calculate our TD error.
             my_network.introduce_targets(temp_target, gamma, lambda);
@@ -149,12 +150,6 @@ int main(int argc, char *argv[]) {
             float beta = 0.9999;
             running_error[0] = running_error[0] * beta + (1 - beta) * error_short;
             running_error[1] = running_error[0] / (1 - pow(beta, counter));
-
-//            std::cout << "Pow " << pow(beta, counter) << std::endl;
-//            std::cout << "Error = " << running_error[1] << std::endl;
-//                running_error[1] = running_error[1] * 0.999 + 0.001 *error_long;
-//if(counter == 500)
-//            exit(1);
 
         }
 
@@ -193,9 +188,6 @@ int main(int argc, char *argv[]) {
             cur_state.push_back(target);
             print_vector(cur_state);
         }
-//        if (counter % 5000000 == 4999999) {
-//            tc = tc2;
-//        }
 
 //      Generating new features every 80000 steps
         if (counter % 80000 == 79999) {
@@ -252,14 +244,6 @@ int main(int argc, char *argv[]) {
             std::cout << "Total Neurons = " << my_network.all_neurons.size() << std::endl;
             my_network.set_print_bool();
 
-//            for(auto &it : my_network.input_neurons)
-//                my_network.print_graph(it);
-//            for(auto &it : my_network.new_features)
-//                my_network.print_graph(it);
-//            my_network.print_memory_feature_weights();
-
-//            print_vector(my_network.read_output_values());
-//            std::cout << "Target = " << tc.get_target(gamma) << std::endl;
         }
     }
 
@@ -269,18 +253,7 @@ int main(int argc, char *argv[]) {
                             my_experiment.get_int_param("steps"))
               << " fps" << std::endl;
 
-//
-//    std::string g = my_network.get_viz_graph();
-//    std::vector<std::string> graph_data;
-//    graph_data.push_back(std::to_string(my_experiment.get_int_param("steps")));
-//    graph_data.push_back(std::to_string(my_experiment.get_int_param("run")));
-//    graph_data.push_back(g);
-//    graph_state_metric.add_value(graph_data);
 
     return 0;
 }
-
-//
-// Created by Khurram Javed on 2021-04-01.
-//
 
