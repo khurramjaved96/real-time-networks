@@ -12,10 +12,20 @@ set(CMAKE_CXX_STANDARD 20)
 
 #Cedar
 set(CMAKE_CXX_FLAGS "-O3 -ltbb -lpthread")
+#set(CMAKE_CXX_FLAGS "-O3 -ltbb -lpthread -fPIC -I/usr/include/python3.9 -I/home/haseebs/workspace/envs/animal/lib/python3.9/site-packages/pybind11/include")
+
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 REQUIRED)
+include_directories("/home/haseebs/workspace/envs/animal/include/pybind11")
+include_directories("/usr/include/python3.9")
 
 #old tmaze
 #add_executable(FlexibleNN simple_exp.cpp src/utils.cpp include/utils.h include/neural_networks/synapse.h src/neural_network/synapse.cpp include/neural_networks/neuron.h src/neural_network/neuron.cpp include/neural_networks/neural_network.h src/neural_network/neural_network.cpp include/experiment/Experiment.h src/experiment/Experiment.cpp include/experiment/Database.h src/experiment/Database.cpp include/experiment/Metric.h src/experiment/Metric.cpp  include/neural_networks/utils.h src/neural_network/utils.cpp include/neural_networks/message.h src/neural_network/message.cpp include/neural_networks/networks/adaptive_network.h src/neural_network/networks/adaptive_network.cpp run_tmaze.cpp src/environments/tmaze.cpp include/environments/tmaze.h)
-add_executable(FlexibleNN src/utils.cpp include/utils.h include/neural_networks/synapse.h src/neural_network/synapse.cpp include/neural_networks/neuron.h src/neural_network/neuron.cpp include/neural_networks/neural_network.h include/experiment/Experiment.h src/experiment/Experiment.cpp include/experiment/Database.h src/experiment/Database.cpp include/experiment/Metric.h src/experiment/Metric.cpp  include/neural_networks/utils.h src/neural_network/utils.cpp include/neural_networks/message.h src/neural_network/message.cpp include/neural_networks/networks/adaptive_network.h src/neural_network/networks/adaptive_network.cpp include/neural_networks/dynamic_elem.h src/neural_network/dynamic_elem.cpp src/environments/tmaze.cpp include/environments/tmaze.h run_tmaze.cpp )
+
+#working tmaze
+#add_executable(FlexibleNN src/utils.cpp include/utils.h include/neural_networks/synapse.h src/neural_network/synapse.cpp include/neural_networks/neuron.h src/neural_network/neuron.cpp include/neural_networks/neural_network.h include/experiment/Experiment.h src/experiment/Experiment.cpp include/experiment/Database.h src/experiment/Database.cpp include/experiment/Metric.h src/experiment/Metric.cpp  include/neural_networks/utils.h src/neural_network/utils.cpp include/neural_networks/message.h src/neural_network/message.cpp include/neural_networks/networks/adaptive_network.h src/neural_network/networks/adaptive_network.cpp include/neural_networks/dynamic_elem.h src/neural_network/dynamic_elem.cpp src/environments/tmaze.cpp include/environments/tmaze.h run_tmaze.cpp)
+
+pybind11_add_module(FlexibleNN src/utils.cpp include/utils.h include/neural_networks/synapse.h src/neural_network/synapse.cpp include/neural_networks/neuron.h src/neural_network/neuron.cpp include/neural_networks/neural_network.h include/experiment/Experiment.h src/experiment/Experiment.cpp include/experiment/Database.h src/experiment/Database.cpp include/experiment/Metric.h src/experiment/Metric.cpp  include/neural_networks/utils.h src/neural_network/utils.cpp include/neural_networks/message.h src/neural_network/message.cpp include/neural_networks/networks/adaptive_network.h src/neural_network/networks/adaptive_network.cpp include/neural_networks/dynamic_elem.h src/neural_network/dynamic_elem.cpp src/environments/tmaze.cpp include/environments/tmaze.h pybind_interface/adaptive_network_int.cpp)
 
 #Cedar
 target_link_libraries(FlexibleNN PRIVATE mariadb)

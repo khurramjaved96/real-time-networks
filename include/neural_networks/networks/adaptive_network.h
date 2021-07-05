@@ -38,7 +38,7 @@ public:
     std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
 //    std::vector<neuron*> new_features;
-    ContinuallyAdaptingNetwork(float step_size, int width, int seed);
+    ContinuallyAdaptingNetwork(float step_size, int num_input, int num_output, int seed);
     ~ContinuallyAdaptingNetwork();
     void print_graph(neuron* root);
     void viz_graph();
@@ -59,6 +59,8 @@ public:
 //    void add_memory(float step_size);
     void add_feature(float step_size);
 };
+
+
 
 
 

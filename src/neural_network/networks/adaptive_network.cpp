@@ -20,11 +20,10 @@
 #include <vector>
 #include <utility>
 
-ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int width, int seed) : mt(seed) {
+ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int num_input, int num_output, int seed) : mt(seed) {
     this->time_step = 0;
 
-    int input_neuron = 3;
-    for (int counter = 0; counter < input_neuron; counter++) {
+    for (int counter = 0; counter < num_input; counter++) {
         auto n = new neuron(false, false, true);
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
         n->increment_reference();
@@ -33,8 +32,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int widt
         this->all_neurons.push_back(n);
     }
 
-    int output_neuros = 4;
-    for (int counter = 0; counter < output_neuros; counter++) {
+    for (int counter = 0; counter < num_output; counter++) {
         auto n = new neuron(false, true);
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
         n->increment_reference();
@@ -101,7 +99,7 @@ long long int ContinuallyAdaptingNetwork::get_timestep() {
 
 void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 
-    if (this->all_synapses.size() < 10000) {
+    if (this->all_synapses.size() < 5000000) {
         std::normal_distribution<float> dist(0, 1);
         std::uniform_real_distribution<float> dist_u(0, 1);
 
