@@ -103,6 +103,7 @@ int Database::add_rows_to_table(const std::string &database_name, const std::str
                                 const std::vector<std::string> &keys,
                                 const std::vector<std::vector<std::string>> &values) {
     this->connect_and_use(database_name);
+    mysql_autocommit(this->mysql, 0);
     for (auto &value : values) {
         std::string query = "INSERT INTO " + table + vec_to_tuple(keys, "") + " VALUES " + vec_to_tuple(value, "'");
         mysql_query(this->mysql, &query[0]);
