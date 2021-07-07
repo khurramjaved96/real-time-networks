@@ -93,14 +93,16 @@ std::vector<float> TracePatterning::reset() {
             break;
         }
     }
-
+    this->set_noise_bits();
     return current_state;
 }
 
 void TracePatterning::set_noise_bits() {
     for(int temp = this->pattern_len + 1; temp < this->pattern_len + 1 + this->num_distractors; temp++)
     {
-        if(NoiseSampler(mt) > 0.98)
+
+        if(NoiseSampler(mt) > 0.98 or temp == this->pattern_len + 1)
+//        if(temp == this->pattern_len + 1)
         {
             this->current_state[temp] = 1;
         }
@@ -116,7 +118,7 @@ float TracePatterning::get_US(){
 
 
 float TracePatterning::get_target(float gamma) {
-    if(this->remaining_until_US>=0 and this->valid and !this->turn_off_first)
+    if(this->remaining_until_US>=0 and this->valid)
     {
         return pow(gamma, this->remaining_until_US);
     }

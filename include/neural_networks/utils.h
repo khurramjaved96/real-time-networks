@@ -14,6 +14,8 @@ template <class mytype>
 mytype max(std::vector<mytype> values);
 float max(std::vector<float> values);
 float min(std::vector<float> values);
+float min(float, float);
+float max(float, float);
 std::vector<float> softmax(const std::vector<float>&);
 float sum(const std::vector<float>&);
 std::vector<float> sum(std::vector<float> &lhs, std::vector<float> &rhs);

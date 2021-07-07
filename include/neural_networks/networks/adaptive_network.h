@@ -53,6 +53,7 @@ public:
     float introduce_targets(std::vector<float> targets, float gamma, float lambda);
     int get_input_size();
     int get_total_synapses();
+    int get_total_neurons();
 //    void add_memory(float step_size);
     void add_feature(float step_size);
 //    std::vector<float> get_memory_weights();
