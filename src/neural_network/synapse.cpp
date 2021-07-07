@@ -49,29 +49,31 @@ synapse::synapse(neuron *input, neuron *output, float w, float step_size) {
  */
 void synapse::assign_credit() {
 //  Another temp hack
-    if(this->grad_queue.size() > 50) {
+    if (this->grad_queue.size() > 50) {
         this->grad_queue.pop();
     }
-    if(this->grad_queue_weight_assignment.size() > 50) {
+    if (this->grad_queue_weight_assignment.size() > 50) {
         this->grad_queue_weight_assignment.pop();
     }
-    if(this->weight_assignment_past_activations.size() > 50) {
+    if (this->weight_assignment_past_activations.size() > 50) {
         this->weight_assignment_past_activations.pop();
     }
 
 //  We go through each gradient that we've put into our synapse
 //  and see if this gradient's activation time corresponds to the correct past activation
-    while (!this->grad_queue_weight_assignment.empty() and !this->weight_assignment_past_activations.empty() and this->weight_assignment_past_activations.front().second >
-                                                                                                 (this->grad_queue_weight_assignment.front().time_step -
-                                                                                                  this->grad_queue_weight_assignment.front().distance_travelled - 1)) {
+    while (!this->grad_queue_weight_assignment.empty() and !this->weight_assignment_past_activations.empty() and
+           this->weight_assignment_past_activations.front().second >
+           (this->grad_queue_weight_assignment.front().time_step -
+            this->grad_queue_weight_assignment.front().distance_travelled - 1)) {
 //      If it doesn't then remove it
         this->grad_queue_weight_assignment.pop();
     }
 
 //  If this condition is met, your gradient flew past its relevant activation - this isn't supposed to happen!
-    if(!this->grad_queue_weight_assignment.empty() and this->weight_assignment_past_activations.front().second !=  (this->grad_queue_weight_assignment.front().time_step -
-                                                                    this->grad_queue_weight_assignment.front().distance_travelled - 1))
-    {
+    if (!this->grad_queue_weight_assignment.empty() and this->weight_assignment_past_activations.front().second !=
+                                                        (this->grad_queue_weight_assignment.front().time_step -
+                                                         this->grad_queue_weight_assignment.front().distance_travelled -
+                                                         1)) {
         std::cout << "Synapses.cpp : Shouldn't happen\n";
         exit(1);
     }
@@ -81,10 +83,16 @@ void synapse::assign_credit() {
 //      We have a match! Here we calculate our update rule. We first update our eligibility trace
         this->trace = this->trace * this->grad_queue_weight_assignment.front().gamma *
                       this->grad_queue_weight_assignment.front().lambda +
-                      this->weight_assignment_past_activations.front().first*this->grad_queue_weight_assignment.front().gradient;
+                      this->weight_assignment_past_activations.front().first *
+                      this->grad_queue_weight_assignment.front().gradient;
+//        if(this->id == 7){
+//            std::cout << "first " <<  this->weight_assignment_past_activations.front().first << " sec " << this->grad_queue_weight_assignment.front().gradient << std::endl;
+//        }
+        this->tidbd_old_activation = this->weight_assignment_past_activations.front().first;
+        this->tidbd_old_error = this->grad_queue_weight_assignment.front().error;
 
 //      As per the trace update rule, our actual credit being assigned is our trace x our TD error.
-        this->credit =  this->trace * this->grad_queue_weight_assignment.front().error;
+        this->credit = this->trace * this->grad_queue_weight_assignment.front().error;
 
 //      Keep our activation for our IDBD meta step size.
         this->credit_activation_idbd = this->weight_assignment_past_activations.front().first;
