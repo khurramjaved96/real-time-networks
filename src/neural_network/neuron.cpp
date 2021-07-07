@@ -155,7 +155,13 @@ void neuron::update_value() {
 //  Age our neuron like a fine wine and set the next values of our neuron.
     for (auto &it : this->incoming_synapses) {
         it->age++;
-        this->temp_value += it->weight * it->input_neuron->value;
+        if(it->weight == 1 or it->weight == -1){
+//            std::cout << "Ignoring this weight \n";
+//
+        }
+        else {
+            this->temp_value += it->weight * it->input_neuron->value;
+        }
     }
 }
 
@@ -315,6 +321,7 @@ void neuron::propagate_error() {
             if (error_vector[a] != err) {
                 std::cout << "Weight = " << this->average_activation << std::endl;
                 std::cout << "Neuron.cpp : Shouldn't happen\n";
+                std::cout << error_vector[a] << " " << err << std::endl;
                 exit(1);
             }
         }
@@ -362,6 +369,8 @@ void neuron::mark_useless_weights() {
         for (auto it : this->incoming_synapses)
             it->useless = true;
     }
+    if (this->is_input_neuron)
+        this->useless_neuron = false;
 }
 
 /**
