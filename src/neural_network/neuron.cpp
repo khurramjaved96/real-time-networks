@@ -146,7 +146,7 @@ void neuron::update_value() {
         for (auto out_g : this->outgoing_synapses) {
 //            out_g->weight = out_g->weight * this->average_activation;
             out_g->weight = 0;
-            out_g->step_size = 1e-5;
+            out_g->step_size = 1e-4;
             out_g->turn_on_idbd();
         }
         this->average_activation = 1;
@@ -341,7 +341,7 @@ void neuron::propagate_error() {
 void neuron::mark_useless_weights() {
     for (auto &it : this->outgoing_synapses) {
 //      Only delete weights if they're older than 70k steps
-        if (it->age > 250000) {
+        if (it->input_neuron->mature and it->step_size < 1e-6) {
 //          Don't delete input or output neurons
             if (!(it->input_neuron->is_input_neuron and it->output_neuron->is_output_neuron)) {
 //              If the average output of this synapse is small (< 0.01), mark it for deletion
