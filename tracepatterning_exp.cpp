@@ -77,9 +77,20 @@ int main(int argc, char *argv[]) {
                                  std::vector<std::string>{"int", "int", "real", "real", "real", "real", "real", "real",
                                                           "real", "real", "real"},
                                  std::vector<std::string>{"step", "run"});
+    Metric neuron_activations_metric = Metric(my_experiment.database_name, "network_state",
+                                              std::vector<std::string>{"step", "run", "neuron_id", "activation",
+                                                                       "avg_activation", "users"},
+                                              std::vector<std::string>{"int", "int", "int", "real", "real", "int"}, \
+                                       std::vector<std::string>{"step", "run", "neuron_id"});
+
+    Metric synapses_state_metric = Metric(my_experiment.database_name, "synapse_state",
+                                          std::vector<std::string>{"step", "run", "synapse_id", "weight", "step_size"},
+                                          std::vector<std::string>{"int", "int", "int", "real", "real"}, \
+                                       std::vector<std::string>{"step", "run", "synapse_id"});
+
     Metric network_size_metric = Metric(my_experiment.database_name, "synapses",
-                                        std::vector<std::string>{"step", "run", "total_synapses"},
-                                        std::vector<std::string>{"int", "int", "int"},
+                                        std::vector<std::string>{"step", "run", "total_synapses", "total_features"},
+                                        std::vector<std::string>{"int", "int", "int", "int"},
                                         std::vector<std::string>{"step", "run"});
 
     // Initialize our network
@@ -99,6 +110,8 @@ int main(int argc, char *argv[]) {
     std::vector<std::vector<std::string>> state_logger;
     std::vector<std::vector<std::string>> network_size_logger;
     std::vector<std::vector<std::string>> graph_data_logger;
+    std::vector<std::vector<std::string>> synapses_state_logger;
+    std::vector<std::vector<std::string>> neuron_activations_logger;
 
     float prediction = 0;
     float real_target = 0;
@@ -150,7 +163,7 @@ int main(int argc, char *argv[]) {
         }
 
 //      For logging purposes
-        if (counter % 300 == 0) {
+        if (counter % 1000 == 0) {
             std::vector<std::string> error;
             error.push_back(std::to_string(counter));
             error.push_back(std::to_string(my_experiment.get_int_param("run")));
@@ -162,27 +175,47 @@ int main(int argc, char *argv[]) {
             network_size.push_back(std::to_string(counter));
             network_size.push_back(std::to_string(my_experiment.get_int_param("run")));
             network_size.push_back(std::to_string(my_network.get_total_synapses()));
+            network_size.push_back(std::to_string(my_network.get_total_neurons()));
             network_size_logger.push_back(network_size);
 
 
         }
-        if (counter % 50000 < 200) {
-            std::vector<std::string> state_string;
-            std::vector<float> cur_state = tc.get_state();
-            state_string.push_back(std::to_string(counter));
-            state_string.push_back(std::to_string(my_experiment.get_int_param("run")));
-            for (int temp = 0; temp < 6; temp++)
-                state_string.push_back(std::to_string(cur_state[temp]));
+//        if (counter % 50000 < 2000) {
+        std::vector<std::string> state_string;
+        std::vector<float> cur_state = tc.get_state();
+        state_string.push_back(std::to_string(counter));
+        state_string.push_back(std::to_string(my_experiment.get_int_param("run")));
+        for (int temp = 0; temp < 6; temp++)
+            state_string.push_back(std::to_string(cur_state[temp]));
 //            state_string.push_back(std::to_string(cur_state[1]));
-            state_string.push_back(std::to_string(real_target));
-            state_string.push_back(std::to_string(my_network.read_output_values()[0]));
-            state_string.push_back(std::to_string(target));
-            state_logger.push_back(state_string);
+        state_string.push_back(std::to_string(real_target));
+        state_string.push_back(std::to_string(my_network.read_output_values()[0]));
+        state_string.push_back(std::to_string(target));
+        state_logger.push_back(state_string);
 
-            cur_state.push_back(real_target);
-            cur_state.push_back(my_network.read_output_values()[0]);
-            cur_state.push_back(target);
-            print_vector(cur_state);
+
+        if (counter % 1000000 < 2000) {
+            for (auto it: my_network.all_neurons) {
+                std::vector<std::string> neuron_value_vector;
+                neuron_value_vector.push_back(std::to_string(counter));
+                neuron_value_vector.push_back(std::to_string(my_experiment.get_int_param("run")));
+                neuron_value_vector.push_back(std::to_string(it->id));
+                neuron_value_vector.push_back(std::to_string(it->value));
+                neuron_value_vector.push_back(std::to_string(it->average_activation));
+                neuron_value_vector.push_back(std::to_string(it->outgoing_synapses.size()));
+                neuron_activations_logger.push_back(neuron_value_vector);
+            }
+        }
+        if (counter % 1000 == 0) {
+            for (auto it: my_network.output_synapses) {
+                std::vector<std::string> output_synapse_state;
+                output_synapse_state.push_back(std::to_string(counter));
+                output_synapse_state.push_back(std::to_string(my_experiment.get_int_param("run")));
+                output_synapse_state.push_back(std::to_string(it->id));
+                output_synapse_state.push_back(std::to_string(it->weight));
+                output_synapse_state.push_back(std::to_string(it->step_size));
+                synapses_state_logger.push_back(output_synapse_state);
+            }
         }
 
 //      Generating new features every 80000 steps
@@ -190,9 +223,11 @@ int main(int argc, char *argv[]) {
 //          First remove all references to useless nodes and neurons
             my_network.collect_garbage();
 
-//          Add 20 new features
-            for (int a = 0; a < 20; a++)
+//          Add 100 new features
+            for (int a = 0; a < 5; a++) {
+                std::cout << "Adding feature\n";
                 my_network.add_feature(my_experiment.get_float_param("step_size"));
+            }
 
         }
 
@@ -206,12 +241,13 @@ int main(int argc, char *argv[]) {
             graph_data_logger.push_back(graph_data);
         }
 
-        if (counter % 100000 == 99998) {
+        if (counter % 10000 == 9998) {
 //            print_vector(my_network.get_memory_weights());
             std::cout << "Pushing results" << std::endl;
             synapses_metric.add_values(error_logger);
             std::cout << "Results added " << std::endl;
             std::cout << "Len = " << error_logger.size() << std::endl;
+            std::cout << "Total state vals = " << state_logger.size() << std::endl;
 //            exit(1);
             error_logger.clear();
             my_network.collect_garbage();
@@ -224,6 +260,12 @@ int main(int argc, char *argv[]) {
 
             graph_state_metric.add_values(graph_data_logger);
             graph_data_logger.clear();
+
+            synapses_state_metric.add_values(synapses_state_logger);
+            synapses_state_logger.clear();
+
+            neuron_activations_metric.add_values(neuron_activations_logger);
+            neuron_activations_logger.clear();
 
 
         }
