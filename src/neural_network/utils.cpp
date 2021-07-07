@@ -63,6 +63,18 @@ float min(std::vector<float> values){
     auto it = std::min_element(values.begin(), values.end());
     return *it;
 }
+
+float min(float a, float b){
+    if(a < b)
+        return a;
+    return b;
+}
+
+float max(float a, float b){
+    if(a>b)
+        return a;
+    return b;
+}
 std::vector<float> softmax(const std::vector<float>& values){
     float max_val = max(values);
     std::vector<float> results;
