@@ -34,6 +34,10 @@
  * @param width: [NOT CURRENTLY USED] neural network width
  * @param seed: random seed to initialize.
  */
+
+int ContinuallyAdaptingNetwork::get_total_neurons() {
+    return this->all_neurons.size();
+}
 ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int width, int seed) : mt(seed) {
     this->time_step = 0;
 

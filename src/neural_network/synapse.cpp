@@ -118,15 +118,26 @@ void synapse::update_weight() {
     if (this->idbd) {
         float meta_grad = this->tidbd_old_error * this->trace * this->h_step_size;
         this->b2 = this->b2 * 0.99 + (1 - 0.99) * (meta_grad * meta_grad);
-
+//        if(this->trace > 2){
+//            std::cout << "ID " << this->id << " trace " << this->trace << " H size " << this->h_step_size << " Step size " << this->step_size << " weight " << this->weight << std::endl;
+//        }
         if (age > 1000) {
-            this->beta_step_size += 1e-2 * meta_grad / (sqrt(this->b2) + 1e-14);
+//            if(this->tidbd_old_error > 0){
+//                std::cout << this->tidbd_old_error << "\t" <<  this->trace << this->h_step_size << std::endl;
+//            }
+//            std::cout << this->tidbd_old_error << "\t"  this->trace << this->h_step_size << std::endl;
+            this->beta_step_size += 1e-4 * meta_grad / (sqrt(this->b2) + 1e-8);
+//            this->beta_step_size += 1e-2 * meta_grad;
+            this->beta_step_size = max(this->beta_step_size, -15);
+            this->beta_step_size = min(this->beta_step_size, -6);
             this->step_size = exp(this->beta_step_size);
+//            this->step_size = min(exp(this->beta_step_size), 0.001);
             this->weight += (this->step_size * this->credit);
-            if ((1 - this->step_size * this->tidbd_old_activation * this->trace) > 0)
+            if ((1 - this->step_size * this->tidbd_old_activation * this->trace) > 0 or true) {
                 this->h_step_size =
                         this->h_step_size * (1 - this->step_size * this->tidbd_old_activation * this->trace) +
                         this->step_size * this->trace * this->tidbd_old_error;
+            }
             else
                 this->h_step_size = this->step_size * this->trace * this->tidbd_old_error;
         }
