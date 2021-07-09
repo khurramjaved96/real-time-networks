@@ -79,16 +79,19 @@ int main(int argc, char *argv[]) {
                                         std::vector<std::string>{"int", "int", "int", "int"},
                                         std::vector<std::string>{"step", "episode", "run"});
 
-    //TODO add num inp and out as params here fixed for env
-    ContinuallyAdaptingNetwork my_network = ContinuallyAdaptingNetwork(exp.get_float_param("step_size"),
-                                                                       exp.get_int_param("width"),
-                                                                       exp.get_int_param("seed"));
-
     TMaze env = TMaze(exp.get_int_param("seed"),
                       exp.get_int_param("tmaze_corridor_length"),
                       exp.get_int_param("episode_length"),
                       exp.get_int_param("episode_gap"),
                       exp.get_bool_param("prediction_problem"));
+
+    //TODO add num inp and out as params here fixed for env
+    // TODO: input neurons and output neurons
+    ContinuallyAdaptingNetwork my_network = ContinuallyAdaptingNetwork(exp.get_float_param("step_size"),
+
+                                                                       exp.get_int_param("width"),
+                                                                       exp.get_int_param("seed"));
+
 
     std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
     my_network.viz_graph();

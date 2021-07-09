@@ -20,11 +20,11 @@
 #include <vector>
 #include <utility>
 
-ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int width, int seed) : mt(seed) {
+ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int input_neurons, int output_neurons,
+                                                       int width, int seed) : mt(seed) {
     this->time_step = 0;
 
-    int input_neuron = 3;
-    for (int counter = 0; counter < input_neuron; counter++) {
+    for (int counter = 0; counter < input_neurons; counter++) {
         auto n = new neuron(false, false, true);
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
         n->increment_reference();
@@ -33,8 +33,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int widt
         this->all_neurons.push_back(n);
     }
 
-    int output_neuros = 4;
-    for (int counter = 0; counter < output_neuros; counter++) {
+    for (int counter = 0; counter < output_neurons; counter++) {
         auto n = new neuron(false, true);
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
         n->increment_reference();
@@ -202,6 +201,33 @@ void ContinuallyAdaptingNetwork::reset_trace(){
             [&](synapse *s) {
                 s->reset_trace();
             });
+}
+
+/**
+ * Reset everything in our network, except for the weights (and past activation averages)
+ */
+void ContinuallyAdaptingNetwork::reset_all_less_weights() {
+    std::for_each(
+            std::execution::par_unseq,
+            all_synapses.begin(),
+            all_synapses.end(),
+            [&](synapse *s) {
+                s->reset_trace();
+                s->zero_gradient();
+                std::queue<message>().swap(s->grad_queue);
+                std::queue<message>().swap(s->grad_queue_weight_assignment);
+                std::queue<std::pair<float, int>>().swap(s->weight_assignment_past_activations);
+            });
+
+    std::for_each(
+            std::execution::par_unseq,
+            all_neurons.begin(),
+            all_neurons.end(),
+            [&](neuron *n) {
+                std::queue<message>().swap(n->error_gradient);
+                std::queue<std::pair<float, int>>().swap(n->past_activations);
+            });
+
 }
 
 void ContinuallyAdaptingNetwork::step() {
