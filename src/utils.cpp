@@ -32,6 +32,18 @@ void print_vector(std::vector<int> const &v) {
 }
 
 
+//void print_vector(std::vector<std::string> const &v) {
+//    std::cout << "[";
+//    int counter = 0;
+//    for (auto i = v.begin(); i != v.end(); ++i) {
+//        std::cout << " "  << std::setw(3) << *i << ",";
+//        if (counter % 100 == 99) std::cout << "\n";
+//        counter++;
+//    }
+//    std::cout << "]\n";
+//}
+
+
 void print_matrix(std::vector<std::vector<int>> const &v) {
     int counter = 0;
     for(int temp=0; temp<v.size(); temp++) {
@@ -65,7 +77,7 @@ void NetworkVisualizer::generate_dot(int time_step) {
 
     for(auto &it : all_neurons) {
         for (auto &os: it->outgoing_synapses) {
-            if (os->input_neuron->mature and os->output_neuron->mature) {
+            if (os->input_neuron->is_mature and os->output_neuron->is_mature) {
                 auto current_n = os;
                 dot_string += "\t" + std::to_string(current_n->input_neuron->id)
                               + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
@@ -85,7 +97,7 @@ std::string NetworkVisualizer::get_graph(int time_step) {
 
 //    for(auto &it : all_neurons) {
 //        for (auto &os: it->outgoing_synapses) {
-//            if(os->input_neuron->mature and os->output_neuron->mature) {
+//            if(os->input_neuron->is_mature and os->output_neuron->is_mature) {
 //                auto current_n = os;
 //                dot_string += "\t" + std::to_string(current_n->input_neuron->id)
 //                              + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
@@ -106,7 +118,7 @@ std::string NetworkVisualizer::get_graph_detailed(int time_step) {
     for(auto &it : all_neurons) {
         dot_string += "\t" + std::to_string(it->id)
                       + " [label=\"" + std::to_string(it->id) + "\\n|"
-                      + "{past_act_size:|err_grad_size:|value:}"
+                      + "{past_act_size:|err_grad_size:|gradient_activation:}"
                       + "|{" + std::to_string(it->past_activations.size()) +"|"
                       +  std::to_string(it->error_gradient.size()) + "|"
                       +  std::to_string(it->value) +"}"
@@ -135,7 +147,7 @@ void NetworkVisualizer::generate_dot_detailed(int time_step) {
     for(auto &it : all_neurons) {
         dot_string += "\t" + std::to_string(it->id)
                       + " [label=\"" + std::to_string(it->id) + "\\n|"
-                      + "{past_act_size:|err_grad_size:|value:}"
+                      + "{past_act_size:|err_grad_size:|gradient_activation:}"
                       + "|{" + std::to_string(it->past_activations.size()) +"|"
                       +  std::to_string(it->error_gradient.size()) + "|"
                       +  std::to_string(it->value) +"}"
