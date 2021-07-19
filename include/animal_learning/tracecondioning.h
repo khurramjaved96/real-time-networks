@@ -33,9 +33,7 @@ public:
     std::vector<float>  step();
     std::vector<float> reset();
     float get_US();
-    float get_long_US();
     float get_target(float gamma);
-    float get_target_long(float gamma);
     float cumulant();
     void increase_ISI(int t);
 };
