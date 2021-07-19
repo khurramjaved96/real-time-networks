@@ -36,16 +36,24 @@
  */
 
 int ContinuallyAdaptingNetwork::get_total_neurons() {
-    return this->all_neurons.size();
+    int tot = 0;
+    for(auto it: this->all_neurons){
+        if(it->is_mature)
+            tot++;
+    }
+    return tot;
 }
-ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int width, int seed) : mt(seed) {
+
+ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed, int no_of_input_features) : mt(seed) {
     this->time_step = 0;
 
 //  Initialize the neural network input neurons.
 //  Currently we fix an input size of 10.
-    int input_neuron = 10;
+    int input_neuron = no_of_input_features;
+
     for (int counter = 0; counter < input_neuron; counter++) {
         auto n = new neuron(false, false, true);
+        n->is_mature = true;
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
         n->increment_reference();
         this->input_neurons.push_back(n);
@@ -55,6 +63,12 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int widt
 
 //  Initialize all output neurons.
 //  Similarly, we fix an output size to 1.
+
+    this->error_neuron = new neuron(false, true);
+    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(this->error_neuron));
+    error_neuron->increment_reference();
+    this->all_neurons.push_back(this->error_neuron);
+
     int output_neuros = 1;
     for (int counter = 0; counter < output_neuros; counter++) {
         auto n = new neuron(false, true);
@@ -125,49 +139,69 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 //  Limit our number of synapses to 1m
     if (this->all_synapses.size() < 1000000) {
 //        std::normal_distribution<float> dist(0, 1);
+        std::uniform_int_distribution<int> drinking_dist(100000, 300000);
         std::uniform_real_distribution<float> dist(-2, 2);
         std::uniform_real_distribution<float> dist_u(0, 1);
+        std::uniform_real_distribution<float> dist_recurren(0, 0.99);
 
 //      Create our new neuron
-        neuron *last_neuron = new neuron(true);
-        last_neuron->increment_reference();
-        this->all_heap_elements.push_back(static_cast<dynamic_elem *>(last_neuron));
-        this->all_neurons.push_back(last_neuron);
+//        neuron *last_neuron = new neuron(true);
+        neuron *recurrent_neuron = new neuron(true, false, false);
+//        recurrent_neuron->drinking_age = drinking_dist(this->mt);
+        recurrent_neuron->is_recurrent_neuron = true;
+        recurrent_neuron->increment_reference();
+        recurrent_neuron->increment_reference();
+        this->all_heap_elements.push_back(static_cast<dynamic_elem *>(recurrent_neuron));
+        this->all_neurons.push_back(recurrent_neuron);
+        this->error_predicting_neurons.push_back(recurrent_neuron);
 
 //      w.p. perc, attach a random neuron (that's not an output neuron) to this neuron
         float perc = dist_u(mt);
         for (auto &n : this->all_neurons) {
-            if (!n->is_output_neuron and n->mature) {
+            if (!n->is_output_neuron and n->is_mature) {
                 if (dist_u(mt) < perc) {
 
-                    auto syn = new synapse(n, last_neuron, 0.001 * dist(this->mt), step_size);
-//                    auto syn = new synapse(n, last_neuron, 0.5 * dist(this->mt), step_size);
-//
-//                    auto syn = new synapse(n, last_neuron, 0.001, step_size);
-                    syn->enable_logging = false;
+                    auto syn = new synapse(n, recurrent_neuron, 0.001 * dist(this->mt), step_size);
                     syn->block_gradients();
                     syn->increment_reference();
                     this->all_synapses.push_back(syn);
+
                     this->all_heap_elements.push_back(static_cast<dynamic_elem *>(syn));
                 }
             }
         }
+//        if(recurrent_neuron->incoming_synapses.size()==0){
+//            std::cout << "Creating new feature with no incoming neurons\n";
+//            exit(1);
+//        }
+        auto syn_2 = new synapse(recurrent_neuron, recurrent_neuron, dist_recurren(this->mt), step_size);
+        syn_2->block_gradients();
+        syn_2->set_connected_to_recurrence(true);
+        recurrent_neuron->recurrent_synapse = syn_2;
+        this->all_heap_elements.push_back(static_cast<dynamic_elem *>(syn_2));
+        syn_2->increment_reference();
+        this->all_synapses.push_back(syn_2);
+        syn_2->increment_reference();
+
+//        std::cout << last_neuron->incoming_synapses.size() << std::endl;
+//        exit(1);
+
 
 //      Attach this neuron to all output neurons.
-//      Set its weight to either 1 or -1
-        for (auto &output_n : this->output_neurons) {
-            synapse *output_s_temp;
-            if (dist(this->mt) > 0) {
-                output_s_temp = new synapse(last_neuron, output_n, 1, 0);
-            } else {
-                output_s_temp = new synapse(last_neuron, output_n, -1, 0);
-            }
-            output_s_temp->increment_reference();
-            this->all_synapses.push_back(output_s_temp);
-            output_s_temp->increment_reference();
-            this->output_synapses.push_back(output_s_temp);
-            this->all_heap_elements.push_back(static_cast<dynamic_elem *>(output_s_temp));
+////      Set its weight to either 1 or -1
+
+        synapse *output_s_temp;
+        if (dist(this->mt) > 0) {
+            output_s_temp = new synapse(recurrent_neuron, this->output_neurons[0], 1, 0);
+        } else {
+            output_s_temp = new synapse(recurrent_neuron, this->output_neurons[0], -1, 0);
         }
+        output_s_temp->set_shadow_weight(true);
+        output_s_temp->increment_reference();
+        this->all_synapses.push_back(output_s_temp);
+        output_s_temp->increment_reference();
+        this->output_synapses.push_back(output_s_temp);
+        this->all_heap_elements.push_back(static_cast<dynamic_elem *>(output_s_temp));
     }
 }
 
@@ -185,7 +219,12 @@ int ContinuallyAdaptingNetwork::get_input_size() {
 }
 
 int ContinuallyAdaptingNetwork::get_total_synapses() {
-    return this->all_synapses.size();
+    int tot = 0;
+    for(auto it: this->all_synapses){
+        if(it->output_neuron->is_mature)
+            tot++;
+    }
+    return tot;
 }
 
 ContinuallyAdaptingNetwork::~ContinuallyAdaptingNetwork() {
@@ -198,12 +237,16 @@ void ContinuallyAdaptingNetwork::set_input_values(std::vector<float> const &inpu
 //    assert(input_values.size() == this->input_neurons.size());
     for (int i = 0; i < input_values.size(); i++) {
         if (i < this->input_neurons.size())
-            this->input_neurons[i]->temp_value = input_values[i];
+            this->input_neurons[i]->value_before_firing = input_values[i];
+        else{
+            std::cout << "More input features than input neurons\n";
+            exit(1);
+        }
     }
 }
 
 bool to_delete_s(synapse *s) {
-    return s->useless;
+    return s->is_useless;
 }
 
 bool to_delete_n(neuron *s) {
@@ -215,7 +258,7 @@ bool to_delete_n(neuron *s) {
  * This function takes a step in the NN by firing all neurons.
  * Afterwards, it calculates gradients based on previous error and
  * propagates it back. Currently backprop is truncated at 1 step.
- * Finally, it updates its weights and prunes useless neurons and synapses.
+ * Finally, it updates its weights and prunes is_useless neurons and synapses.
  */
 void ContinuallyAdaptingNetwork::step() {
 
@@ -274,7 +317,7 @@ void ContinuallyAdaptingNetwork::step() {
                 s->update_weight();
             });
 
-//  Mark all useless weights and neurons for deletion
+//  Mark all is_useless weights and neurons for deletion
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -283,22 +326,22 @@ void ContinuallyAdaptingNetwork::step() {
                 n->mark_useless_weights();
             });
 
-//  Delete our useless weights and neurons
+//  Delete our is_useless weights and neurons
     std::for_each(
-//            std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
                 n->prune_useless_weights();
             });
 
-//  For all synapses, if the synapse is useless set it has 0 references. We remove it.
+//  For all synapses, if the synapse is is_useless set it has 0 references. We remove it.
+
     std::for_each(
             std::execution::par_unseq,
             this->all_synapses.begin(),
             this->all_synapses.end(),
             [&](synapse *s) {
-                if (s->useless) {
+                if (s->is_useless) {
                     s->decrement_reference();
                 }
             });
@@ -311,7 +354,7 @@ void ContinuallyAdaptingNetwork::step() {
             this->output_synapses.begin(),
             this->output_synapses.end(),
             [&](synapse *s) {
-                if (s->useless) {
+                if (s->is_useless) {
                     s->decrement_reference();
                 }
             });
@@ -350,16 +393,12 @@ bool is_null_ptr(dynamic_elem *elem) {
  * Find all synapses and neurons with 0 references to them and delete them.
  */
 void ContinuallyAdaptingNetwork::collect_garbage() {
-    for(int temp = 0; temp < this->all_heap_elements.size(); temp++){
-//        if(all_heap_elements[temp]->references < 2) {
-//            std::cout << all_heap_elements[temp]->references << std::endl;
-//            exit(1);
-//        }
+    for (int temp = 0; temp < this->all_heap_elements.size(); temp++) {
+
         if (all_heap_elements[temp]->references == 0) {
-//            std::cout << "Deleting element\n";
+
             delete all_heap_elements[temp];
             all_heap_elements[temp] = nullptr;
-//            exit(1);
         }
     }
 
@@ -399,7 +438,12 @@ float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets, 
 //  Put all targets into our neurons.
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
+        if(counter == 1){
+            std::cout << "More than one output neuron not supported currently\n";
+            exit(1);
+        }
         error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
     }
-    return error;
+    this->error_neuron->introduce_targets(error, this->time_step-1, gamma, lambda);
+    return error*error;
 }
