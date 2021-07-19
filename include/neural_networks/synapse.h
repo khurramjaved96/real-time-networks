@@ -17,64 +17,55 @@ class neuron;
 
 
 class synapse : public dynamic_elem {
+    bool is_recurrent_connection;
 public:
+    static long long int synapse_id_generator;
     long long int id;
-    static long long int synapse_id;
-    bool useless;
+
+    bool is_useless;
     int age;
-    bool mark_delete;
+    bool in_shadow_mode;
+    bool print_status;
     float weight;
     float credit;
     float trace;
-    float credit_activation_idbd;
     float step_size;
+    float TH;
 
+    float synapse_utility;
     float tidbd_old_activation;
     float tidbd_old_error;
-    bool print_status;
-    bool pass_gradients;
-    float idbd_local_gradient;
-    float b1;
-    float b2;
-    float beta_step_size;
-    float h_step_size;
-    float idbd;
-    bool enable_logging;
+    bool propagate_gradients;
+    float l2_norm_meta_gradient;
+    float log_step_size_tidbd;
+    float h_tidbd;
+    bool idbd;
+    void set_connected_to_recurrence(bool);
+    bool get_recurrent_status();
     std::queue<message> grad_queue;
     std::queue<message> grad_queue_weight_assignment;
-    std::queue<std::pair<float, int>> weight_assignment_past_activations;
+    std::queue<message_activation> weight_assignment_past_activations;
     neuron *input_neuron;
     neuron *output_neuron;
 
     explicit synapse(neuron *input, neuron *output, float w, float step_size);
 
-    void read_gradients();
-
-    void update_credit();
-
-//    void process_input();
-    void step();
     void block_gradients();
 
-    void read_gradient();
-
-    void zero_gradient();
+    void set_shadow_weight(bool);
 
     void update_weight();
+
     void turn_on_idbd();
+
+    void turn_off_idbd();
+
+    void update_utility();
+
     void assign_credit();
-    ~synapse()=default;
 
-};
+    ~synapse() = default;
 
-class no_grad_synapse{
-public:
-    neuron *input_neurons;
-    neuron *output_neurons;
-
-    explicit no_grad_synapse(neuron *input, neuron *output);
-
-    void copy_activation(int time_step);
 };
 
 #endif //BENCHMARKS_SYNAPSE_H
