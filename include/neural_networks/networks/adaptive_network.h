@@ -29,15 +29,17 @@ class ContinuallyAdaptingNetwork{
 
 public:
     std::vector<neuron*> output_neurons;
+    neuron* error_neuron;
     std::vector<synapse*> all_synapses;
     std::vector<synapse*> output_synapses;
+    std::vector<neuron*> error_predicting_neurons;
 //  all_heap_elements collects all neurons and synapses for easier garbage collection.
     std::vector<dynamic_elem *> all_heap_elements;
     void collect_garbage();
     std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
 //    std::vector<neuron*> new_features;
-    ContinuallyAdaptingNetwork(float step_size, int width, int seed);
+    ContinuallyAdaptingNetwork(float step_size, int seed, int no_of_input_features);
     ~ContinuallyAdaptingNetwork();
     void print_graph(neuron* root);
     void viz_graph();
