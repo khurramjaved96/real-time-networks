@@ -125,7 +125,7 @@ TestCase::~TestCase() {
 void TestCase::set_input_values(std::vector<float> const &input_values) {
     assert(input_values.size() == this->input_neurons.size());
     for (int i = 0; i < input_values.size(); i++) {
-        this->input_neurons[i]->temp_value = input_values[i];
+        this->input_neurons[i]->value_before_firing = input_values[i];
     }
 }
 
@@ -183,7 +183,7 @@ void TestCase::step() {
 //        it->fire(this->time_step);
 //    }
 //
-////    std::cout << "Neurons updating value\n";
+////    std::cout << "Neurons updating gradient_activation\n";
 //    for(auto& it : this->all_neurons){
 //        it->update_value();
 //    }
