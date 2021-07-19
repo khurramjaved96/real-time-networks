@@ -6,7 +6,7 @@
 #define FLEXIBLENN_MESSAGE_H
 
 
-class message{
+class message {
 public:
     float gradient;
     int time_step;
@@ -14,9 +14,18 @@ public:
     float lambda;
     float gamma;
     float error;
+    float error_shadow_prediction;
+
     message(float m, int t);
 };
 
+class message_activation {
+public:
+    float gradient_activation;
+    float error_prediction_value;
+    int time;
+    float TH;
+};
 
 
 #endif //FLEXIBLENN_MESSAGE_H
