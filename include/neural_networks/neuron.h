@@ -20,7 +20,7 @@
 class neuron : public dynamic_elem {
 public:
     static long long int neuron_id_generator;
-    synapse* recurrent_synapse;
+    synapse *recurrent_synapse;
     float old_value;
     bool is_recurrent_neuron;
     bool is_input_neuron;

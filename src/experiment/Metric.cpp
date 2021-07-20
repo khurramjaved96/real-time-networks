@@ -8,7 +8,8 @@
 #include "../../include/experiment/Metric.h"
 
 
-Metric::Metric(std::string db_name, std::string table_name, std::vector<std::string> keys, std::vector<std::string> type,
+Metric::Metric(std::string db_name, std::string table_name, std::vector<std::string> keys,
+               std::vector<std::string> type,
                std::vector<std::string> index) {
     this->database_name = db_name;
     this->table_name = std::move(table_name);

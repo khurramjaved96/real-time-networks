@@ -6,4 +6,5 @@
 #define FLEXIBLENN_RECURRENCE_TESTS_H
 
 bool recurrent_network_test();
+
 #endif //FLEXIBLENN_RECURRENCE_TESTS_H

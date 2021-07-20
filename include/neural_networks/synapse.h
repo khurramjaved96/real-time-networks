@@ -40,8 +40,11 @@ public:
     float log_step_size_tidbd;
     float h_tidbd;
     bool idbd;
+
     void set_connected_to_recurrence(bool);
+
     bool get_recurrent_status();
+
     std::queue<message> grad_queue;
     std::queue<message> grad_queue_weight_assignment;
     std::queue<message_activation> weight_assignment_past_activations;

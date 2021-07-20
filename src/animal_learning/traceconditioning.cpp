@@ -76,7 +76,6 @@ float TraceConditioning::get_US() {
 }
 
 
-
 float TraceConditioning::get_target(float gamma) {
     if (this->remaining_until_US >= 0) {
         return pow(gamma, this->remaining_until_US);

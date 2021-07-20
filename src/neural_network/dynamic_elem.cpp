@@ -10,8 +10,9 @@ dynamic_elem::dynamic_elem() {
 }
 
 void dynamic_elem::increment_reference() {
-    this->references+=1;
+    this->references += 1;
 }
+
 void dynamic_elem::decrement_reference() {
-    this->references-=1;
+    this->references -= 1;
 }

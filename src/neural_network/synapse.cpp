@@ -48,6 +48,7 @@ synapse::synapse(neuron *input, neuron *output, float w, float step_size) {
 void synapse::set_connected_to_recurrence(bool val) {
     this->is_recurrent_connection = val;
 }
+
 void synapse::set_shadow_weight(bool val) {
     this->in_shadow_mode = val;
 }
@@ -83,7 +84,7 @@ void synapse::assign_credit() {
                                                         (this->grad_queue_weight_assignment.front().time_step -
                                                          this->grad_queue_weight_assignment.front().distance_travelled -
                                                          1)) {
-        if(this->is_recurrent_connection){
+        if (this->is_recurrent_connection) {
             std::cout << "Is recurrent connection\n";
         }
         std::cout << "Synapses.cpp : Shouldn't happen\n";
@@ -95,8 +96,8 @@ void synapse::assign_credit() {
 //      We have a match! Here we calculate our update rule. We first update our eligibility trace
         this->trace = this->trace * this->grad_queue_weight_assignment.front().gamma *
                       this->grad_queue_weight_assignment.front().lambda +
-                this->weight_assignment_past_activations.front().gradient_activation *
-                this->grad_queue_weight_assignment.front().gradient;
+                      this->weight_assignment_past_activations.front().gradient_activation *
+                      this->grad_queue_weight_assignment.front().gradient;
 //        if(this->id == 7){
 //            std::cout << "first " <<  this->weight_assignment_past_activations.front().first << " sec " << this->grad_queue_weight_assignment.front().gradient << std::endl;
 //        }
@@ -124,10 +125,9 @@ bool synapse::get_recurrent_status() {
 }
 
 void synapse::update_utility() {
-    if(this->output_neuron->is_output_neuron){
-        synapse_utility = std::abs(this->weight*this->input_neuron->average_activation);
-    }
-    else{
+    if (this->output_neuron->is_output_neuron) {
+        synapse_utility = std::abs(this->weight * this->input_neuron->average_activation);
+    } else {
 
     }
 }
@@ -175,11 +175,11 @@ void synapse::update_weight() {
 
         this->weight += (this->step_size * this->credit);
     }
-    if(this->is_recurrent_connection){
-        if(this->weight > 0.9){
+    if (this->is_recurrent_connection) {
+        if (this->weight > 0.9) {
             this->weight = 0.9;
         }
-        if(this->weight < 0){
+        if (this->weight < 0) {
             this->weight = 0;
         }
     }

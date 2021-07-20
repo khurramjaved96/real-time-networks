@@ -40,7 +40,8 @@ int ContinuallyAdaptingRecurrentNetwork::get_total_neurons() {
     return this->all_neurons.size();
 }
 
-ContinuallyAdaptingRecurrentNetwork::ContinuallyAdaptingRecurrentNetwork(float step_size, int seed, int no_of_input_features) : mt(seed) {
+ContinuallyAdaptingRecurrentNetwork::ContinuallyAdaptingRecurrentNetwork(float step_size, int seed,
+                                                                         int no_of_input_features) : mt(seed) {
     this->time_step = 0;
 
 //  Initialize the neural network input neurons.
@@ -70,7 +71,7 @@ ContinuallyAdaptingRecurrentNetwork::ContinuallyAdaptingRecurrentNetwork(float s
     output_n->increment_reference();
     this->all_neurons.push_back(output_n);
     std::uniform_real_distribution<float> dist(-1, 1);
-    for(int i=0; i<2; i++) {
+    for (int i = 0; i < 2; i++) {
         auto recurrent_neuron = new neuron(true, false, false);
         recurrent_neuron->is_recurrent_neuron = true;
         recurrent_neuron->is_mature = true;
@@ -78,16 +79,15 @@ ContinuallyAdaptingRecurrentNetwork::ContinuallyAdaptingRecurrentNetwork(float s
         recurrent_neuron->increment_reference();
         this->all_neurons.push_back(recurrent_neuron);
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(recurrent_neuron));
-        synapse* syn;
-        synapse* syn_1;
-        synapse* syn_2;
-        if(i == 1) {
+        synapse *syn;
+        synapse *syn_1;
+        synapse *syn_2;
+        if (i == 1) {
 //            std::cout << "Gets in 1\n";
             syn = new synapse(n, recurrent_neuron, dist(this->mt), step_size);
             syn_1 = new synapse(n2, recurrent_neuron, dist(this->mt), step_size);
             syn_2 = new synapse(recurrent_neuron, recurrent_neuron, dist(this->mt), step_size);
-        }
-        else{
+        } else {
 //            std::cout << "Gets in 2\n";
             syn = new synapse(n, recurrent_neuron, dist(this->mt), step_size);
             syn_1 = new synapse(n2, recurrent_neuron, dist(this->mt), step_size);
@@ -115,9 +115,8 @@ ContinuallyAdaptingRecurrentNetwork::ContinuallyAdaptingRecurrentNetwork(float s
         syn_2->increment_reference();
 
 
-
-        synapse* s;
-        if(i == 0)
+        synapse *s;
+        if (i == 0)
             s = new synapse(recurrent_neuron, output_n, 0, step_size);
         else
             s = new synapse(recurrent_neuron, output_n, -0, step_size);
@@ -129,7 +128,7 @@ ContinuallyAdaptingRecurrentNetwork::ContinuallyAdaptingRecurrentNetwork(float s
         this->output_synapses.push_back(s);
     }
 //    exit(1);
-    synapse* s;
+    synapse *s;
 
     s = new synapse(n, output_n, 0.3, step_size);
     s->turn_on_idbd();
@@ -284,14 +283,12 @@ void ContinuallyAdaptingRecurrentNetwork::set_input_values(std::vector<float> co
         if (i < this->input_neurons.size()) {
             this->input_neurons[i]->value_before_firing = input_values[i];
 //            std::cout << "Setting gradient_activation = " << input_values[i] << std::endl;
-        }
-        else{
+        } else {
             std::cout << "More input features than input neurons\n";
             exit(1);
         }
     }
 }
-
 
 
 /**
@@ -424,7 +421,6 @@ void ContinuallyAdaptingRecurrentNetwork::step() {
 }
 
 
-
 /**
  * Find all synapses and neurons with 0 references to them and delete them.
  */
@@ -474,11 +470,11 @@ float ContinuallyAdaptingRecurrentNetwork::introduce_targets(std::vector<float> 
 //  Put all targets into our neurons.
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
-        if(counter == 1){
+        if (counter == 1) {
             std::cout << "More than one output neuron not supported currently\n";
             exit(1);
         }
         error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
     }
-    return error*error;
+    return error * error;
 }

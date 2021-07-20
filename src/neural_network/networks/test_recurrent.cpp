@@ -40,7 +40,8 @@ int ContinuallyAdaptingRecurrentNetworkTest::get_total_neurons() {
     return this->all_neurons.size();
 }
 
-ContinuallyAdaptingRecurrentNetworkTest::ContinuallyAdaptingRecurrentNetworkTest(float step_size, int seed, int no_of_input_features) : mt(seed) {
+ContinuallyAdaptingRecurrentNetworkTest::ContinuallyAdaptingRecurrentNetworkTest(float step_size, int seed,
+                                                                                 int no_of_input_features) : mt(seed) {
     this->time_step = 0;
 
 //  Initialize the neural network input neurons.
@@ -270,8 +271,7 @@ void ContinuallyAdaptingRecurrentNetworkTest::set_input_values(std::vector<float
         if (i < this->input_neurons.size()) {
             this->input_neurons[i]->value_before_firing = input_values[i];
 //            std::cout << "Setting gradient_activation = " << input_values[i] << std::endl;
-        }
-        else{
+        } else {
             std::cout << "More input features than input neurons\n";
             exit(1);
         }
@@ -454,15 +454,16 @@ float ContinuallyAdaptingRecurrentNetworkTest::introduce_targets(std::vector<flo
     return error;
 }
 
-float ContinuallyAdaptingRecurrentNetworkTest::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
+float
+ContinuallyAdaptingRecurrentNetworkTest::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
 //  Put all targets into our neurons.
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
-        if(counter == 1){
+        if (counter == 1) {
             std::cout << "More than one output neuron not supported currently\n";
             exit(1);
         }
         error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
     }
-    return error*error;
+    return error * error;
 }

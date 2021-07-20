@@ -133,7 +133,7 @@ void neuron::fire(int time_step) {
 //        this->average_activation *= 0.99999;
     } else {
 //      Keep a running average of our activations.
-        if(std::abs(this->value) > this->average_activation){
+        if (std::abs(this->value) > this->average_activation) {
             this->average_activation = std::abs(this->value);
         }
 //        this->average_activation = this->average_activation * 0.95 + 0.05 * std::abs(this->value);

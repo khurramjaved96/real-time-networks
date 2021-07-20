@@ -51,8 +51,8 @@ int main(int argc, char *argv[]) {
 
     // Initialize our dataset
     TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
-                                          std::pair<int, int>(interval, interval_up),
-                                          std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
+                                         std::pair<int, int>(interval, interval_up),
+                                         std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
 
 //    TraceConditioning tc = TraceConditioning(std::pair<int, int>(interval, interval_up),
 //                                         std::pair<int, int>(interval, interval_up),
@@ -86,13 +86,15 @@ int main(int argc, char *argv[]) {
                                                           "real", "real", "real"},
                                  std::vector<std::string>{"step", "run"});
     Metric neuron_activations_metric = Metric(my_experiment.database_name, "network_state",
-                                              std::vector<std::string>{"step", "run", "neuron_id_generator", "activation",
+                                              std::vector<std::string>{"step", "run", "neuron_id_generator",
+                                                                       "activation",
                                                                        "avg_activation", "users"},
                                               std::vector<std::string>{"int", "int", "int", "real", "real", "int"}, \
                                        std::vector<std::string>{"step", "run", "neuron_id_generator"});
 
     Metric synapses_state_metric = Metric(my_experiment.database_name, "synapse_state",
-                                          std::vector<std::string>{"step", "run", "synapse_id_generator", "weight", "step_size"},
+                                          std::vector<std::string>{"step", "run", "synapse_id_generator", "weight",
+                                                                   "step_size"},
                                           std::vector<std::string>{"int", "int", "int", "real", "real"}, \
                                        std::vector<std::string>{"step", "run", "synapse_id_generator"});
 

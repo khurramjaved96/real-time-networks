@@ -6,12 +6,16 @@
 #define FLEXIBLENN_DYNAMIC_ELEM_H
 
 
-class dynamic_elem{
+class dynamic_elem {
 public:
     int references;
+
     dynamic_elem();
-    virtual ~dynamic_elem()= default;
+
+    virtual ~dynamic_elem() = default;
+
     void decrement_reference();
+
     void increment_reference();
 };
 

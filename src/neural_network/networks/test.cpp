@@ -37,8 +37,7 @@ TestCase::TestCase(float step_size, int width, int seed) {
     this->all_neurons.push_back(n);
 
     int output_neuros = 1;
-    for (int counter=0; counter < output_neuros; counter++)
-    {
+    for (int counter = 0; counter < output_neuros; counter++) {
         auto n = new neuron(false);
         this->output_neuros.push_back(n);
         this->all_neurons.push_back(n);
@@ -57,7 +56,7 @@ TestCase::TestCase(float step_size, int width, int seed) {
     this->all_synapses.push_back(new synapse(all_neurons[5 - 1], all_neurons[7 - 1], 0.2, step_size));
     this->all_synapses.push_back(new synapse(all_neurons[6 - 1], all_neurons[7 - 1], 0.2, step_size));
 
-    for(auto it: this->all_synapses){
+    for (auto it: this->all_synapses) {
         sum_of_gradients.push_back(0);
     }
 
@@ -166,8 +165,7 @@ void TestCase::step() {
                 n->propagate_error();
             });
 
-    for(int counter = 0; counter < all_synapses.size(); counter ++)
-    {
+    for (int counter = 0; counter < all_synapses.size(); counter++) {
         this->sum_of_gradients[counter] += all_synapses[counter]->credit;
     }
 //    std::for_each(
