@@ -162,9 +162,8 @@ void TestCase::step() {
     for (int counter = 0; counter < all_synapses.size(); counter++) {
         this->sum_of_gradients[counter] += all_synapses[counter]->credit;
     }
-
-
     this->time_step++;
+}
 
 std::vector<float> TestCase::read_output_values() {
     std::vector<float> output_vec;
