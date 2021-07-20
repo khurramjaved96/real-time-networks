@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/khurramjaved96/continually-adapting-networks.svg?branch=step_size_adaptation)](https://travis-ci.com/khurramjaved96/continually-adapting-networks)
+
 # Continually Adapting Networks
 Implementation of dynamic NNs for agent-state construction using genetate and test with gradients. 
 
