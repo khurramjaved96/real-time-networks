@@ -1,22 +1,5 @@
 dist: focal
 language: cpp
-matrix:
-  include: 
-   # works on Precise and Trusty
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-9
-      env:
-        - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-
-before_install:
-    - eval "${MATRIX_EVAL}"
- 
- 
 
       
 compiler: gcc
