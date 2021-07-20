@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-03-16.
 //
 
-#ifndef BENCHMARKS_NEURAL_NETWORK_H
-#define BENCHMARKS_NEURAL_NETWORK_H
+#ifndef INCLUDE_NEURAL_NETWORKS_NEURAL_NETWORK_H_
+#define INCLUDE_NEURAL_NETWORKS_NEURAL_NETWORK_H_
 
 
 #include "synapse.h"
@@ -38,4 +38,4 @@ public:
     void introduce_error(std::map<neuron, float> const &error_map);
 };
 
-#endif //BENCHMARKS_NEURAL_NETWORK_H
+#endif //INCLUDE_NEURAL_NETWORKS_NEURAL_NETWORK_H_

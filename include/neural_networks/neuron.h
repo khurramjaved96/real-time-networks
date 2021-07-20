@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-03-16.
 //
 
-#ifndef BENCHMARKS_NEURON_H
-#define BENCHMARKS_NEURON_H
+#ifndef INCLUDE_NEURAL_NETWORKS_NEURON_H_
+#define INCLUDE_NEURAL_NETWORKS_NEURON_H_
 
 
 #include <vector>
@@ -98,4 +98,4 @@ public:
 //
 //};
 
-#endif //BENCHMARKS_NEURON_H
+#endif //INCLUDE_NEURAL_NETWORKS_NEURON_H_

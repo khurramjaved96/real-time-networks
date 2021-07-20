@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-07-11.
 //
 
-#ifndef FLEXIBLENN_ADAPTIVE_RECURRENT_NETWORK_H
-#define FLEXIBLENN_ADAPTIVE_RECURRENT_NETWORK_H
+#ifndef INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_
+#define INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_
 
 
 #include "../synapse.h"
@@ -20,7 +20,6 @@ class ContinuallyAdaptingRecurrentNetwork {
     long long int time_step;
 
     std::mt19937 mt;
-
 
 public:
     std::vector<neuron *> output_neurons;
@@ -69,10 +68,8 @@ public:
 
     int get_total_neurons();
 
-//    void add_memory(float step_size);
     void add_feature(float step_size);
-//    std::vector<float> get_memory_weights();
 };
 
 
-#endif //FLEXIBLENN_ADAPTIVE_RECURRENT_NETWORK_H
+#endif //INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_

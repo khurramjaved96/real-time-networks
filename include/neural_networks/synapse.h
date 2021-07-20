@@ -2,12 +2,11 @@
 // Created by Khurram Javed on 2021-03-16.
 //
 
-#ifndef BENCHMARKS_SYNAPSE_H
-#define BENCHMARKS_SYNAPSE_H
+#ifndef INCLUDE_NEURAL_NETWORKS_SYNAPSE_H_
+#define INCLUDE_NEURAL_NETWORKS_SYNAPSE_H_
 
 
 #include <vector>
-//#include "neuron.h"
 #include "message.h"
 #include <queue>
 #include <utility>
@@ -71,4 +70,4 @@ public:
 
 };
 
-#endif //BENCHMARKS_SYNAPSE_H
+#endif //INCLUDE_NEURAL_NETWORKS_SYNAPSE_H_

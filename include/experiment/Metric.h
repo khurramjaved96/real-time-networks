@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-03-30.
 //
 
-#ifndef FLEXIBLENN_METRIC_H
-#define FLEXIBLENN_METRIC_H
+#ifndef INCLUDE_EXPERIMENT_METRIC_H_
+#define INCLUDE_EXPERIMENT_METRIC_H_
 #include <vector>
 #include <string>
 #include <iostream>
@@ -24,4 +24,4 @@ public:
 
 };
 
-#endif //FLEXIBLENN_METRIC_H
+#endif //INCLUDE_EXPERIMENT_METRIC_H_

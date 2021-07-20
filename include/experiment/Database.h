@@ -7,8 +7,8 @@
 #include <vector>
 #include <mysql.h>
 
-#ifndef BINDING_DATABASE_H
-#define BINDING_DATABASE_H
+#ifndef INCLUDE_EXPERIMENT_DATABASE_H_
+#define INCLUDE_EXPERIMENT_DATABASE_H_
 
 
 class Database {
@@ -37,4 +37,4 @@ public:
     Database();
 };
 
-#endif //BINDING_DATABASE_H
+#endif //INCLUDE_EXPERIMENT_DATABASE_H_

@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-04-01.
 //
 
-#ifndef FLEXIBLENN_MESSAGE_H
-#define FLEXIBLENN_MESSAGE_H
+#ifndef INCLUDE_NEURAL_MESSAGE_ELEM_H_
+#define INCLUDE_NEURAL_MESSAGE_ELEM_H_
 
 
 class message {
@@ -28,4 +28,4 @@ public:
 };
 
 
-#endif //FLEXIBLENN_MESSAGE_H
+#endif //INCLUDE_NEURAL_MESSAGE_ELEM_H_

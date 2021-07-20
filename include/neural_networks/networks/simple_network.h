@@ -2,8 +2,8 @@
 // Created by haseebs on 4/29/21.
 //
 
-#ifndef FLEXIBLENN_SIMPLE_NETWORK_H
-#define FLEXIBLENN_SIMPLE_NETWORK_H
+#ifndef INCLUDE_NEURAL_NETWORKS_NETWORKS_SIMPLE_NETWORK_H_
+#define INCLUDE_NEURAL_NETWORKS_NETWORKS_SIMPLE_NETWORK_H_
 
 #include "../synapse.h"
 #include <vector>
@@ -45,4 +45,4 @@ public:
     int get_total_synapses();
 };
 
-#endif //FLEXIBLENN_SIMPLE_NETWORK_H
+#endif //INCLUDE_NEURAL_NETWORKS_NETWORKS_SIMPLE_NETWORK_H_

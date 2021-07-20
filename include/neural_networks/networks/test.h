@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-04-25.
 //
 
-#ifndef FLEXIBLENN_TEST_H
-#define FLEXIBLENN_TEST_H
+#ifndef INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_
+#define INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_
 
 
 #include "../synapse.h"
@@ -48,4 +48,4 @@ public:
 };
 
 
-#endif //FLEXIBLENN_TEST_H
+#endif //INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_

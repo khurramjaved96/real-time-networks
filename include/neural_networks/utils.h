@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-03-30.
 //
 
-#ifndef FLEXIBLENN_UTILS_H
-#define FLEXIBLENN_UTILS_H
+#ifndef INCLUDE_NEURAL_NETWORKS_UTILS_H_
+#define INCLUDE_NEURAL_NETWORKS_UTILS_H_
 
 #include <vector>
 #include <random>
@@ -66,5 +66,5 @@ bool to_delete_n(neuron *s);
 
 bool is_null_ptr(dynamic_elem *elem);
 
-#endif //FLEXIBLENN_UTILS_H
+#endif //INCLUDE_NEURAL_NETWORKS_UTILS_H_
 //
