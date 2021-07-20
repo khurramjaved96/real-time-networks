@@ -16,3 +16,6 @@ For the tests, you'll need Python installed together with `pytorch` and `autogra
 To compile this project locally, you'll have to link your MariaDB C++ connector locally, as demonstrated
 in `CMakeLists.txt`. You'll also need to uncomment essentially everything under the 
 comment "For running locally".
+
+## Test cases
+Test cases can be added in the tests directory. Create a new .h and .cpp file for the testcase and call the test case function in tests/test.cpp. The repo uses Travis-CI for Continuous Integration. 
