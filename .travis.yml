@@ -1,7 +1,8 @@
 dist: focal
 language: cpp
 
-      
+before_install:
+  - sudo apt install libtbb-dev
 compiler: gcc
 
 script: cd tests && bash compile.sh && bash ./tests
