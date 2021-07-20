@@ -7,13 +7,13 @@
 //
 
 #include "../../../include/neural_networks/networks/test.h"
-#include "../../../include/neural_networks/neuron.h"
-#include "../../../include/neural_networks/synapse.h"
-#include "../../../include/neural_networks/utils.h"
 #include <assert.h>
 #include <random>
 #include <execution>
 #include <iostream>
+#include "../../../include/neural_networks/neuron.h"
+#include "../../../include/neural_networks/synapse.h"
+#include "../../../include/neural_networks/utils.h"
 
 TestCase::TestCase(float step_size, int width, int seed) {
     this->time_step = 0;
@@ -56,11 +56,9 @@ TestCase::TestCase(float step_size, int width, int seed) {
     this->all_synapses.push_back(new synapse(all_neurons[5 - 1], all_neurons[7 - 1], 0.2, step_size));
     this->all_synapses.push_back(new synapse(all_neurons[6 - 1], all_neurons[7 - 1], 0.2, step_size));
 
-    for (auto it: this->all_synapses) {
+    for (auto it : this->all_synapses) {
         sum_of_gradients.push_back(0);
     }
-
-
 }
 
 //    this->all_synapses.push_back(new synapse(all_neurons[1], all_neurons[6], dist(mt), step_size));
@@ -79,12 +77,10 @@ TestCase::TestCase(float step_size, int width, int seed) {
 //}
 
 void TestCase::print_graph(neuron *root) {
-
-    for (auto &os: root->outgoing_synapses) {
+    for (auto &os : root->outgoing_synapses) {
         auto current_n = os;
 
         if (!current_n->print_status) {
-
             std::cout << current_n->input_neuron->id << "\t" << current_n->output_neuron->id << "\t"
                       << os->grad_queue.size() << "\t\t" << current_n->input_neuron->past_activations.size()
                       << "\t\t\t" << current_n->output_neuron->past_activations.size() << "\t\t\t"
@@ -130,8 +126,6 @@ void TestCase::set_input_values(std::vector<float> const &input_values) {
 }
 
 void TestCase::step() {
-
-
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -168,59 +162,9 @@ void TestCase::step() {
     for (int counter = 0; counter < all_synapses.size(); counter++) {
         this->sum_of_gradients[counter] += all_synapses[counter]->credit;
     }
-//    std::for_each(
-//            std::execution::par_unseq,
-//            all_synapses.begin(),
-//            all_synapses.end(),
-//            [&](synapse *s) {
-//                s->update_weight();
-//            });
-
-
-    //    std::cout << "Neurons firing\n";
-//    for(auto& it : this->all_neurons){
-//        it->fire(this->time_step);
-//    }
-//
-////    std::cout << "Neurons updating gradient_activation\n";
-//    for(auto& it : this->all_neurons){
-//        it->update_value();
-//    }
-////    std::cout << "Neurons forwarding gradients to synapses\n";
-//
-//    for(auto& it : this->all_neurons){
-//        it->forward_gradients();
-//    }
-//
-////    std::cout << "Propagating gradients from synapses to neuron (Summing with correct time-steps)\n";
-//
-//    for(auto& it : this->all_neurons){
-//        it->propagate_error();
-//    }
-//
-//    for(auto& it: this->all_synapses){
-//        it->update_weight();
-////        it->zero_gradient();
-//    }
 
 
     this->time_step++;
-
-
-
-
-
-//
-//    std::for_each(
-//            std::execution::par_unseq,
-//            output_neurons.begin(),
-//            output_neurons.end(),
-//            [&](neuron* n)
-//            {
-//                n->update_value();
-//            });
-
-}
 
 std::vector<float> TestCase::read_output_values() {
     std::vector<float> output_vec;

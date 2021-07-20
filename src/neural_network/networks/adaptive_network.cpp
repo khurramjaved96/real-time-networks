@@ -8,20 +8,19 @@
 
 
 #include "../../../include/neural_networks/networks/adaptive_network.h"
+#include <assert.h>
+#include <cmath>
+#include <random>
+#include <execution>
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <utility>
 #include "../../../include/neural_networks/neuron.h"
 #include "../../../include/neural_networks/synapse.h"
 #include "../../../include/neural_networks/dynamic_elem.h"
 #include "../../../include/utils.h"
 #include "../../../include/neural_networks/utils.h"
-#include <assert.h>
-#include <random>
-#include <execution>
-#include <cmath>
-#include <iostream>
-#include <algorithm>
-#include <vector>
-#include <utility>
-
 /**
  * Continually adapting neural network.
  * Essentially a neural network with the ability to add and remove neurons
@@ -38,7 +37,7 @@
 
 int ContinuallyAdaptingNetwork::get_total_neurons() {
     int tot = 0;
-    for (auto it: this->all_neurons) {
+    for (auto it : this->all_neurons) {
         if (it->is_mature)
             tot++;
     }
@@ -82,8 +81,8 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
 
 
 //  Connect our input and output neurons with synapses.
-    for (auto &input: this->input_neurons) {
-        for (auto &output: this->output_neurons) {
+    for (auto &input : this->input_neurons) {
+        for (auto &output : this->output_neurons) {
             synapse *s = new synapse(input, output, 0, step_size);
             this->all_heap_elements.push_back(static_cast<dynamic_elem *>(s));
             s->increment_reference();
@@ -96,12 +95,10 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
 }
 
 void ContinuallyAdaptingNetwork::print_graph(neuron *root) {
-
-    for (auto &os: root->outgoing_synapses) {
+    for (auto &os : root->outgoing_synapses) {
         auto current_n = os;
 
         if (!current_n->print_status) {
-
             std::cout << current_n->input_neuron->id << "\t" << current_n->output_neuron->id << "\t"
                       << os->grad_queue.size() << "\t\t" << current_n->input_neuron->past_activations.size()
                       << "\t\t\t" << current_n->output_neuron->past_activations.size() << "\t\t\t"
@@ -159,9 +156,8 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 //      w.p. perc, attach a random neuron (that's not an output neuron) to this neuron
         float perc = dist_u(mt);
         for (auto &n : this->all_neurons) {
-            if (!n->is_output_neuron and n->is_mature) {
+            if (!n->is_output_neuron && n->is_mature) {
                 if (dist_u(mt) < perc) {
-
                     auto syn = new synapse(n, recurrent_neuron, 0.001 * dist(this->mt), step_size);
                     syn->block_gradients();
                     syn->increment_reference();
@@ -221,7 +217,7 @@ int ContinuallyAdaptingNetwork::get_input_size() {
 
 int ContinuallyAdaptingNetwork::get_total_synapses() {
     int tot = 0;
-    for (auto it: this->all_synapses) {
+    for (auto it : this->all_synapses) {
         if (it->output_neuron->is_mature)
             tot++;
     }
@@ -237,9 +233,9 @@ ContinuallyAdaptingNetwork::~ContinuallyAdaptingNetwork() {
 void ContinuallyAdaptingNetwork::set_input_values(std::vector<float> const &input_values) {
 //    assert(input_values.size() == this->input_neurons.size());
     for (int i = 0; i < input_values.size(); i++) {
-        if (i < this->input_neurons.size())
+        if (i < this->input_neurons.size()) {
             this->input_neurons[i]->value_before_firing = input_values[i];
-        else {
+        } else {
             std::cout << "More input features than input neurons\n";
             exit(1);
         }
@@ -255,8 +251,6 @@ void ContinuallyAdaptingNetwork::set_input_values(std::vector<float> const &inpu
  * Finally, it updates its weights and prunes is_useless neurons and synapses.
  */
 void ContinuallyAdaptingNetwork::step() {
-
-
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -372,8 +366,6 @@ void ContinuallyAdaptingNetwork::step() {
 
 
     this->time_step++;
-
-
 }
 
 
@@ -382,9 +374,7 @@ void ContinuallyAdaptingNetwork::step() {
  */
 void ContinuallyAdaptingNetwork::collect_garbage() {
     for (int temp = 0; temp < this->all_heap_elements.size(); temp++) {
-
         if (all_heap_elements[temp]->references == 0) {
-
             delete all_heap_elements[temp];
             all_heap_elements[temp] = nullptr;
         }
@@ -392,7 +382,6 @@ void ContinuallyAdaptingNetwork::collect_garbage() {
 
     auto it = std::remove_if(this->all_heap_elements.begin(), this->all_heap_elements.end(), is_null_ptr);
     this->all_heap_elements.erase(it, this->all_heap_elements.end());
-
 }
 
 std::vector<float> ContinuallyAdaptingNetwork::read_output_values() {

@@ -3,12 +3,13 @@
 //
 
 #include "../../include/neural_networks/neuron.h"
+#include <assert.h>
 #include <iostream>
 #include <utility>
 #include <algorithm>
 #include <vector>
 #include "../../include/utils.h"
-#include <assert.h>
+
 
 neuron::neuron(bool activation) {
     value = 0;
@@ -28,16 +29,6 @@ neuron::neuron(bool activation) {
     neuron_utility = 0;
     drinking_age = 159999;
 }
-
-//recurrent_neuron::recurrent_neuron(bool activation, bool output_n, bool input_n) : neuron(activation, output_n, input_n) {
-//
-//}
-//
-//float recurrent_neuron::introduce_targets(float target, int timestep, float gamma, float lambda) {
-//    std::cout << "Never introduce tragets on recurrent neurons\n";
-//    exit(1);
-//}
-
 
 
 neuron::neuron(bool activation, bool output_n) {
@@ -94,8 +85,7 @@ neuron::neuron(bool activation, bool output_n, bool input_n) {
     is_mature = false;
     references = 0;
     neuron_utility = 0;
-    drinking_age = 159999; //Steps to matureness
-
+    drinking_age = 159999;  // Steps to matureness
 }
 
 /**
@@ -104,11 +94,10 @@ neuron::neuron(bool activation, bool output_n, bool input_n) {
  * @param time_step: time step that this neuron fires. Used for recording our activation gradient_activation firing time.
  */
 void neuron::fire(int time_step) {
-//   Temp hack
-//    std::cout << "Firing\n";
+// Temp hack
+
     if (this->past_activations.size() > 50) {
         this->past_activations.pop();
-
     }
     if (this->error_gradient.size() > 50) {
         this->error_gradient.pop();
@@ -154,7 +143,7 @@ void neuron::fire(int time_step) {
 
 
 //  Pass this record to our outgoing synapses
-    for (auto it: this->outgoing_synapses) {
+    for (auto it : this->outgoing_synapses) {
         message_activation activation_val2;
         activation_val2.gradient_activation = this->value;
         activation_val2.time = time_step;
@@ -196,7 +185,7 @@ void neuron::fire(int time_step) {
  */
 void neuron::update_value() {
     this->neuron_age++;
-    if (this->neuron_age == this->drinking_age and !this->is_output_neuron) {
+    if (this->neuron_age == this->drinking_age && !this->is_output_neuron) {
         this->is_mature = true;
     }
 
@@ -204,7 +193,7 @@ void neuron::update_value() {
     this->value_before_firing = 0;
     this->shadow_error_prediction_before_firing = 0;
 
-    if (this->neuron_age == this->drinking_age and !this->is_input_neuron and this->average_activation > 0 and
+    if (this->neuron_age == this->drinking_age && !this->is_input_neuron && this->average_activation > 0 &&
         this->outgoing_synapses.size() > 0) {
         float scale = 1 / this->average_activation;
         for (auto it : this->incoming_synapses) {
@@ -215,8 +204,8 @@ void neuron::update_value() {
             }
         }
 
-        if (this->outgoing_synapses.size() == 0 or
-            (this->outgoing_synapses.size() > 1 and !this->is_recurrent_neuron) or
+        if (this->outgoing_synapses.size() == 0 ||
+            (this->outgoing_synapses.size() > 1 && !this->is_recurrent_neuron) ||
             (this->outgoing_synapses.size() > 2)) {
             std::cout << "Too many outgoing synapses; shouldn't happen\t" << this->outgoing_synapses.size() << "\n";
             std::cout << "ID\t" << this->neuron_id_generator << " Age \t" << this->neuron_age << std::endl;
@@ -243,13 +232,9 @@ void neuron::update_value() {
         it->age++;
         if (it->in_shadow_mode) {
             this->shadow_error_prediction_before_firing += it->weight * it->input_neuron->value;
-//            std::cout << "Shadow weight detected\n";
-//            exit(1);
         } else {
             this->value_before_firing += it->weight * it->input_neuron->value;
-//            std::cout <<"ID: " << it->id << "\tWeight: " << it->weight << "\tValue: " << it->input_neuron->gradient_activation << std::endl;
         }
-
     }
 //    std::cout << this->value_before_firing << std::endl;
 }
@@ -268,10 +253,8 @@ bool to_delete_ss(synapse *s) {
 void neuron::forward_gradients() {
 //  If this neuron has gradients to pass back
     if (!this->error_gradient.empty()) {
-
 //      We do so to all incoming synapses
         for (auto &it : this->incoming_synapses) {
-
             float message_value;
 
             message_value = this->error_gradient.front().gradient;
@@ -288,10 +271,7 @@ void neuron::forward_gradients() {
             if (it->propagate_gradients)
                 it->grad_queue.push(grad_temp);
             it->grad_queue_weight_assignment.push(grad_temp);
-
-
-        }
-//      Remove this gradient from our list of things needed to pass back
+        }  //  Remove this gradient from our list of things needed to pass back
         this->error_gradient.pop();
     }
 }
@@ -301,7 +281,6 @@ void neuron::forward_gradients() {
  * doing some reading before going through this function.
  */
 void neuron::propagate_error() {
-
     float accumulate_gradient = 0;
     std::vector<int> time_vector;
     std::vector<int> distance_vector;
@@ -317,25 +296,24 @@ void neuron::propagate_error() {
         bool wait = false;
 
 //      We look at all outgoing synapses
-        for (auto &output_synapses_iterator : this->outgoing_synapses) { //Iterate over all outgoing synapses. We want to make sure
-
+        for (auto &output_synapses_iterator : this->outgoing_synapses) {
+            // Iterate over all outgoing synapses. We want to make sure
 //          Skip this if there are no gradients to propagate for this synapse
             if (!output_synapses_iterator->grad_queue.empty()) {
-
 //              This diff in time_step and distance_travelled is essentially "how long until I activate this gradient"
 //              Currently, b/c of grad_temp.distance_travelled = error_gradient.front().distance_travelled + 1
 //              this means this will always be this->past_activations.front().second - 2.
 
 //              So now we need to match the right past activation with the activation time required.
 //              Since we always truncate gradients after 1 step, this corresponds to having a past activation time
-//              the same as the time step the gradient was calculated - 2. grad distance_travelled is always 1 in this case.
+//              the same as the time step the gradient was calculated - 2. grad distance_travelled is
+//              always 1 in this case.
 
 //              Remove all past activations that are older than the activation time required of the earliest gradient
-                while (!output_synapses_iterator->grad_queue.empty() and !this->past_activations.empty() and
+                while (!output_synapses_iterator->grad_queue.empty() && !this->past_activations.empty() &&
                        this->past_activations.front().time > output_synapses_iterator->grad_queue.front().time_step -
-                                                             output_synapses_iterator->grad_queue.front().distance_travelled -
+                       output_synapses_iterator->grad_queue.front().distance_travelled -
                                                              1) {
-
                     output_synapses_iterator->grad_queue.pop();
                 }
 
@@ -363,7 +341,8 @@ void neuron::propagate_error() {
                                                    output_synapses_iterator->grad_queue.front().distance_travelled - 1;
                     activation_time_required_list.push_back(activation_time_required);
 
-//                  Check to see if the grad isn't ready to be used. This is the case where the current grad needs to wait
+//                  Check to see if the grad isn't ready to be used.
+//                  This is the case where the current grad needs to wait
 //                  for other nodes to propagate backwards.
                     if (this->past_activations.front().time < activation_time_required) {
                         wait = true;
@@ -375,9 +354,10 @@ void neuron::propagate_error() {
                         error_vector.push_back(output_synapses_iterator->grad_queue.front().error);
                         messages_q.push_back(output_synapses_iterator->grad_queue.front());
 
-//                      Here we accumulate all our grads wrt the forward node activation according to the backprop algorithm.
+//                      Here we accumulate all our grads wrt the forward node activation
+//                      according to the backprop algorithm.
 //                      Only accumulate gradient if activation was non-zero.
-                        if (this->past_activations.front().gradient_activation > 0 or !this->is_relu) {
+                        if (this->past_activations.front().gradient_activation > 0 || !this->is_relu) {
 //                            std::cout << "Past activation = " << this->past_activations.front().first << std::endl;
                             accumulate_gradient += output_synapses_iterator->weight *
                                                    output_synapses_iterator->grad_queue.front().gradient;
@@ -388,23 +368,21 @@ void neuron::propagate_error() {
                             time_check = activation_time_required;
                         } else {
                             if (time_check != activation_time_required) {
-
                                 flag = true;
                             }
                         }
                     }
                 }
             }
-
         }
 
 
-        if (flag or time_vector.empty())
+        if (flag || time_vector.empty())
             return;
 
 //      Remove all the grads we just processed
-        for (auto &it: this->outgoing_synapses) {
-            if (!it->grad_queue.empty() and !wait) {
+        for (auto &it : this->outgoing_synapses) {
+            if (!it->grad_queue.empty() && !wait) {
                 it->grad_queue.pop();
             }
         }
@@ -431,7 +409,6 @@ void neuron::propagate_error() {
 //      Remove the activation we just processed
         this->past_activations.pop();
         this->error_gradient.push(n_message);
-
     }
 }
 //
@@ -442,10 +419,10 @@ void neuron::propagate_error() {
 void neuron::mark_useless_weights() {
     for (auto &it : this->outgoing_synapses) {
 //      Only delete weights if they're older than 70k steps
-        if (it->age > 1000000 or (it->age > (it->output_neuron->drinking_age + 20) and it->step_size < 1e-6)) {
+        if (it->age > 1000000 || (it->age > (it->output_neuron->drinking_age + 20) && it->step_size < 1e-6)) {
             this->is_mature = true;
 //          Don't delete input or output neurons
-            if (!(it->input_neuron->is_input_neuron and it->output_neuron->is_output_neuron)) {
+            if (!(it->input_neuron->is_input_neuron && it->output_neuron->is_output_neuron)) {
 //              If the average output of this synapse is small (< 0.01), mark it for deletion
                 if (std::abs(it->weight) < 0.01) {
                     it->is_useless = true;
@@ -459,7 +436,7 @@ void neuron::mark_useless_weights() {
 
 //  if this current neuron has no outgoing synapses and is not an output or input neuron,
 //  delete it and its incoming synapses.
-    if (this->outgoing_synapses.empty() and !this->is_output_neuron and !this->is_input_neuron) {
+    if (this->outgoing_synapses.empty() && !this->is_output_neuron && !this->is_input_neuron) {
         this->useless_neuron = true;
         for (auto it : this->incoming_synapses)
             it->is_useless = true;
@@ -512,7 +489,6 @@ void neuron::prune_useless_weights() {
             });
     it = std::remove_if(this->incoming_synapses.begin(), this->incoming_synapses.end(), to_delete_ss);
     this->incoming_synapses.erase(it, this->incoming_synapses.end());
-
 }
 
 /**
@@ -531,7 +507,7 @@ float neuron::introduce_targets(float target, int time_step) {
         float error_grad = error;
 
 //      If activation leq zero and we apply relu on this output, don't let gradients flow back
-        if (this->past_activations.front().gradient_activation <= 0 and this->is_relu) {
+        if (this->past_activations.front().gradient_activation <= 0 && this->is_relu) {
             error_grad = 0;
         }
 
@@ -562,7 +538,7 @@ float neuron::introduce_targets(float target, int time_step, float gamma, float 
 //      The activation is the output of our NN.
         float error;
         float error_prediction_error;
-        if (this->past_activations.front().gradient_activation == 0 and this->is_relu) {
+        if (this->past_activations.front().gradient_activation == 0 && this->is_relu) {
             error = 0;
             std::cout << "Output neuron should never have activation\n";
             exit(1);
@@ -573,7 +549,7 @@ float neuron::introduce_targets(float target, int time_step, float gamma, float 
         float error_grad = error;
 
 //      If activation leq zero and we apply relu on this output, don't let gradients flow back
-        if (this->past_activations.front().gradient_activation < 0 and this->is_relu) {
+        if (this->past_activations.front().gradient_activation < 0 && this->is_relu) {
             std::cout << "Negative with ReLU: Should never get here\n";
             std::cout << this->past_activations.front().gradient_activation << std::endl;
 //            std::cout << this->is_relu << std:
@@ -598,11 +574,10 @@ float neuron::introduce_targets(float target, int time_step, float gamma, float 
 
 void neuron::update_utility() {
     this->neuron_utility = 0;
-    for (auto it: this->outgoing_synapses) {
+    for (auto it : this->outgoing_synapses) {
         this->neuron_utility += it->synapse_utility;
     }
 }
 
 
 long long int neuron::neuron_id_generator = 0;
-//normal_random neuron::normal_dist = normal_random(0, 1, 0.1);

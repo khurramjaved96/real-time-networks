@@ -67,11 +67,11 @@ void NetworkVisualizer::generate_dot(int time_step) {
                  "\tnode [shape = circle];\n";
 
     for (auto &it : all_neurons) {
-        for (auto &os: it->outgoing_synapses) {
-            if (os->input_neuron->is_mature and os->output_neuron->is_mature) {
+        for (auto &os : it->outgoing_synapses) {
+            if (os->input_neuron->is_mature && os->output_neuron->is_mature) {
                 auto current_n = os;
                 dot_string += "\t" + std::to_string(current_n->input_neuron->id)
-                              + "->" + std::to_string(current_n->output_neuron->id) //+ ";\n";
+                              + "->" + std::to_string(current_n->output_neuron->id)  //+ ";\n";
                               + "[label = \"" + std::to_string(os->weight) + "\"];\n";
             }
         }
@@ -114,7 +114,7 @@ std::string NetworkVisualizer::get_graph_detailed(int time_step) {
                       + std::to_string(it->error_gradient.size()) + "|"
                       + std::to_string(it->value) + "}"
                       + "\"];\n";
-        for (auto &os: it->outgoing_synapses) {
+        for (auto &os : it->outgoing_synapses) {
             auto current_n = os;
             dot_string += "\t" + std::to_string(current_n->input_neuron->id)
                           + "->" + std::to_string(current_n->output_neuron->id) + ";\n";
@@ -143,7 +143,7 @@ void NetworkVisualizer::generate_dot_detailed(int time_step) {
                       + std::to_string(it->error_gradient.size()) + "|"
                       + std::to_string(it->value) + "}"
                       + "\"];\n";
-        for (auto &os: it->outgoing_synapses) {
+        for (auto &os : it->outgoing_synapses) {
             auto current_n = os;
             dot_string += "\t" + std::to_string(current_n->input_neuron->id)
                           + "->" + std::to_string(current_n->output_neuron->id) + ";\n";

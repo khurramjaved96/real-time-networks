@@ -15,5 +15,3 @@ message::message(float m, int t) : time_step(t) {
     this->gamma = 0;
     this->error = 0;
 }
-
-//

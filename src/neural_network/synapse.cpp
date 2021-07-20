@@ -3,13 +3,13 @@
 //
 
 #include "../../include/neural_networks/synapse.h"
+#include <math.h>
 #include <vector>
 #include <iostream>
-#include <queue>
-#include <mutex>
 #include "../../include/neural_networks/neuron.h"
 #include "../../include/neural_networks/utils.h"
-#include <math.h>
+
+
 
 long long int temp = 0;
 
@@ -71,7 +71,7 @@ void synapse::assign_credit() {
 
 //  We go through each gradient that we've put into our synapse
 //  and see if this gradient's activation time corresponds to the correct past activation
-    while (!this->grad_queue_weight_assignment.empty() and !this->weight_assignment_past_activations.empty() and
+    while (!this->grad_queue_weight_assignment.empty() && !this->weight_assignment_past_activations.empty() &&
            this->weight_assignment_past_activations.front().time >
            (this->grad_queue_weight_assignment.front().time_step -
             this->grad_queue_weight_assignment.front().distance_travelled - 1)) {
@@ -80,7 +80,7 @@ void synapse::assign_credit() {
     }
 
 //  If this condition is met, your gradient flew past its relevant activation - this isn't supposed to happen!
-    if (!this->grad_queue_weight_assignment.empty() and this->weight_assignment_past_activations.front().time !=
+    if (!this->grad_queue_weight_assignment.empty() && this->weight_assignment_past_activations.front().time !=
                                                         (this->grad_queue_weight_assignment.front().time_step -
                                                          this->grad_queue_weight_assignment.front().distance_travelled -
                                                          1)) {
@@ -98,9 +98,7 @@ void synapse::assign_credit() {
                       this->grad_queue_weight_assignment.front().lambda +
                       this->weight_assignment_past_activations.front().gradient_activation *
                       this->grad_queue_weight_assignment.front().gradient;
-//        if(this->id == 7){
-//            std::cout << "first " <<  this->weight_assignment_past_activations.front().first << " sec " << this->grad_queue_weight_assignment.front().gradient << std::endl;
-//        }
+
         this->tidbd_old_activation = this->weight_assignment_past_activations.front().gradient_activation;
         this->tidbd_old_error = this->grad_queue_weight_assignment.front().error;
 
@@ -127,8 +125,6 @@ bool synapse::get_recurrent_status() {
 void synapse::update_utility() {
     if (this->output_neuron->is_output_neuron) {
         synapse_utility = std::abs(this->weight * this->input_neuron->average_activation);
-    } else {
-
     }
 }
 
@@ -148,9 +144,7 @@ void synapse::update_weight() {
     if (this->idbd) {
         float meta_grad = this->tidbd_old_error * this->trace * this->h_tidbd;
         this->l2_norm_meta_gradient = this->l2_norm_meta_gradient * 0.99 + (1 - 0.99) * (meta_grad * meta_grad);
-//        if(this->trace > 2){
-//            std::cout << "ID " << this->id << " trace " << this->trace << " H size " << this->h_tidbd << " Step size " << this->step_size << " weight " << this->weight << std::endl;
-//        }
+
         if (age > 1000) {
 //            if(this->tidbd_old_error > 0){
 //                std::cout << this->tidbd_old_error << "\t" <<  this->trace << this->h_tidbd << std::endl;
@@ -167,12 +161,12 @@ void synapse::update_weight() {
                 this->h_tidbd =
                         this->h_tidbd * (1 - this->step_size * this->tidbd_old_activation * this->trace) +
                         this->step_size * this->trace * this->tidbd_old_error;
-            } else
+            } else {
                 this->h_tidbd = this->step_size * this->trace * this->tidbd_old_error;
+            }
         }
 
     } else {
-
         this->weight += (this->step_size * this->credit);
     }
     if (this->is_recurrent_connection) {
@@ -183,6 +177,5 @@ void synapse::update_weight() {
             this->weight = 0;
         }
     }
-
 }
 
