@@ -26,8 +26,5 @@ addons:
       
 compiler: gcc
 
-deploy:
-  provider: script
-  script: bash tests/compile.sh && bash tests/tests
-  on:
-    branch: develop
+script: bash tests/compile.sh && bash tests/tests
+
