@@ -2,10 +2,6 @@
 // Created by Khurram Javed on 2021-04-01.
 //
 
-//
-// Created by Khurram Javed on 2021-03-30.
-//
-
 
 #include <assert.h>
 #include <cmath>
