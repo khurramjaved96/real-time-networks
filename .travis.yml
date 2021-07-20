@@ -1,4 +1,5 @@
 dist: trusty
+language: cpp
 matrix:
   include: 
    # works on Precise and Trusty
