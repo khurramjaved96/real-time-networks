@@ -6,5 +6,5 @@ before_install:
   - sudo apt install libtbb-dev
 compiler: gcc
 
-script: cd tests && bash compile.sh && bash ./tests
+script: cd tests && bash compile.sh && ./tests
 
