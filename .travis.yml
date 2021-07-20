@@ -4,5 +4,5 @@ language: cpp
       
 compiler: gcc
 
-script: bash tests/compile.sh && bash tests/tests
+script: cd tests && bash compile.sh && bash ./tests
 
