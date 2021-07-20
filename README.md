@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/khurramjaved96/continually-adapting-networks.svg?branch=step_size_adaptation)](https://travis-ci.com/khurramjaved96/continually-adapting-networks)
+[![CMake](https://github.com/khurramjaved96/continually-adapting-networks/actions/workflows/cmake.yml/badge.svg?branch=step_size_adaptation)](https://github.com/khurramjaved96/continually-adapting-networks/actions/workflows/cmake.yml)
 
 # Continually Adapting Networks
 Implementation of dynamic NNs for agent-state construction using genetate and test with gradients. 
