@@ -61,7 +61,7 @@ bool recurrent_network_test() {
         counter++;
     }
 // Ground truth is computed by running "recurrent_test.py" in python_scripts
-    std::vector<float> gt{877.8438, 74.0906, 1824.9984, 1044.9813};
+    std::vector<float> gt{877.8438, 74.0906, 1824.9984, 1043.9813};
     for (int i = 0; i < sum_of_gradients.size(); i++) {
         if (std::abs(sum_of_gradients[i] - gt[i]) > 1e-3)
             return false;
