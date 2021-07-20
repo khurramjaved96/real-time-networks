@@ -1,9 +1,9 @@
 //
-// Created by Khurram Javed on 2021-07-11.
+// Created by Khurram Javed on 2021-07-20.
 //
 
-#ifndef FLEXIBLENN_ADAPTIVE_RECURRENT_NETWORK_H
-#define FLEXIBLENN_ADAPTIVE_RECURRENT_NETWORK_H
+#ifndef FLEXIBLENN_TEST_RECURRENT_H
+#define FLEXIBLENN_TEST_RECURRENT_H
 
 
 
@@ -17,8 +17,9 @@
 
 
 
+class ContinuallyAdaptingRecurrentNetworkTest{
 
-class ContinuallyAdaptingRecurrentNetwork{
+
 
     long long int time_step;
 
@@ -37,8 +38,8 @@ public:
     std::vector<neuron*> all_neurons;
     std::vector<neuron*> input_neurons;
 //    std::vector<neuron*> new_features;
-    ContinuallyAdaptingRecurrentNetwork(float step_size, int seed, int no_of_input_features);
-    ~ContinuallyAdaptingRecurrentNetwork();
+    ContinuallyAdaptingRecurrentNetworkTest(float step_size, int seed, int no_of_input_features);
+    ~ContinuallyAdaptingRecurrentNetworkTest();
     void print_graph(neuron* root);
     void viz_graph();
     void set_print_bool();
@@ -60,5 +61,4 @@ public:
 };
 
 
-
-#endif //FLEXIBLENN_ADAPTIVE_RECURRENT_NETWORK_H
+#endif //FLEXIBLENN_TEST_RECURRENT_H

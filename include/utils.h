@@ -24,3 +24,4 @@ public:
     std::string get_graph_detailed(int time_step);
     void generate_dot_detailed(int time_step);
 };
+

@@ -8,6 +8,9 @@
 #include <algorithm>
 #include <random>
 #include <assert.h>
+#include "../../include/neural_networks/synapse.h"
+#include "../../include/neural_networks/neuron.h"
+#include "../../include/neural_networks/dynamic_elem.h"
 
 float sigmoid(float a){
     return 1/(1+exp(-1*a));
@@ -21,7 +24,22 @@ mytype max(std::vector<mytype> values){
     auto it = std::max_element(values.begin(), values.end());
     return *it;
 }
-//
+
+
+bool is_null_ptr(dynamic_elem *elem) {
+//    return true;
+    if (elem == nullptr)
+        return true;
+    return false;
+}
+
+bool to_delete_s(synapse *s) {
+    return s->is_useless;
+}
+
+bool to_delete_n(neuron *s) {
+    return s->useless_neuron;
+}
 
 
 std::vector<float> one_hot_encode(int no, int total){

@@ -7,6 +7,9 @@
 
 #include <vector>
 #include <random>
+#include "neuron.h"
+#include "synapse.h"
+#include "dynamic_elem.h"
 
 float sigmoid(float a);
 float relu(float a);
@@ -39,5 +42,12 @@ public:
     float get_random_number();
     std::vector<float> get_random_vector(int size);
 };
+
+bool to_delete_s(synapse *s);
+
+bool to_delete_n(neuron *s);
+
+bool is_null_ptr(dynamic_elem *elem);
+
 #endif //FLEXIBLENN_UTILS_H
 //

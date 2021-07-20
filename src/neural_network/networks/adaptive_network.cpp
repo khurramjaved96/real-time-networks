@@ -12,6 +12,7 @@
 #include "../../../include/neural_networks/synapse.h"
 #include "../../../include/neural_networks/dynamic_elem.h"
 #include "../../../include/utils.h"
+#include "../../../include/neural_networks/utils.h"
 #include <assert.h>
 #include <random>
 #include <execution>
@@ -245,13 +246,6 @@ void ContinuallyAdaptingNetwork::set_input_values(std::vector<float> const &inpu
     }
 }
 
-bool to_delete_s(synapse *s) {
-    return s->is_useless;
-}
-
-bool to_delete_n(neuron *s) {
-    return s->useless_neuron;
-}
 
 /**
  * Step function after putting in the inputs to the neural network.
@@ -382,12 +376,6 @@ void ContinuallyAdaptingNetwork::step() {
 
 }
 
-bool is_null_ptr(dynamic_elem *elem) {
-//    return true;
-    if (elem == nullptr)
-        return true;
-    return false;
-}
 
 /**
  * Find all synapses and neurons with 0 references to them and delete them.

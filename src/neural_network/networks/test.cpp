@@ -9,6 +9,7 @@
 #include "../../../include/neural_networks/networks/test.h"
 #include "../../../include/neural_networks/neuron.h"
 #include "../../../include/neural_networks/synapse.h"
+#include "../../../include/neural_networks/utils.h"
 #include <assert.h>
 #include <random>
 #include <execution>
