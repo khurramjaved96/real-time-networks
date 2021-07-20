@@ -5,23 +5,23 @@
 //
 // Created by Khurram Javed on 2021-03-30.
 //
-
-
 #include "../../../include/neural_networks/networks/test_recurrent.h"
-#include "../../../include/neural_networks/neuron.h"
-#include "../../../include/neural_networks/synapse.h"
-#include "../../../include/neural_networks/dynamic_elem.h"
-#include "../../../include/utils.h"
-#include "../../../include/neural_networks/utils.h"
 #include <assert.h>
+#include <cmath>
+
+
 #include <random>
 #include <execution>
-#include <cmath>
 #include <iostream>
 #include <algorithm>
 #include <vector>
 #include <utility>
 
+#include "../../../include/neural_networks/neuron.h"
+#include "../../../include/neural_networks/synapse.h"
+#include "../../../include/neural_networks/dynamic_elem.h"
+#include "../../../include/utils.h"
+#include "../../../include/neural_networks/utils.h"
 /**
  * Continually adapting neural network.
  * Essentially a neural network with the ability to add and remove neurons
@@ -133,16 +133,12 @@ ContinuallyAdaptingRecurrentNetworkTest::ContinuallyAdaptingRecurrentNetworkTest
 //    this->all_synapses.push_back(s);
 //    s->increment_reference();
 //    this->output_synapses.push_back(s);
-
 }
 
 void ContinuallyAdaptingRecurrentNetworkTest::print_graph(neuron *root) {
-
-    for (auto &os: root->outgoing_synapses) {
+    for (auto &os : root->outgoing_synapses) {
         auto current_n = os;
-
         if (!current_n->print_status) {
-
             std::cout << current_n->input_neuron->id << "\t" << current_n->output_neuron->id << "\t"
                       << os->grad_queue.size() << "\t\t" << current_n->input_neuron->past_activations.size()
                       << "\t\t\t" << current_n->output_neuron->past_activations.size() << "\t\t\t"
@@ -195,9 +191,8 @@ void ContinuallyAdaptingRecurrentNetworkTest::add_feature(float step_size) {
 //      w.p. perc, attach a random neuron (that's not an output neuron) to this neuron
         float perc = dist_u(mt);
         for (auto &n : this->all_neurons) {
-            if (!n->is_output_neuron and n->is_mature) {
+            if (!n->is_output_neuron && n->is_mature) {
                 if (dist_u(mt) < perc) {
-
                     auto syn = new synapse(n, last_neuron, 0.001 * dist(this->mt), step_size);
 //                    auto syn = new synapse(n, last_neuron, 0.001, step_size);
 //                    auto syn = new synapse(n, last_neuron, 0.5 * dist(this->mt), step_size);
@@ -287,8 +282,6 @@ void ContinuallyAdaptingRecurrentNetworkTest::set_input_values(std::vector<float
  * Finally, it updates its weights and prunes is_useless neurons and synapses.
  */
 void ContinuallyAdaptingRecurrentNetworkTest::step() {
-
-
     std::for_each(
             std::execution::par_unseq,
             all_neurons.begin(),
@@ -404,8 +397,6 @@ void ContinuallyAdaptingRecurrentNetworkTest::step() {
 
 
     this->time_step++;
-
-
 }
 
 
@@ -414,9 +405,7 @@ void ContinuallyAdaptingRecurrentNetworkTest::step() {
  */
 void ContinuallyAdaptingRecurrentNetworkTest::collect_garbage() {
     for (int temp = 0; temp < this->all_heap_elements.size(); temp++) {
-
         if (all_heap_elements[temp]->references == 0) {
-
             delete all_heap_elements[temp];
             all_heap_elements[temp] = nullptr;
         }
@@ -424,7 +413,6 @@ void ContinuallyAdaptingRecurrentNetworkTest::collect_garbage() {
 
     auto it = std::remove_if(this->all_heap_elements.begin(), this->all_heap_elements.end(), is_null_ptr);
     this->all_heap_elements.erase(it, this->all_heap_elements.end());
-
 }
 
 std::vector<float> ContinuallyAdaptingRecurrentNetworkTest::read_output_values() {

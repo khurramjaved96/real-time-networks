@@ -5,23 +5,22 @@
 //
 
 
-
+#include <math.h>
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <chrono>
-#include "include/utils.h"
 #include <map>
 #include <string>
-#include <math.h>
 
+#include "include/utils.h"
+#include "include/animal_learning/tracecondioning.h"
 #include "include/neural_networks/networks/adaptive_network.h"
 #include "include/neural_networks/neural_network.h"
 #include "include/experiment/Experiment.h"
 #include "include/neural_networks/utils.h"
 #include "include/experiment/Metric.h"
-#include "include/animal_learning/tracecondioning.h"
-#include "include/neural_networks/networks/adaptive_network.h"
+
 
 /**
  * Our main entry function for running all experiments.
@@ -38,7 +37,6 @@
  * @return void
  */
 int main(int argc, char *argv[]) {
-
 //    std::string default_config = "--name test --width 10 --seed 0 --steps 100 --run 0 --step_size 0.0001";
 
     // Initialize everything
@@ -46,7 +44,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Program started \n";
     int interval = my_experiment.get_int_param("ISI_low");
     int interval_up = my_experiment.get_int_param("ISI_high");
-    float gamma = 1.0 - 1.0 / (double(interval_up));
+    float gamma = 1.0 - 1.0 / (static_cast<double>(interval_up));
     float lambda = my_experiment.get_float_param("lambda");
 
     // Initialize our dataset
@@ -129,13 +127,12 @@ int main(int argc, char *argv[]) {
 
 //  start taking steps!
     for (int counter = 0; counter < my_experiment.get_int_param("steps"); counter++) {
-
         std::vector<float> temp_target;
 
 //      Get our current state
         auto state_current = tc.step();
         std::vector<float> new_vec;
-        for (auto &it: state_current) {
+        for (auto &it : state_current) {
             new_vec.push_back(it);
         }
 
@@ -168,7 +165,6 @@ int main(int argc, char *argv[]) {
             float beta = 0.9999;
             running_error[0] = running_error[0] * beta + (1 - beta) * error_short;
             running_error[1] = running_error[0] / (1 - pow(beta, counter));
-
         }
 
 //      For logging purposes
@@ -186,8 +182,6 @@ int main(int argc, char *argv[]) {
             network_size.push_back(std::to_string(my_network.get_total_synapses()));
             network_size.push_back(std::to_string(my_network.get_total_neurons()));
             network_size_logger.push_back(network_size);
-
-
         }
         if (counter % 50000 < 500) {
             std::vector<float> print_vec;
@@ -221,7 +215,7 @@ int main(int argc, char *argv[]) {
 //        }
 
         if (counter % 1000000 < 500) {
-            for (auto it: my_network.all_neurons) {
+            for (auto it : my_network.all_neurons) {
                 std::vector<std::string> neuron_value_vector;
                 neuron_value_vector.push_back(std::to_string(counter));
                 neuron_value_vector.push_back(std::to_string(my_experiment.get_int_param("run")));
@@ -233,7 +227,7 @@ int main(int argc, char *argv[]) {
             }
         }
         if (counter % 50000 == 0) {
-            for (auto it: my_network.output_synapses) {
+            for (auto it : my_network.output_synapses) {
                 std::vector<std::string> output_synapse_state;
                 output_synapse_state.push_back(std::to_string(counter));
                 output_synapse_state.push_back(std::to_string(my_experiment.get_int_param("run")));
@@ -256,7 +250,6 @@ int main(int argc, char *argv[]) {
                 my_network.add_feature(my_experiment.get_float_param("step_size"));
             }
 //            exit(1);
-
         }
 //
 //      visualizations
@@ -294,8 +287,6 @@ int main(int argc, char *argv[]) {
 
             neuron_activations_metric.add_values(neuron_activations_logger);
             neuron_activations_logger.clear();
-
-
         }
         if (counter % 10000 == 0 || counter % 10000 == 999 || counter % 10000 == 998) {
             std::cout << "### STEP = " << counter << std::endl;
@@ -311,7 +302,6 @@ int main(int argc, char *argv[]) {
             std::cout << "Total Neurons = " << my_network.all_neurons.size() << std::endl;
             std::cout << "Total Neurons Mature = " << my_network.get_total_neurons() << std::endl;
             my_network.set_print_bool();
-
         }
     }
 
