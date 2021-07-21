@@ -175,7 +175,7 @@ std::string ContinuallyAdaptingRecurrentNetwork::get_viz_graph() {
 }
 
 
-long long int ContinuallyAdaptingRecurrentNetwork::get_timestep() {
+int64_t ContinuallyAdaptingRecurrentNetwork::get_timestep() {
     return this->time_step;
 }
 

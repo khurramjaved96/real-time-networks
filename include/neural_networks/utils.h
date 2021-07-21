@@ -6,10 +6,11 @@
 #define INCLUDE_NEURAL_NETWORKS_UTILS_H_
 
 #include <vector>
+#include <algorithm>
 #include <random>
-#include "neuron.h"
-#include "synapse.h"
-#include "dynamic_elem.h"
+#include "./neuron.h"
+#include "./synapse.h"
+#include "./dynamic_elem.h"
 
 float sigmoid(float a);
 
@@ -43,8 +44,9 @@ std::vector<float> one_hot_encode(int no, int total_numbers);
 class uniform_random {
     std::mt19937 mt;
     std::uniform_real_distribution<float> dist;
-public:
-    uniform_random(int seed);
+
+ public:
+    explicit uniform_random(int seed);
 
     std::vector<float> get_random_vector(int size);
 };
@@ -52,7 +54,8 @@ public:
 class normal_random {
     std::mt19937 mt;
     std::normal_distribution<float> dist;
-public:
+
+ public:
     normal_random(int seed, float mean, float stddev);
 
     float get_random_number();
@@ -66,5 +69,4 @@ bool to_delete_n(neuron *s);
 
 bool is_null_ptr(dynamic_elem *elem);
 
-#endif //INCLUDE_NEURAL_NETWORKS_UTILS_H_
-//
+#endif  // INCLUDE_NEURAL_NETWORKS_UTILS_H_

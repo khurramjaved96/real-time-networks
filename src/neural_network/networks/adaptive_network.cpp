@@ -123,7 +123,7 @@ std::string ContinuallyAdaptingNetwork::get_viz_graph() {
 }
 
 
-long long int ContinuallyAdaptingNetwork::get_timestep() {
+int64_t ContinuallyAdaptingNetwork::get_timestep() {
     return this->time_step;
 }
 

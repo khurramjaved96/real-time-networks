@@ -163,7 +163,7 @@ std::string ContinuallyAdaptingRecurrentNetworkTest::get_viz_graph() {
 }
 
 
-long long int ContinuallyAdaptingRecurrentNetworkTest::get_timestep() {
+int64_t ContinuallyAdaptingRecurrentNetworkTest::get_timestep() {
     return this->time_step;
 }
 

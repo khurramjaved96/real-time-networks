@@ -6,21 +6,19 @@
 #define INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_
 
 
-#include "../synapse.h"
-#include <vector>
-#include "../neuron.h"
+
 #include <vector>
 #include <map>
-
+#include "../synapse.h"
+#include "../neuron.h"
 
 class TestCase {
-
     std::vector<neuron *> output_neuros;
     std::vector<neuron *> all_neurons;
-
-    long long int time_step;
+    int64_t time_step;
     std::vector<synapse *> all_synapses;
-public:
+
+ public:
     std::vector<float> sum_of_gradients;
     std::vector<neuron *> input_neurons;
 
@@ -48,4 +46,4 @@ public:
 };
 
 
-#endif //INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_
+#endif  // INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_

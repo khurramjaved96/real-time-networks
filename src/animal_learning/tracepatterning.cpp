@@ -2,11 +2,11 @@
 // Created by Khurram Javed on 2021-04-22.
 //
 
-#include "../../include/animal_learning/tracecondioning.h"
-#include <vector>
 #include <math.h>
+#include <vector>
 #include <random>
 #include "../../include/utils.h"
+#include "../../include/animal_learning/tracecondioning.h"
 
 TracePatterning::TracePatterning(std::pair<int, int> ISI, std::pair<int, int> ISI_long, std::pair<int, int> ITI,
                                  int num_distractors, int seed) : ISI_sampler(ISI.first, ISI.second),
@@ -26,7 +26,7 @@ TracePatterning::TracePatterning(std::pair<int, int> ISI, std::pair<int, int> IS
     while (this->valid_patterns.size() < 10) {
         std::vector<float> p = create_pattern();
         bool flag = true;
-        for (auto it: this->valid_patterns) {
+        for (auto it : this->valid_patterns) {
             if (p == it) {
                 flag = false;
             }
@@ -35,7 +35,6 @@ TracePatterning::TracePatterning(std::pair<int, int> ISI, std::pair<int, int> IS
             this->valid_patterns.push_back(p);
         }
     }
-
 }
 
 
@@ -59,11 +58,10 @@ std::vector<float> TracePatterning::step() {
         this->current_state[a] = 0;
 
     if (remaining_steps == 0) {
-
         return this->reset();
     }
     set_noise_bits();
-    if (this->remaining_until_US == 1 and this->valid) {
+    if (this->remaining_until_US == 1 && this->valid) {
         this->current_state[6] = 1;
     } else {
         this->current_state[6] = 0;
@@ -95,10 +93,7 @@ std::vector<float> TracePatterning::reset() {
 
 void TracePatterning::set_noise_bits() {
     for (int temp = this->pattern_len + 1; temp < this->pattern_len + 1 + this->num_distractors; temp++) {
-
-        if (NoiseSampler(mt) > 0.98 or temp == this->pattern_len + 1)
-//        if(temp == this->pattern_len + 1)
-        {
+        if (NoiseSampler(mt) > 0.98 || temp == this->pattern_len + 1) {
             this->current_state[temp] = 1;
         } else {
             this->current_state[temp] = 0;
@@ -112,7 +107,7 @@ float TracePatterning::get_US() {
 
 
 float TracePatterning::get_target(float gamma) {
-    if (this->remaining_until_US >= 0 and this->valid) {
+    if (this->remaining_until_US >= 0 && this->valid) {
         return pow(gamma, this->remaining_until_US);
     }
     return 0;

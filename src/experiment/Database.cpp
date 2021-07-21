@@ -3,9 +3,9 @@
 //
 
 #include "../../include/experiment/Database.h"
+#include <mysql.h>
 #include <string>
 #include <iostream>
-#include <mysql.h>
 #include <cstring>
 
 Database::Database() {
@@ -21,7 +21,6 @@ Database::Database() {
 /// Connets to the database and stores the connection in this->mysql
 /// \return 0 if successfull, non-zero otherwise
 int Database::connect() {
-
     this->mysql = mysql_init(NULL);
 
     if (!this->mysql) {
@@ -36,15 +35,13 @@ int Database::connect() {
                        NULL,        /* default database to use, NULL for none */
                        0,           /* port number, 0 for default */
                        NULL,        /* socket file or named pipe name */
-                       CLIENT_FOUND_ROWS /* connection flags */ );
+                       CLIENT_FOUND_ROWS /* connection flags */);
     return 0;
-
 }
 
 /// Connect to the database and execute USE this->db_name;
 /// \return
 int Database::connect_and_use(std::string database_name) {
-
     this->mysql = mysql_init(NULL);
 
     if (!this->mysql) {
@@ -59,12 +56,11 @@ int Database::connect_and_use(std::string database_name) {
                        NULL,        /* default database to use, NULL for none */
                        0,           /* port number, 0 for default */
                        NULL,        /* socket file or named pipe name */
-                       CLIENT_FOUND_ROWS /* connection flags */ );
+                       CLIENT_FOUND_ROWS /* connection flags */);
     std::string use_query = "USE " + database_name + ";";
 //    std::cout << "Running query " << use_query << std::endl;
     int selection = mysql_query(this->mysql, &use_query[0]);
     return 0;
-
 }
 
 int Database::create_database(const std::string &database_name) {
@@ -145,6 +141,5 @@ int Database::make_table(const std::string &database_name, const std::string &ta
         this->run_query(query, database_name);
     }
     return 1;
-
 }
 

@@ -2,12 +2,11 @@
 // Created by Khurram Javed on 2021-03-16.
 //
 
-#ifndef BENCHMARKS_UTILS_H
-#define BENCHMARKS_UTILS_H
-
-#endif //BENCHMARKS_UTILS_H
+#ifndef INCLUDE_UTILS_H_
+#define INCLUDE_UTILS_H_
 
 #include <string>
+#include <vector>
 #include "neural_networks/neuron.h"
 
 void print_vector(std::vector<int> const &v);
@@ -22,8 +21,8 @@ class NetworkVisualizer {
     std::string dot_string;
     std::vector<neuron *> all_neurons;
 
-public:
-    NetworkVisualizer(std::vector<neuron *> all_neurons);
+ public:
+    explicit NetworkVisualizer(std::vector<neuron *> all_neurons);
 
     void generate_dot(int time_step);
 
@@ -33,4 +32,6 @@ public:
 
     void generate_dot_detailed(int time_step);
 };
+
+#endif  // INCLUDE_UTILS_H_
 

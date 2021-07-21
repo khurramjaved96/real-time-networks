@@ -580,4 +580,4 @@ void neuron::update_utility() {
 }
 
 
-long long int neuron::neuron_id_generator = 0;
+int64_t neuron::neuron_id_generator = 0;

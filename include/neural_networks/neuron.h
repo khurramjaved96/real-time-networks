@@ -8,18 +8,16 @@
 
 #include <vector>
 #include <queue>
-#include <mutex>
 #include <unordered_set>
-#include "synapse.h"
-#include "message.h"
-#include "utils.h"
 #include <utility>
-#include "dynamic_elem.h"
-
+#include "./dynamic_elem.h"
+#include "./synapse.h"
+#include "./message.h"
+#include "./utils.h"
 
 class neuron : public dynamic_elem {
-public:
-    static long long int neuron_id_generator;
+ public:
+    static int64_t neuron_id_generator;
     synapse *recurrent_synapse;
     float old_value;
     bool is_recurrent_neuron;
@@ -36,7 +34,7 @@ public:
     bool useless_neuron;
     int sucesses;
     int failures;
-    long long int id;
+    int64_t id;
     bool is_mature;
     int neuron_age;
     float average_activation;
@@ -50,7 +48,7 @@ public:
     std::vector<synapse *> outgoing_synapses;
     std::vector<synapse *> incoming_synapses;
 
-    neuron(bool activation);
+    explicit neuron(bool activation);
 
     neuron(bool activation, bool output_n);
 
@@ -76,26 +74,4 @@ public:
 };
 
 
-//class recurrent_neuron : public neuron {
-//public:
-//
-//
-//    synapse *recurrent_synapse;
-//
-//    recurrent_neuron(bool activation, bool output_n, bool input_n);
-//
-////    void fire(int time_step);
-//
-//    float introduce_targets(float target, int timestep, float gamma, float lambda);
-//
-//    void propagate_error();
-//
-//    void mark_useless_weights();
-//
-//    void prune_useless_weights();
-//
-//    ~recurrent_neuron() = default;
-//
-//};
-
-#endif //INCLUDE_NEURAL_NETWORKS_NEURON_H_
+#endif  // INCLUDE_NEURAL_NETWORKS_NEURON_H_

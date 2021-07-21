@@ -7,7 +7,7 @@
 
 
 class message {
-public:
+ public:
     float gradient;
     int time_step;
     int distance_travelled;
@@ -20,7 +20,7 @@ public:
 };
 
 class message_activation {
-public:
+ public:
     float gradient_activation;
     float error_prediction_value;
     int time;
@@ -28,4 +28,4 @@ public:
 };
 
 
-#endif //INCLUDE_NEURAL_MESSAGE_ELEM_H_
+#endif  // INCLUDE_NEURAL_MESSAGE_ELEM_H_

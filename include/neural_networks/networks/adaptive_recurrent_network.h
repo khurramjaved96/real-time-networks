@@ -6,22 +6,20 @@
 #define INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_
 
 
-#include "../synapse.h"
-#include <vector>
-#include "../neuron.h"
+
 #include <vector>
 #include <map>
+#include <string>
 #include <random>
 #include "../dynamic_elem.h"
-
+#include "../synapse.h"
+#include "../neuron.h"
 
 class ContinuallyAdaptingRecurrentNetwork {
-
-    long long int time_step;
-
+    int64_t time_step;
     std::mt19937 mt;
 
-public:
+ public:
     std::vector<neuron *> output_neurons;
     neuron *error_neuron;
     std::vector<synapse *> all_synapses;
@@ -48,7 +46,7 @@ public:
 
     std::string get_viz_graph();
 
-    long long int get_timestep();
+    int64_t get_timestep();
 
     void set_input_values(std::vector<float> const &input_values);
 
@@ -72,4 +70,4 @@ public:
 };
 
 
-#endif //INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_
+#endif  // INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_

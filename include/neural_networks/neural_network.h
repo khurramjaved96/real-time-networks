@@ -6,17 +6,15 @@
 #define INCLUDE_NEURAL_NETWORKS_NEURAL_NETWORK_H_
 
 
-#include "synapse.h"
-#include <vector>
-#include "neuron.h"
 #include <vector>
 #include <map>
-#include "dynamic_elem.h"
+#include "./dynamic_elem.h"
+#include "./neuron.h"
+#include "./synapse.h"
 
 
 class NeuralNetwork {
-public:
-
+ public:
     std::vector<neuron *> all_neurons;
     std::vector<neuron *> input_neurons;
     std::vector<neuron *> output_neuros;
@@ -38,4 +36,4 @@ public:
     void introduce_error(std::map<neuron, float> const &error_map);
 };
 
-#endif //INCLUDE_NEURAL_NETWORKS_NEURAL_NETWORK_H_
+#endif  // INCLUDE_NEURAL_NETWORKS_NEURAL_NETWORK_H_

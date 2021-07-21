@@ -7,7 +7,7 @@
 
 
 class dynamic_elem {
-public:
+ public:
     int references;
 
     dynamic_elem();
@@ -19,4 +19,4 @@ public:
     void increment_reference();
 };
 
-#endif //INCLUDE_NEURAL_NETWORKS_DYNAMIC_ELEM_H_
+#endif  // INCLUDE_NEURAL_NETWORKS_DYNAMIC_ELEM_H_

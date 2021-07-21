@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <utility>
 
 #ifndef INCLUDE_ANIMAL_LEARNING_TRACECONDIONING_H_
 #define INCLUDE_ANIMAL_LEARNING_TRACECONDIONING_H_
@@ -28,7 +29,7 @@ class TraceConditioning {
     void set_noise_bits();
 
 
-public:
+ public:
     TraceConditioning(std::pair<int, int> ISI, std::pair<int, int> ISI_long, std::pair<int, int> ITI,
                       int num_distractors, int seed);
 
@@ -69,7 +70,7 @@ class TracePatterning {
     void set_noise_bits();
 
 
-public:
+ public:
     TracePatterning(std::pair<int, int> ISI, std::pair<int, int> ISI_long, std::pair<int, int> ITI, int num_distractors,
                     int seed);
 
@@ -97,4 +98,4 @@ public:
 };
 
 
-#endif //INCLUDE_ANIMAL_LEARNING_TRACECONDIONING_H_
+#endif  // INCLUDE_ANIMAL_LEARNING_TRACECONDIONING_H_

@@ -19,7 +19,7 @@ class Experiment {
 
     static std::vector<int> frequency_of_params(std::map<std::string, std::vector<std::string>> &args);
 
-public:
+ public:
     std::map<std::string, std::string> args_for_run;
     int run;
     std::string database_name;
@@ -34,4 +34,4 @@ public:
 };
 
 
-#endif //INCLUDE_EXPERIMENT_EXPERIMENT_H_
+#endif  // INCLUDE_EXPERIMENT_EXPERIMENT_H_

@@ -7,19 +7,20 @@
 
 
 #include <vector>
-#include "message.h"
 #include <queue>
 #include <utility>
-#include "dynamic_elem.h"
+#include "./dynamic_elem.h"
+#include "./message.h"
 
 class neuron;
 
 
 class synapse : public dynamic_elem {
     bool is_recurrent_connection;
-public:
-    static long long int synapse_id_generator;
-    long long int id;
+
+ public:
+    static int64_t synapse_id_generator;
+    int64_t id;
 
     bool is_useless;
     int age;
@@ -67,7 +68,6 @@ public:
     void assign_credit();
 
     ~synapse() = default;
-
 };
 
-#endif //INCLUDE_NEURAL_NETWORKS_SYNAPSE_H_
+#endif  // INCLUDE_NEURAL_NETWORKS_SYNAPSE_H_

@@ -2,10 +2,11 @@
 // Created by Khurram Javed on 2021-04-22.
 //
 
-#include "../../include/animal_learning/tracecondioning.h"
-#include <vector>
+
 #include <math.h>
 #include <random>
+#include <vector>
+#include "../../include/animal_learning/tracecondioning.h"
 
 
 TraceConditioning::TraceConditioning(std::pair<int, int> ISI, std::pair<int, int> ISI_long, std::pair<int, int> ITI,
@@ -56,8 +57,8 @@ std::vector<float> TraceConditioning::reset() {
     this->remaining_steps = this->remaining_until_US + ITI_sampler(mt);
 
     set_noise_bits();
-    current_state[0] = 1; // Setting the CS
-    current_state[1] = 0; //setting the US
+    current_state[0] = 1;  // Setting the CS
+    current_state[1] = 0;  // setting the US
     return current_state;
 }
 
