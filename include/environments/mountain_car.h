@@ -19,9 +19,11 @@ public:
     float max_velocity;
     float min_velocity;
     float goal_position;
-    MountainCar(int seed, bool tile_coding = true);
+    int discretization;
+    int max_timesteps;
+    MountainCar(int seed, int discretization = 0);
     int get_random_action();
-    int observation_shape();
+    unsigned long observation_shape();
     int n_actions();
     bool at_goal();
     Observation get_current_obs();

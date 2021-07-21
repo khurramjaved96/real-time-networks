@@ -88,7 +88,8 @@ int main(int argc, char *argv[]) {
     //TODO add num inp and out as params here fixed for env
     // TODO: input neurons and output neurons
     ContinuallyAdaptingNetwork my_network = ContinuallyAdaptingNetwork(exp.get_float_param("step_size"),
-
+                                                                       10,
+                                                                       4,
                                                                        exp.get_int_param("width"),
                                                                        exp.get_int_param("seed"));
 

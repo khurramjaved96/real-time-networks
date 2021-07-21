@@ -235,7 +235,8 @@ void ContinuallyAdaptingNetwork::step() {
 
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
@@ -244,7 +245,8 @@ void ContinuallyAdaptingNetwork::step() {
 
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
@@ -252,7 +254,8 @@ void ContinuallyAdaptingNetwork::step() {
             });
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
@@ -261,7 +264,8 @@ void ContinuallyAdaptingNetwork::step() {
 
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
@@ -270,7 +274,8 @@ void ContinuallyAdaptingNetwork::step() {
 
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             all_synapses.begin(),
             all_synapses.end(),
             [&](synapse *s) {
@@ -278,7 +283,8 @@ void ContinuallyAdaptingNetwork::step() {
             });
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             all_synapses.begin(),
             all_synapses.end(),
             [&](synapse *s) {
@@ -287,7 +293,8 @@ void ContinuallyAdaptingNetwork::step() {
 
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             all_neurons.begin(),
             all_neurons.end(),
             [&](neuron *n) {
@@ -305,7 +312,8 @@ void ContinuallyAdaptingNetwork::step() {
 
 
     std::for_each(
-            std::execution::par_unseq,
+//            std::execution::par_unseq,
+            std::execution::seq,
             this->all_synapses.begin(),
             this->all_synapses.end(),
             [&](synapse *s) {
@@ -347,6 +355,20 @@ void ContinuallyAdaptingNetwork::step() {
     this->time_step++;
 
 
+}
+
+bool ContinuallyAdaptingNetwork::any_credit_remaining() {
+    bool remaining = false;
+    std::for_each(
+            std::execution::par_unseq,
+            this->all_synapses.begin(),
+            this->all_synapses.end(),
+            [&](synapse *s) {
+                if(s->credit > 0) {
+                    remaining = true;
+                }
+            });
+    return remaining;
 }
 
 bool is_null_ptr(dynamic_elem* elem)

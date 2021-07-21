@@ -52,6 +52,7 @@ public:
     void step();
     std::vector<float> read_output_values();
     std::vector<float> read_all_values();
+    bool any_credit_remaining();
     float introduce_targets(std::vector<float> targets);
     float introduce_targets(std::vector<float> targets, float gamma, float lambda);
     float introduce_targets(std::vector<float> targets, float gamma, float lambda, std::vector<bool> no_grad);

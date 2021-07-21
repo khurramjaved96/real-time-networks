@@ -205,7 +205,9 @@ void neuron::fire(int time_step) {
         this->error_gradient.pop();
     }
     this->value = temp_value;
-    if (this->activation_type && this->value <= 0) {
+//  Make sure we don't put activations on both input and output values
+    if (this->activation_type && this->value <= 0 && !this->is_output_neuron && !this->is_input_neuron) {
+//    if (this->activation_type && this->value <= 0) {
         this->value = 0;
     } else {
         this->average_activation = this->average_activation * 0.95 + 0.05 * std::abs(this->value);

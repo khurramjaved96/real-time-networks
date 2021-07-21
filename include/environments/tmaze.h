@@ -14,6 +14,7 @@ struct Observation
     float cmltv_reward;
     bool is_terminal;
     std::vector<float> state;
+    std::vector<float> observation;
 };
 
 
