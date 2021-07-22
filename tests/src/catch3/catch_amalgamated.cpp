@@ -16,7 +16,7 @@
 //  You probably shouldn't edit it directly.
 //  ----------------------------------------------------------
 
-#include "catch_amalgamated.hpp"
+#include "../../include/catch3/catch_amalgamated.hpp"
 
 
 // Adapted from donated nonius code.

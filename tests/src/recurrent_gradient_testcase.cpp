@@ -6,10 +6,10 @@
 
 
 #include <vector>
-#include "../include/utils.h"
+#include "../../include/utils.h"
 
-#include "../include/neural_networks/networks/test_recurrent.h"
-#include "../include/animal_learning/tracecondioning.h"
+#include "../include/fixed_recurrent_network.h"
+#include "../../include/animal_learning/tracecondioning.h"
 
 
 bool recurrent_network_test() {

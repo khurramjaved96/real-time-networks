@@ -5,10 +5,14 @@
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 
-#include "catch_amalgamated.hpp"
-#include "recurrence_tests.h"
+#include <iostream>
+
+#include "include/catch3/catch_amalgamated.hpp"
+#include "include/recurrence_tests.h"
+#include "include/feedforward_gradient_testcase.h"
 
 TEST_CASE("Recurrent gradient", "[Gradient estimation]") {
     REQUIRE(recurrent_network_test());
+//    REQUIRE(feedforwadtest());
 }
 //}
