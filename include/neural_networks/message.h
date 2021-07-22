@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-04-01.
 //
 
-#ifndef INCLUDE_NEURAL_MESSAGE_ELEM_H_
-#define INCLUDE_NEURAL_MESSAGE_ELEM_H_
+#ifndef INCLUDE_NEURAL_NETWORKS_MESSAGE_H_
+#define INCLUDE_NEURAL_NETWORKS_MESSAGE_H_
 
 
 class message {
@@ -28,4 +28,4 @@ class message_activation {
 };
 
 
-#endif  // INCLUDE_NEURAL_MESSAGE_ELEM_H_
+#endif  // INCLUDE_NEURAL_NETWORKS_MESSAGE_H_p
