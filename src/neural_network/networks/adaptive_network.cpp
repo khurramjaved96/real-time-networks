@@ -415,12 +415,7 @@ float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets, 
 //  Put all targets into our neurons.
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
-        if (counter == 1) {
-            std::cout << "More than one output neuron not supported currently\n";
-            exit(1);
-        }
         error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
     }
-    this->error_neuron->introduce_targets(error, this->time_step - 1, gamma, lambda);
     return error * error;
 }
