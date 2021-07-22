@@ -13,6 +13,10 @@
 
 TEST_CASE("Recurrent gradient", "[Gradient estimation]") {
     REQUIRE(recurrent_network_test());
-//    REQUIRE(feedforwadtest());
+}
+
+
+TEST_CASE("Feedforward deep gradients with variable length paths", "[Gradient estimation]") {
+    REQUIRE(feedforwadtest());
 }
 //}

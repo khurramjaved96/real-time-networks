@@ -64,6 +64,8 @@ class neuron : public dynamic_elem {
 
     void propagate_error();
 
+    void propagate_deep_error();
+
     void update_utility();
 
     void mark_useless_weights();

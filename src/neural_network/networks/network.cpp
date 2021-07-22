@@ -241,7 +241,7 @@ std::vector<float> Network::read_all_values() {
 float Network::introduce_targets(std::vector<float> targets) {
     float error = 0;
     for (int counter = 0; counter < targets.size(); counter++) {
-        error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1);
+        error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step);
     }
     return error;
 }
