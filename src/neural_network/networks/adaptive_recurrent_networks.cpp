@@ -35,14 +35,11 @@
  * @param seed: random seed to initialize.
  */
 
-int ContinuallyAdaptingRecurrentNetwork::get_total_neurons() {
-    return this->all_neurons.size();
-}
 
 ContinuallyAdaptingRecurrentNetwork::ContinuallyAdaptingRecurrentNetwork(float step_size, int seed,
-                                                                         int no_of_input_features) : mt(seed) {
+                                                                         int no_of_input_features)  {
     this->time_step = 0;
-
+    this->mt.seed(seed);
 //  Initialize the neural network input neurons.
 //  Currently we fix an input size of 10.
     int input_neuron = 1;
@@ -162,22 +159,6 @@ void ContinuallyAdaptingRecurrentNetwork::print_graph(neuron *root) {
     }
 }
 
-void ContinuallyAdaptingRecurrentNetwork::viz_graph() {
-    NetworkVisualizer netviz = NetworkVisualizer(this->all_neurons);
-    netviz.generate_dot(this->time_step);
-    netviz.generate_dot_detailed(this->time_step);
-}
-
-std::string ContinuallyAdaptingRecurrentNetwork::get_viz_graph() {
-    NetworkVisualizer netviz = NetworkVisualizer(this->all_neurons);
-    return netviz.get_graph(this->time_step);
-//    netviz.generate_dot_detailed(this->time_step);
-}
-
-
-int64_t ContinuallyAdaptingRecurrentNetwork::get_timestep() {
-    return this->time_step;
-}
 
 /**
  * Add a feature by adding a neuron to the neural network. This neuron is connected
@@ -198,7 +179,6 @@ void ContinuallyAdaptingRecurrentNetwork::add_feature(float step_size) {
         last_neuron->increment_reference();
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(last_neuron));
         this->all_neurons.push_back(last_neuron);
-        this->error_predicting_neurons.push_back(last_neuron);
 
 //      w.p. perc, attach a random neuron (that's not an output neuron) to this neuron
         float perc = dist_u(mt);
@@ -250,40 +230,12 @@ void ContinuallyAdaptingRecurrentNetwork::add_feature(float step_size) {
 }
 
 
-void ContinuallyAdaptingRecurrentNetwork::set_print_bool() {
-    std::cout
-            << "From\tTo\tGrad_queue_size\tFrom activations_size\tTo activations_size\tError grad_queue From\tCredit\n";
-    for (auto &s : this->all_synapses)
-        s->print_status = false;
-}
-
-
-int ContinuallyAdaptingRecurrentNetwork::get_input_size() {
-    return this->input_neurons.size();
-}
-
-int ContinuallyAdaptingRecurrentNetwork::get_total_synapses() {
-    return this->all_synapses.size();
-}
-
 ContinuallyAdaptingRecurrentNetwork::~ContinuallyAdaptingRecurrentNetwork() {
     for (auto &it : this->all_heap_elements)
         delete it;
 }
 
 
-void ContinuallyAdaptingRecurrentNetwork::set_input_values(std::vector<float> const &input_values) {
-//    assert(input_values.size() == this->input_neurons.size());
-    for (int i = 0; i < input_values.size(); i++) {
-        if (i < this->input_neurons.size()) {
-            this->input_neurons[i]->value_before_firing = input_values[i];
-//            std::cout << "Setting gradient_activation = " << input_values[i] << std::endl;
-        } else {
-            std::cout << "More input features than input neurons\n";
-            exit(1);
-        }
-    }
-}
 
 
 /**
@@ -411,39 +363,6 @@ void ContinuallyAdaptingRecurrentNetwork::step() {
     this->time_step++;
 }
 
-
-/**
- * Find all synapses and neurons with 0 references to them and delete them.
- */
-void ContinuallyAdaptingRecurrentNetwork::collect_garbage() {
-    for (int temp = 0; temp < this->all_heap_elements.size(); temp++) {
-        if (all_heap_elements[temp]->references == 0) {
-            delete all_heap_elements[temp];
-            all_heap_elements[temp] = nullptr;
-        }
-    }
-
-    auto it = std::remove_if(this->all_heap_elements.begin(), this->all_heap_elements.end(), is_null_ptr);
-    this->all_heap_elements.erase(it, this->all_heap_elements.end());
-}
-
-std::vector<float> ContinuallyAdaptingRecurrentNetwork::read_output_values() {
-    std::vector<float> output_vec;
-    output_vec.reserve(this->output_neurons.size());
-    for (auto &output_neuro : this->output_neurons) {
-        output_vec.push_back(output_neuro->value);
-    }
-    return output_vec;
-}
-
-std::vector<float> ContinuallyAdaptingRecurrentNetwork::read_all_values() {
-    std::vector<float> output_vec;
-    output_vec.reserve(this->all_neurons.size());
-    for (auto &output_neuro : this->all_neurons) {
-        output_vec.push_back(output_neuro->value);
-    }
-    return output_vec;
-}
 
 
 float ContinuallyAdaptingRecurrentNetwork::introduce_targets(std::vector<float> targets) {
