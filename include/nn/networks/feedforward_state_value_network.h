@@ -2,9 +2,8 @@
 // Created by Khurram Javed on 2021-04-01.
 //
 
-#ifndef INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_NETWORK_H_
-#define INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_NETWORK_H_
-
+#ifndef INCLUDE_NN_NETWORKS_ADAPTIVE_NETWORK_H_
+#define INCLUDE_NN_NETWORKS_ADAPTIVE_NETWORK_H_
 
 
 #include <vector>
@@ -14,12 +13,12 @@
 #include "../synapse.h"
 #include "../neuron.h"
 #include "../dynamic_elem.h"
-#include "network.h"
+#include "./network.h"
 
 
 class ContinuallyAdaptingNetwork : public Network {
 
- public:
+public:
 
 
     ContinuallyAdaptingNetwork(float step_size, int seed, int no_of_input_features);
@@ -42,4 +41,5 @@ class ContinuallyAdaptingNetwork : public Network {
     void add_feature(float step_size);
 //    std::vector<float> get_memory_weights();
 };
-#endif  // INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_NETWORK_H_
+
+#endif  // INCLUDE_NN_NETWORKS_ADAPTIVE_NETWORK_H_

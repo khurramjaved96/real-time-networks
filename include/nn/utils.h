@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-03-30.
 //
 
-#ifndef INCLUDE_NEURAL_NETWORKS_UTILS_H_
-#define INCLUDE_NEURAL_NETWORKS_UTILS_H_
+#ifndef INCLUDE_NN_UTILS_H_
+#define INCLUDE_NN_UTILS_H_
 
 #include <vector>
 #include <algorithm>
@@ -69,4 +69,4 @@ bool to_delete_n(neuron *s);
 
 bool is_null_ptr(dynamic_elem *elem);
 
-#endif  // INCLUDE_NEURAL_NETWORKS_UTILS_H_
+#endif  // INCLUDE_NN_UTILS_H_

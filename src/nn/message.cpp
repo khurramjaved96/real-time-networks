@@ -3,7 +3,7 @@
 //
 
 
-#include "../../include/neural_networks/message.h"
+#include "../../include/nn/message.h"
 #include <stdexcept>
 
 

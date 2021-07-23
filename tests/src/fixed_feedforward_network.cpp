@@ -11,9 +11,9 @@
 #include <random>
 #include <execution>
 #include <iostream>
-#include "../../include/neural_networks/neuron.h"
-#include "../../include/neural_networks/synapse.h"
-#include "../../include/neural_networks/utils.h"
+#include "../../include/nn/neuron.h"
+#include "../../include/nn/synapse.h"
+#include "../../include/nn/utils.h"
 
 TestCase::TestCase(float step_size, int width, int seed) {
     this->time_step = 0;
@@ -43,8 +43,12 @@ TestCase::TestCase(float step_size, int width, int seed) {
         this->all_neurons.push_back(n);
     }
 
-    this->all_synapses.push_back(new synapse(all_neurons[1 - 1], all_neurons[4 - 1], 0.2, step_size));
-    this->all_synapses.push_back(new synapse(all_neurons[1 - 1], all_neurons[6 - 1], 0.5, step_size));
+    auto inp1 = new synapse(all_neurons[1 - 1], all_neurons[4 - 1], 0.2, step_size);
+    auto inp2 = new synapse(all_neurons[1 - 1], all_neurons[6 - 1], 0.5, step_size);
+    inp1->block_gradients();
+    inp2->block_gradients();
+    this->all_synapses.push_back(inp1);
+    this->all_synapses.push_back(inp2);
     this->all_synapses.push_back(new synapse(all_neurons[2 - 1], all_neurons[4 - 1], -0.2, step_size));
     this->all_synapses.push_back(new synapse(all_neurons[2 - 1], all_neurons[5 - 1], 0.7, step_size));
     this->all_synapses.push_back(new synapse(all_neurons[3 - 1], all_neurons[4 - 1], 0.65, step_size));

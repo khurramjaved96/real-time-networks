@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-07-11.
 //
 
-#ifndef INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_
-#define INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_
+#ifndef INCLUDE_NN_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_
+#define INCLUDE_NN_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_
 
 
 
@@ -14,7 +14,7 @@
 #include "../dynamic_elem.h"
 #include "../synapse.h"
 #include "../neuron.h"
-#include "network.h"
+#include "./network.h"
 
 class ContinuallyAdaptingRecurrentNetwork : public Network{
 
@@ -30,7 +30,6 @@ class ContinuallyAdaptingRecurrentNetwork : public Network{
 
     void step();
 
-
     float introduce_targets(std::vector<float> targets);
 
     float introduce_targets(std::vector<float> targets, float gamma, float lambda);
@@ -39,4 +38,4 @@ class ContinuallyAdaptingRecurrentNetwork : public Network{
 };
 
 
-#endif  // INCLUDE_NEURAL_NETWORKS_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_
+#endif  // INCLUDE_NN_NETWORKS_ADAPTIVE_RECURRENT_NETWORK_H_

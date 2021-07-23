@@ -26,8 +26,5 @@ int Metric::add_value(std::vector<std::string> values) {
 
 int Metric::add_values(const std::vector<std::vector<std::string>> &vector_of_values) {
     this->d.add_rows_to_table(this->database_name, this->table_name, this->db_columns, vector_of_values);
-//    for (auto const &imap: vector_of_values) {
-//        this->d.add_row_to_table(this->database_name, this->table_name, this->db_columns, imap);
-//    }
     return 0;
 }

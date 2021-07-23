@@ -6,7 +6,7 @@
 #include <math.h>
 #include <random>
 #include <vector>
-#include "../../include/animal_learning/tracecondioning.h"
+#include "../../../include/environments/animal_learning/tracecondioning.h"
 
 
 TraceConditioning::TraceConditioning(std::pair<int, int> ISI, std::pair<int, int> ISI_long, std::pair<int, int> ITI,

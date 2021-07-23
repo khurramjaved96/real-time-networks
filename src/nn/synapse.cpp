@@ -2,12 +2,12 @@
 // Created by Khurram Javed on 2021-03-16.
 //
 
-#include "../../include/neural_networks/synapse.h"
+#include "../../include/nn/synapse.h"
 #include <math.h>
 #include <vector>
 #include <iostream>
-#include "../../include/neural_networks/neuron.h"
-#include "../../include/neural_networks/utils.h"
+#include "../../include/nn/neuron.h"
+#include "../../include/nn/utils.h"
 
 
 

@@ -11,10 +11,10 @@
 #include <vector>
 #include <map>
 #include <random>
-#include "../../include/neural_networks/dynamic_elem.h"
-#include "../../include/neural_networks/synapse.h"
-#include "../../include/neural_networks/neuron.h"
-#include "../../include/neural_networks/networks/network.h"
+#include "../../include/nn/dynamic_elem.h"
+#include "../../include/nn/synapse.h"
+#include "../../include/nn/neuron.h"
+#include "../../include/nn/networks/network.h"
 
 
 class ContinuallyAdaptingRecurrentNetworkTest: public Network {

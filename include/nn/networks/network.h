@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-07-21.
 //
 
-#ifndef INCLUDE_NEURAL_NETWORKS_NETWORKS_NETWORK_H
-#define INCLUDE_NEURAL_NETWORKS_NETWORKS_NETWORK_H
+#ifndef INCLUDE_NN_NETWORKS_NETWORK_H
+#define INCLUDE_NN_NETWORKS_NETWORK_H
 
 #include <vector>
 #include <map>
@@ -56,4 +56,4 @@ class Network {
 //    virtual void add_feature() = 0;
 };
 
-#endif  // INCLUDE_NEURAL_NETWORKS_NETWORKS_NETWORK_H
+#endif  // INCLUDE_NN_NETWORKS_NETWORK_H

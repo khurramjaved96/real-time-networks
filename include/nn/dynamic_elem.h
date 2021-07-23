@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-05-31.
 //
 
-#ifndef INCLUDE_NEURAL_NETWORKS_DYNAMIC_ELEM_H_
-#define INCLUDE_NEURAL_NETWORKS_DYNAMIC_ELEM_H_
+#ifndef INCLUDE_NN_DYNAMIC_ELEM_H_
+#define INCLUDE_NN_DYNAMIC_ELEM_H_
 
 
 class dynamic_elem {
@@ -19,4 +19,4 @@ class dynamic_elem {
     void increment_reference();
 };
 
-#endif  // INCLUDE_NEURAL_NETWORKS_DYNAMIC_ELEM_H_
+#endif  // INCLUDE_NN_DYNAMIC_ELEM_H_

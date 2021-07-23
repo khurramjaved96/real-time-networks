@@ -7,7 +7,7 @@
 //
 
 
-#include "../../../include/neural_networks/networks/adaptive_network.h"
+#include "../../../include/nn/networks/feedforward_state_value_network.h"
 #include <assert.h>
 #include <cmath>
 #include <random>
@@ -16,11 +16,11 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
-#include "../../../include/neural_networks/neuron.h"
-#include "../../../include/neural_networks/synapse.h"
-#include "../../../include/neural_networks/dynamic_elem.h"
+#include "../../../include/nn/neuron.h"
+#include "../../../include/nn/synapse.h"
+#include "../../../include/nn/dynamic_elem.h"
 #include "../../../include/utils.h"
-#include "../../../include/neural_networks/utils.h"
+#include "../../../include/nn/utils.h"
 
 /**
  * Continually adapting neural network.

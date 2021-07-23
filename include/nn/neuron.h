@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-03-16.
 //
 
-#ifndef INCLUDE_NEURAL_NETWORKS_NEURON_H_
-#define INCLUDE_NEURAL_NETWORKS_NEURON_H_
+#ifndef INCLUDE_NN_NEURON_H_
+#define INCLUDE_NN_NEURON_H_
 
 
 #include <vector>
@@ -76,4 +76,4 @@ class neuron : public dynamic_elem {
 };
 
 
-#endif  // INCLUDE_NEURAL_NETWORKS_NEURON_H_
+#endif  // INCLUDE_NN_NEURON_H_

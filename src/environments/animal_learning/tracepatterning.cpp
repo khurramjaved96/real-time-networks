@@ -5,8 +5,8 @@
 #include <math.h>
 #include <vector>
 #include <random>
-#include "../../include/utils.h"
-#include "../../include/animal_learning/tracecondioning.h"
+#include "../../../include/utils.h"
+#include "../../../include/environments/animal_learning/tracecondioning.h"
 
 TracePatterning::TracePatterning(std::pair<int, int> ISI, std::pair<int, int> ISI_long, std::pair<int, int> ITI,
                                  int num_distractors, int seed) : ISI_sampler(ISI.first, ISI.second),

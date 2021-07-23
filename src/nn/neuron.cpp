@@ -2,7 +2,7 @@
 // Created by Khurram Javed on 2021-03-16.
 //
 
-#include "../../include/neural_networks/neuron.h"
+#include "../../include/nn/neuron.h"
 #include <assert.h>
 #include <iostream>
 #include <utility>

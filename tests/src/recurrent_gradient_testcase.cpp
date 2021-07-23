@@ -9,7 +9,7 @@
 #include "../../include/utils.h"
 
 #include "../include/fixed_recurrent_network.h"
-#include "../../include/animal_learning/tracecondioning.h"
+#include "../../include/environments/animal_learning/tracecondioning.h"
 
 
 bool recurrent_network_test() {

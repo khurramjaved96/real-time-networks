@@ -14,11 +14,11 @@
 #include <string>
 
 #include "include/utils.h"
-#include "include/animal_learning/tracecondioning.h"
-#include "include/neural_networks/networks/adaptive_network.h"
-#include "include/neural_networks/neural_network.h"
+#include "include/environments/animal_learning/tracecondioning.h"
+#include "include/nn/networks/feedforward_state_value_network.h"
+#include "include/nn/neural_network.h"
 #include "include/experiment/Experiment.h"
-#include "include/neural_networks/utils.h"
+#include "include/nn/utils.h"
 #include "include/experiment/Metric.h"
 
 

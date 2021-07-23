@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-03-16.
 //
 
-#ifndef INCLUDE_NEURAL_NETWORKS_SYNAPSE_H_
-#define INCLUDE_NEURAL_NETWORKS_SYNAPSE_H_
+#ifndef INCLUDE_NN_SYNAPSE_H_
+#define INCLUDE_NN_SYNAPSE_H_
 
 
 #include <vector>
@@ -70,4 +70,4 @@ class synapse : public dynamic_elem {
     ~synapse() = default;
 };
 
-#endif  // INCLUDE_NEURAL_NETWORKS_SYNAPSE_H_
+#endif  // INCLUDE_NN_SYNAPSE_H_

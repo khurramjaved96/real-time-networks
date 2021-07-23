@@ -2,7 +2,7 @@
 // Created by Khurram Javed on 2021-05-31.
 //
 
-#include "../../include/neural_networks/dynamic_elem.h"
+#include "../../include/nn/dynamic_elem.h"
 
 
 dynamic_elem::dynamic_elem() {

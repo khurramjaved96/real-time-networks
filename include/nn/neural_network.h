@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-03-16.
 //
 
-#ifndef INCLUDE_NEURAL_NETWORKS_NEURAL_NETWORK_H_
-#define INCLUDE_NEURAL_NETWORKS_NEURAL_NETWORK_H_
+#ifndef INCLUDE_NN_NEURAL_NETWORK_H_
+#define INCLUDE_NN_NEURAL_NETWORK_H_
 
 
 #include <vector>
@@ -36,4 +36,4 @@ class NeuralNetwork {
     void introduce_error(std::map<neuron, float> const &error_map);
 };
 
-#endif  // INCLUDE_NEURAL_NETWORKS_NEURAL_NETWORK_H_
+#endif  // INCLUDE_NN_NEURAL_NETWORK_H_

@@ -11,7 +11,7 @@
 
 #include "../include/fixed_feedforward_network.h"
 #include "../../include/utils.h"
-#include "../../include/animal_learning/tracecondioning.h"
+#include "../../include/environments/animal_learning/tracecondioning.h"
 
 
 bool feedforwadtest() {
