@@ -1,7 +1,7 @@
 [![Test Cases](https://github.com/khurramjaved96/continually-adapting-networks/actions/workflows/cmake.yml/badge.svg?branch=step_size_adaptation&event=push)](https://github.com/khurramjaved96/continually-adapting-networks/actions/workflows/cmake.yml) [![cpplint](https://github.com/khurramjaved96/continually-adapting-networks/actions/workflows/cpplint.yml/badge.svg?event=push)](https://github.com/khurramjaved96/continually-adapting-networks/actions/workflows/cpplint.yml) [![codecov](https://codecov.io/gh/khurramjaved96/continually-adapting-networks/branch/development/graph/badge.svg?token=3YDYPKYSKO)](https://codecov.io/gh/khurramjaved96/continually-adapting-networks)
 
-# Continually Adapting Networks
-Implementation of dynamic NNs for agent-state construction using genetate and test with gradients. 
+# Real-time Neural Networks
+Implementation of Real-time Neural Networks for agent-state construction with a focus on constructive approaches
 
 ## Requirements
 In order to run this project, you'll need the following things installed:
