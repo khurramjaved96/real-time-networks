@@ -58,9 +58,9 @@ class Neuron : public dynamic_elem {
     void propagate_error();
 
 //    Returns the gradient of the post activation w.r.t pre-activation
-    virtual float backward(float output_grad);
+    virtual float backward(float output_grad)  = 0;
 
-    virtual float forward(float temp_value);
+    virtual float forward(float temp_value)  = 0;
 
     void propagate_deep_error();
 
@@ -87,29 +87,22 @@ class SigmoidNeuron : public Neuron{
  public:
     float backward(float output_grad);
     float forward(float temp_value);
-
     SigmoidNeuron(bool is_input, bool is_output);
-
-
 };
 
 class LinearNeuron : public Neuron{
  public:
     float backward(float output_grad);
     float forward(float temp_value);
-
     LinearNeuron(bool is_input, bool is_output);
-
 };
 
 class LeakyRelu : public Neuron{
-public:
     float negative_slope;
+public:
     float backward(float output_grad);
     float forward(float temp_value);
-
-    LeakyRelu(bool is_input, bool is_output);
-
+    LeakyRelu(bool is_input, bool is_output, float negative_slope);
 };
 
 #endif  // INCLUDE_NN_NEURON_H_

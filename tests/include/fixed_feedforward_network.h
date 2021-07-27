@@ -18,12 +18,21 @@ class TestCase : public Network{
  public:
     std::vector<float> sum_of_gradients;
 
-
+    TestCase();
     TestCase(float step_size, int width, int seed);
 
     TestCase(float step_size, int width, int seed, bool sigmoid_status);
 
     void step();
+};
+
+
+class LeakyReluTest : public TestCase{
+
+public:
+
+    LeakyReluTest(float step_size, int width, int seed);
+
 };
 
 

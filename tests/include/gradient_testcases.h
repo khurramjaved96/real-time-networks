@@ -9,4 +9,8 @@ bool feedforwadtest_relu();
 
 bool feedforwadtest_sigmoid();
 
+bool feedforwardtest_leaky_relu();
+
+bool recurrent_network_test();
+
 #endif  // TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H

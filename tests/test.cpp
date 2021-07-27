@@ -8,8 +8,7 @@
 #include <iostream>
 
 #include "include/catch3/catch_amalgamated.hpp"
-#include "include/recurrence_tests.h"
-#include "include/feedforward_gradient_testcase.h"
+#include "include/gradient_testcases.h"
 
 TEST_CASE("Recurrent gradient", "[Gradient estimation]") {
     REQUIRE(recurrent_network_test());
@@ -22,5 +21,9 @@ TEST_CASE("Feedforward deep gradients with variable length paths", "[Gradient es
 
 TEST_CASE("Feedforward deep gradients with variable length paths Sigmoid Activation", "[Gradient estimation]") {
     REQUIRE(feedforwadtest_sigmoid());
+}
+
+TEST_CASE("Feedforward deep gradients with variable length paths LeakyReLU Activation", "[Gradient estimation]") {
+    REQUIRE(feedforwardtest_leaky_relu());
 }
 //}
