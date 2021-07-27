@@ -15,7 +15,7 @@
 #include "./message.h"
 #include "./utils.h"
 
-class neuron : public dynamic_elem {
+class Neuron : public dynamic_elem {
  public:
     static int64_t neuron_id_generator;
     synapse *recurrent_synapse;
@@ -29,7 +29,6 @@ class neuron : public dynamic_elem {
     float value_before_firing;
     int memory_made;
     float neuron_utility;
-    bool is_relu;
     bool is_output_neuron;
     bool useless_neuron;
     int sucesses;
@@ -48,13 +47,7 @@ class neuron : public dynamic_elem {
     std::vector<synapse *> outgoing_synapses;
     std::vector<synapse *> incoming_synapses;
 
-    explicit neuron(bool activation);
-
-    neuron(bool activation, bool output_n);
-
-    neuron(bool activation, bool output_n, int id);
-
-    neuron(bool activation, bool output_n, bool input_n);
+    Neuron(bool is_input, bool is_output);
 
     void fire(int time_step);
 
@@ -64,6 +57,11 @@ class neuron : public dynamic_elem {
 
     void propagate_error();
 
+//    Returns the gradient of the post activation w.r.t pre-activation
+    virtual float backward(float output_grad);
+
+    virtual float forward(float temp_value);
+
     void propagate_deep_error();
 
     void update_utility();
@@ -72,8 +70,46 @@ class neuron : public dynamic_elem {
 
     void prune_useless_weights();
 
-    ~neuron() = default;
+    ~Neuron() = default;
 };
 
+
+class ReluNeuron : public Neuron{
+ public:
+    float backward(float output_grad);
+    float forward(float temp_value);
+
+    ReluNeuron(bool is_input, bool is_output);
+
+};
+
+class SigmoidNeuron : public Neuron{
+ public:
+    float backward(float output_grad);
+    float forward(float temp_value);
+
+    SigmoidNeuron(bool is_input, bool is_output);
+
+
+};
+
+class LinearNeuron : public Neuron{
+ public:
+    float backward(float output_grad);
+    float forward(float temp_value);
+
+    LinearNeuron(bool is_input, bool is_output);
+
+};
+
+class LeakyRelu : public Neuron{
+public:
+    float negative_slope;
+    float backward(float output_grad);
+    float forward(float temp_value);
+
+    LeakyRelu(bool is_input, bool is_output);
+
+};
 
 #endif  // INCLUDE_NN_NEURON_H_

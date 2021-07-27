@@ -45,7 +45,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
     int input_neuron = no_of_input_features;
 
     for (int counter = 0; counter < input_neuron; counter++) {
-        auto n = new neuron(false, false, true);
+        auto n = new LinearNeuron(true ,false);
         n->is_mature = true;
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
         n->increment_reference();
@@ -59,7 +59,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
 
     int output_neuros = 1;
     for (int counter = 0; counter < output_neuros; counter++) {
-        auto n = new neuron(false, true);
+        auto n = new LinearNeuron(false, true);
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
         n->increment_reference();
         this->output_neurons.push_back(n);
@@ -82,7 +82,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
     }
 }
 
-void ContinuallyAdaptingNetwork::print_graph(neuron *root) {
+void ContinuallyAdaptingNetwork::print_graph(Neuron *root) {
     for (auto &os : root->outgoing_synapses) {
         auto current_n = os;
 
@@ -127,8 +127,7 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
         std::uniform_real_distribution<float> dist_recurren(0, 0.99);
 
 //      Create our new neuron
-//        neuron *last_neuron = new neuron(true);
-        neuron *recurrent_neuron = new neuron(true, false, false);
+        Neuron *recurrent_neuron = new ReluNeuron(false, false);
 //        recurrent_neuron->drinking_age = drinking_dist(this->mt);
         recurrent_neuron->is_recurrent_neuron = true;
         recurrent_neuron->increment_reference();

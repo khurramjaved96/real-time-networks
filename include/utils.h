@@ -7,7 +7,7 @@
 
 #include <string>
 #include <vector>
-#include "neural_networks/neuron.h"
+#include "nn/neuron.h"
 
 void print_vector(std::vector<int> const &v);
 
@@ -19,10 +19,10 @@ void print_matrix(std::vector<std::vector<float>> const &v);
 
 class NetworkVisualizer {
     std::string dot_string;
-    std::vector<neuron *> all_neurons;
+    std::vector<Neuron *> all_neurons;
 
  public:
-    explicit NetworkVisualizer(std::vector<neuron *> all_neurons);
+    explicit NetworkVisualizer(std::vector<Neuron *> all_neurons);
 
     void generate_dot(int time_step);
 

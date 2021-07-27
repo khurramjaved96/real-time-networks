@@ -5,6 +5,8 @@
 #ifndef TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H
 #define TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H
 
-bool feedforwadtest();
+bool feedforwadtest_relu();
+
+bool feedforwadtest_sigmoid();
 
 #endif  // TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H

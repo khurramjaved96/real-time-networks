@@ -12,8 +12,8 @@
 #include "./dynamic_elem.h"
 #include "./message.h"
 
-class neuron;
 
+class Neuron;
 
 class synapse : public dynamic_elem {
     bool is_recurrent_connection;
@@ -48,10 +48,10 @@ class synapse : public dynamic_elem {
     std::queue<message> grad_queue;
     std::queue<message> grad_queue_weight_assignment;
     std::queue<message_activation> weight_assignment_past_activations;
-    neuron *input_neuron;
-    neuron *output_neuron;
+    Neuron *input_neuron;
+    Neuron *output_neuron;
 
-    explicit synapse(neuron *input, neuron *output, float w, float step_size);
+    explicit synapse(Neuron *input, Neuron *output, float w, float step_size);
 
     void block_gradients();
 

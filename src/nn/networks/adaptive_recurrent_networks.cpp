@@ -45,7 +45,7 @@ ContinuallyAdaptingRecurrentNetwork::ContinuallyAdaptingRecurrentNetwork(float s
     int input_neuron = 1;
 
 
-    auto n = new neuron(false, false, true);
+    auto n = new LinearNeuron(true, false);
     n->is_mature = true;
     this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
     n->increment_reference();
@@ -53,14 +53,14 @@ ContinuallyAdaptingRecurrentNetwork::ContinuallyAdaptingRecurrentNetwork(float s
     n->increment_reference();
     this->all_neurons.push_back(n);
 
-    auto n2 = new neuron(false, false, true);
+    auto n2 = new LinearNeuron(true, false);
     n2->is_mature = true;
     this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n2));
     n2->increment_reference();
     this->input_neurons.push_back(n2);
     n2->increment_reference();
     this->all_neurons.push_back(n2);
-    auto output_n = new neuron(false, true);
+    auto output_n = new LinearNeuron(false, true);
     this->all_heap_elements.push_back(static_cast<dynamic_elem *>(output_n));
     output_n->increment_reference();
     this->output_neurons.push_back(output_n);
@@ -68,7 +68,7 @@ ContinuallyAdaptingRecurrentNetwork::ContinuallyAdaptingRecurrentNetwork(float s
     this->all_neurons.push_back(output_n);
     std::uniform_real_distribution<float> dist(-1, 1);
     for (int i = 0; i < 2; i++) {
-        auto recurrent_neuron = new neuron(true, false, false);
+        auto recurrent_neuron = new ReluNeuron(false, false);
         recurrent_neuron->is_recurrent_neuron = true;
         recurrent_neuron->is_mature = true;
         recurrent_neuron->increment_reference();
@@ -143,7 +143,7 @@ ContinuallyAdaptingRecurrentNetwork::ContinuallyAdaptingRecurrentNetwork(float s
     this->output_synapses.push_back(s);
 }
 
-void ContinuallyAdaptingRecurrentNetwork::print_graph(neuron *root) {
+void ContinuallyAdaptingRecurrentNetwork::print_graph(Neuron *root) {
     for (auto &os : root->outgoing_synapses) {
         auto current_n = os;
 
@@ -174,7 +174,7 @@ void ContinuallyAdaptingRecurrentNetwork::add_feature(float step_size) {
         std::uniform_real_distribution<float> dist_u(0, 1);
 
 //      Create our new neuron
-        neuron *last_neuron = new neuron(true);
+        Neuron *last_neuron = new ReluNeuron(false, false);
         last_neuron->increment_reference();
         last_neuron->increment_reference();
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(last_neuron));
@@ -186,10 +186,6 @@ void ContinuallyAdaptingRecurrentNetwork::add_feature(float step_size) {
             if (!n->is_output_neuron && n->is_mature) {
                 if (dist_u(mt) < perc) {
                     auto syn = new synapse(n, last_neuron, 0.001 * dist(this->mt), step_size);
-//                    auto syn = new synapse(n, last_neuron, 0.001, step_size);
-//                    auto syn = new synapse(n, last_neuron, 0.5 * dist(this->mt), step_size);
-//
-//                    auto syn = new synapse(n, last_neuron, 0.001, step_size);
                     syn->turn_on_idbd();
                     syn->block_gradients();
                     syn->increment_reference();
@@ -207,12 +203,6 @@ void ContinuallyAdaptingRecurrentNetwork::add_feature(float step_size) {
         syn->increment_reference();
         this->all_synapses.push_back(syn);
         this->all_heap_elements.push_back(static_cast<dynamic_elem *>(syn));
-//        std::cout << last_neuron->incoming_synapses.size() << std::endl;
-//        exit(1);
-
-
-//      Attach this neuron to all output neurons.
-////      Set its weight to either 1 or -1
 
         synapse *output_s_temp;
         if (dist(this->mt) > 0) {
@@ -250,7 +240,7 @@ void ContinuallyAdaptingRecurrentNetwork::step() {
             std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
-            [&](neuron *n) {
+            [&](Neuron *n) {
                 n->fire(this->time_step);
             });
 
@@ -259,7 +249,7 @@ void ContinuallyAdaptingRecurrentNetwork::step() {
             std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
-            [&](neuron *n) {
+            [&](Neuron *n) {
                 n->update_value();
             });
 
@@ -269,7 +259,7 @@ void ContinuallyAdaptingRecurrentNetwork::step() {
             std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
-            [&](neuron *n) {
+            [&](Neuron *n) {
                 n->forward_gradients();
             });
 
@@ -278,7 +268,7 @@ void ContinuallyAdaptingRecurrentNetwork::step() {
             std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
-            [&](neuron *n) {
+            [&](Neuron *n) {
                 n->propagate_error();
             });
 

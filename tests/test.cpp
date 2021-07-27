@@ -17,6 +17,10 @@ TEST_CASE("Recurrent gradient", "[Gradient estimation]") {
 
 
 TEST_CASE("Feedforward deep gradients with variable length paths", "[Gradient estimation]") {
-    REQUIRE(feedforwadtest());
+    REQUIRE(feedforwadtest_relu());
+}
+
+TEST_CASE("Feedforward deep gradients with variable length paths Sigmoid Activation", "[Gradient estimation]") {
+    REQUIRE(feedforwadtest_sigmoid());
 }
 //}

@@ -25,7 +25,7 @@ public:
 
     ~ContinuallyAdaptingNetwork();
 
-    void print_graph(neuron *root);
+    void print_graph(Neuron *root);
 
     void viz_graph();
 

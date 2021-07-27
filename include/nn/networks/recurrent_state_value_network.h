@@ -26,7 +26,7 @@ class ContinuallyAdaptingRecurrentNetwork : public Network{
 
     ~ContinuallyAdaptingRecurrentNetwork();
 
-    void print_graph(neuron *root);
+    void print_graph(Neuron *root);
 
     void step();
 

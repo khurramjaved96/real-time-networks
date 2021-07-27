@@ -21,8 +21,11 @@ class TestCase : public Network{
 
     TestCase(float step_size, int width, int seed);
 
+    TestCase(float step_size, int width, int seed, bool sigmoid_status);
+
     void step();
 };
+
 
 
 #endif  // INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_

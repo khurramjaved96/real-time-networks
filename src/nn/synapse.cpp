@@ -15,7 +15,7 @@ int64_t temp = 0;
 
 int64_t synapse::synapse_id_generator = 0;
 
-synapse::synapse(neuron *input, neuron *output, float w, float step_size) {
+synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
     references = 0;
     TH = 0;
     this->is_recurrent_connection = false;

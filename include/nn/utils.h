@@ -65,7 +65,7 @@ class normal_random {
 
 bool to_delete_s(synapse *s);
 
-bool to_delete_n(neuron *s);
+bool to_delete_n(Neuron *s);
 
 bool is_null_ptr(dynamic_elem *elem);
 

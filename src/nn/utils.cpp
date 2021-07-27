@@ -8,13 +8,14 @@
 
 #include <algorithm>
 #include <random>
+#include <iostream>
 
 #include "../../include/nn/synapse.h"
 #include "../../include/nn/neuron.h"
 #include "../../include/nn/dynamic_elem.h"
 
 float sigmoid(float a) {
-    return 1 / (1 + exp(-1 * a));
+    return (1.0) / (1.0 + exp(-1 * a));
 }
 
 float relu(float a) {
@@ -40,7 +41,7 @@ bool to_delete_s(synapse *s) {
     return s->is_useless;
 }
 
-bool to_delete_n(neuron *s) {
+bool to_delete_n(Neuron *s) {
     return s->useless_neuron;
 }
 

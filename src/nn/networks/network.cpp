@@ -90,7 +90,7 @@ void Network::step() {
             std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
-            [&](neuron *n) {
+            [&](Neuron *n) {
                 n->fire(this->time_step);
             });
 
@@ -99,7 +99,7 @@ void Network::step() {
             std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
-            [&](neuron *n) {
+            [&](Neuron *n) {
                 n->update_value();
             });
 
@@ -109,7 +109,7 @@ void Network::step() {
             std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
-            [&](neuron *n) {
+            [&](Neuron *n) {
                 n->forward_gradients();
             });
 
@@ -118,7 +118,7 @@ void Network::step() {
             std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
-            [&](neuron *n) {
+            [&](Neuron *n) {
                 n->propagate_error();
             });
 
@@ -145,7 +145,7 @@ void Network::step() {
             std::execution::par_unseq,
             all_neurons.begin(),
             all_neurons.end(),
-            [&](neuron *n) {
+            [&](Neuron *n) {
                 n->mark_useless_weights();
             });
 
@@ -153,7 +153,7 @@ void Network::step() {
     std::for_each(
             all_neurons.begin(),
             all_neurons.end(),
-            [&](neuron *n) {
+            [&](Neuron *n) {
                 n->prune_useless_weights();
             });
 
@@ -189,7 +189,7 @@ void Network::step() {
             std::execution::par_unseq,
             this->all_neurons.begin(),
             this->all_neurons.end(),
-            [&](neuron *s) {
+            [&](Neuron *s) {
                 if (s->useless_neuron) {
                     s->decrement_reference();
                 }

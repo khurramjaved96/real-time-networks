@@ -58,7 +58,7 @@ void print_matrix(std::vector<std::vector<int>> const &v) {
     std::cout << "\n";
 }
 
-NetworkVisualizer::NetworkVisualizer(std::vector<neuron *> all_neurons) {
+NetworkVisualizer::NetworkVisualizer(std::vector<Neuron *> all_neurons) {
     this->all_neurons = all_neurons;
 }
 

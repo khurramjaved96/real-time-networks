@@ -19,12 +19,12 @@ class Network {
     std::mt19937 mt;
 
  public:
-    std::vector<neuron *> output_neurons;
+    std::vector<Neuron *> output_neurons;
     std::vector<synapse *> all_synapses;
     std::vector<synapse *> output_synapses;
     std::vector<dynamic_elem *> all_heap_elements;
-    std::vector<neuron *> all_neurons;
-    std::vector<neuron *> input_neurons;
+    std::vector<Neuron *> all_neurons;
+    std::vector<Neuron *> input_neurons;
 
     void collect_garbage();
 
