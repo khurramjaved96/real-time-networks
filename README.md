@@ -17,3 +17,8 @@ To compile this project locally, you'll have to link your MariaDB C++ connector 
 in `CMakeLists.txt`. You'll also need to uncomment essentially everything under the 
 comment "For running locally".
 
+## Instructions for python extension
+* Install pybind11
+* From the project's root directory, use `git clone --recursive https://github.com/DLR-RM/rl-baselines3-zoo`
+* Use CMakeListsPy.txt to compile after adjusting the `include_directories` inside.
+* Train using `python train_CAN.py --run-id 0 --algo dqn --env PongNoFrameskip-v4 --no-render --deterministic --n-timesteps 20000000`
