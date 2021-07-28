@@ -48,7 +48,7 @@ def train_CAN(model, timestep, obs_vec, rewards_vec, step_size, gamma, lmbda, is
         if t > 0:
             prediction = model.read_output_values()[0]
             predictions_vec.append(prediction)
-            if t == len(obs_vec):
+            if t != len(obs_vec):
                 target = rewards_vec[t-1] + gamma * prediction
             else:
                 target = rewards_vec[t-1]
