@@ -55,6 +55,8 @@ class Neuron : public dynamic_elem {
 
     float introduce_targets(float target, int timestep, float gamma, float lambda);
 
+    float introduce_targets(float target, int timestep, float gamma, float lambda, bool no_grad);
+
     void propagate_error();
 
 //    Returns the gradient of the post activation w.r.t pre-activation

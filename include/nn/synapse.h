@@ -67,6 +67,8 @@ class synapse : public dynamic_elem {
 
     void assign_credit();
 
+    void reset_trace();
+
     ~synapse() = default;
 };
 

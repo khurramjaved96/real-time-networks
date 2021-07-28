@@ -375,3 +375,15 @@ float ContinuallyAdaptingRecurrentNetwork::introduce_targets(std::vector<float> 
     }
     return error * error;
 }
+
+float ContinuallyAdaptingRecurrentNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda, std::vector<bool> no_grad) {
+    float error = 0;
+    if (targets.size() != 1) {
+        std::cout << "Multiple target values passed. This network only learns to make a single prediction.\n";
+        exit(1);
+    }
+    for (int counter = 0; counter < targets.size(); counter++) {
+        error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda, no_grad[counter]);
+    }
+    return error * error;
+}

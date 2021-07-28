@@ -34,6 +34,8 @@ class ContinuallyAdaptingRecurrentNetwork : public Network{
 
     float introduce_targets(std::vector<float> targets, float gamma, float lambda);
 
+    float introduce_targets(std::vector<float> targets, float gamma, float lambda, std::vector<bool> no_grad);
+
     void add_feature(float step_size);
 };
 

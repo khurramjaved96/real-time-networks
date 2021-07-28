@@ -254,3 +254,13 @@ float Network::introduce_targets(std::vector<float> targets, float gamma, float 
     }
     return error * error;
 }
+
+void Network::reset_trace(){
+    std::for_each(
+            std::execution::par_unseq,
+            all_synapses.begin(),
+            all_synapses.end(),
+            [&](synapse *s) {
+                s->reset_trace();
+            });
+}

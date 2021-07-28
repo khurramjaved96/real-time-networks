@@ -694,6 +694,46 @@ float Neuron::introduce_targets(float target, int time_step, float gamma, float 
 }
 
 
+/**
+ * Introduce a target to a neuron and calculate its error.
+ * In this case, target should be our TD target, and the neuron should be an outgoing neuron.
+ * @param target: target gradient_activation to calculate our error.
+ * @param time_step: time step that we calculate this error. Use for backprop purposes.
+ * @param gamma: discount factor
+ * @param lambda: eligibility trace decay parameter
+ * @param no_grad: whether grad is computed
+ * @return: squared error
+ */
+float Neuron::introduce_targets(float target, int time_step, float gamma, float lambda, bool no_grad) {
+//  Introduce a target to a neuron and calculate its error.
+//  In this case, target should be our TD target.
+
+    if (!this->past_activations.empty()) {
+//      The activation is the output of our NN.
+        float error;
+        float error_prediction_error;
+        if (!no_grad)
+            error = target - this->past_activations.front().gradient_activation;
+            error_prediction_error = error - this->past_activations.front().error_prediction_value;
+
+        float error_grad = error;
+
+
+//      Create our error gradient for this neuron
+        message m(int(!no_grad), time_step);
+        m.lambda = lambda;
+        m.gamma = gamma;
+        m.error = error_grad;
+        m.error_shadow_prediction = error_prediction_error;
+
+        this->error_gradient.push(m);
+        this->past_activations.pop();
+        return error;
+    }
+    return 0;
+}
+
+
 void Neuron::update_utility() {
     this->neuron_utility = 0;
     for (auto it : this->outgoing_synapses) {

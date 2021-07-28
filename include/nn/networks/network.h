@@ -53,6 +53,8 @@ class Network {
 
     int get_total_neurons();
 
+    void reset_trace();
+
 //    virtual void add_feature() = 0;
 };
 

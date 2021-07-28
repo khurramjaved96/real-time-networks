@@ -53,6 +53,9 @@ void synapse::set_shadow_weight(bool val) {
     this->in_shadow_mode = val;
 }
 
+void synapse::reset_trace() {
+    this->trace = 0;
+}
 
 /**
  * Calculate and set credit based on gradients in the current synapse.
