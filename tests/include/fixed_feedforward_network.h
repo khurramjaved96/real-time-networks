@@ -5,36 +5,31 @@
 #ifndef INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_
 #define INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_
 
-
-
 #include <vector>
 #include <map>
 #include "../../include/nn/synapse.h"
 #include "../../include/nn/neuron.h"
 #include "../../include/nn/networks/network.h"
 
-class TestCase : public Network{
+class TestCase : public Network {
 
  public:
-    std::vector<float> sum_of_gradients;
+  std::vector<float> sum_of_gradients;
 
-    TestCase();
-    TestCase(float step_size, int width, int seed);
+  TestCase();
+  TestCase(float step_size, int width, int seed);
 
-    TestCase(float step_size, int width, int seed, bool sigmoid_status);
+  TestCase(float step_size, int width, int seed, bool sigmoid_status);
 
-    void step();
+  void step();
 };
 
+class LeakyReluTest : public TestCase {
 
-class LeakyReluTest : public TestCase{
+ public:
 
-public:
-
-    LeakyReluTest(float step_size, int width, int seed);
+  LeakyReluTest(float step_size, int width, int seed);
 
 };
-
-
 
 #endif  // INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_

@@ -5,18 +5,17 @@
 #ifndef INCLUDE_NN_DYNAMIC_ELEM_H_
 #define INCLUDE_NN_DYNAMIC_ELEM_H_
 
-
 class dynamic_elem {
  public:
-    int references;
+  int references;
 
-    dynamic_elem();
+  dynamic_elem();
 
-    virtual ~dynamic_elem() = default;
+  virtual ~dynamic_elem() = default;
 
-    void decrement_reference();
+  void decrement_reference();
 
-    void increment_reference();
+  void increment_reference();
 };
 
 #endif  // INCLUDE_NN_DYNAMIC_ELEM_H_

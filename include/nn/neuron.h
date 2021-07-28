@@ -16,7 +16,7 @@
 #include "./utils.h"
 
 class Neuron : public dynamic_elem {
- public:
+public:
     static int64_t neuron_id_generator;
     synapse *recurrent_synapse;
     float old_value;
@@ -42,8 +42,8 @@ class Neuron : public dynamic_elem {
 
     void update_value();
 
-    std::queue<message> error_gradient;
-    std::queue<message_activation> past_activations;
+    std::queue <message> error_gradient;
+    std::queue <message_activation> past_activations;
     std::vector<synapse *> outgoing_synapses;
     std::vector<synapse *> incoming_synapses;
 
@@ -60,9 +60,9 @@ class Neuron : public dynamic_elem {
     void propagate_error();
 
 //    Returns the gradient of the post activation w.r.t pre-activation
-    virtual float backward(float output_grad)  = 0;
+    virtual float backward(float output_grad) = 0;
 
-    virtual float forward(float temp_value)  = 0;
+    virtual float forward(float temp_value) = 0;
 
     void propagate_deep_error();
 
@@ -76,34 +76,41 @@ class Neuron : public dynamic_elem {
 };
 
 
-class ReluNeuron : public Neuron{
- public:
+class ReluNeuron : public Neuron {
+public:
     float backward(float output_grad);
+
     float forward(float temp_value);
 
     ReluNeuron(bool is_input, bool is_output);
 
 };
 
-class SigmoidNeuron : public Neuron{
- public:
+class SigmoidNeuron : public Neuron {
+public:
     float backward(float output_grad);
+
     float forward(float temp_value);
+
     SigmoidNeuron(bool is_input, bool is_output);
 };
 
-class LinearNeuron : public Neuron{
- public:
+class LinearNeuron : public Neuron {
+public:
     float backward(float output_grad);
+
     float forward(float temp_value);
+
     LinearNeuron(bool is_input, bool is_output);
 };
 
-class LeakyRelu : public Neuron{
+class LeakyRelu : public Neuron {
     float negative_slope;
 public:
     float backward(float output_grad);
+
     float forward(float temp_value);
+
     LeakyRelu(bool is_input, bool is_output, float negative_slope);
 };
 

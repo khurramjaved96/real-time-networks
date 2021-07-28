@@ -12,26 +12,25 @@
 #include "Database.h"
 
 class Experiment {
-    std::map<std::string, std::vector<std::string>> args;
+  std::map<std::string, std::vector<std::string>> args;
 
-    std::string output_dir;
-    Database d = Database();
+  std::string output_dir;
+  Database d = Database();
 
-    static std::vector<int> frequency_of_params(std::map<std::string, std::vector<std::string>> &args);
+  static std::vector<int> frequency_of_params(std::map<std::string, std::vector<std::string>> &args);
 
  public:
-    std::map<std::string, std::string> args_for_run;
-    int run;
-    std::string database_name;
+  std::map<std::string, std::string> args_for_run;
+  int run;
+  std::string database_name;
 
-    Experiment(int name, char *argv[]);
+  Experiment(int name, char *argv[]);
 
-    static std::map<std::string, std::vector<std::string>> parse_params(int total_prams, char *pram_list[]);
+  static std::map<std::string, std::vector<std::string>> parse_params(int total_prams, char *pram_list[]);
 
-    int get_int_param(const std::string &);
+  int get_int_param(const std::string &);
 
-    float get_float_param(const std::string &);
+  float get_float_param(const std::string &);
 };
-
 
 #endif  // INCLUDE_EXPERIMENT_EXPERIMENT_H_

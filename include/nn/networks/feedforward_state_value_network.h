@@ -5,7 +5,6 @@
 #ifndef INCLUDE_NN_NETWORKS_ADAPTIVE_NETWORK_H_
 #define INCLUDE_NN_NETWORKS_ADAPTIVE_NETWORK_H_
 
-
 #include <vector>
 #include <map>
 #include <random>
@@ -15,31 +14,29 @@
 #include "../dynamic_elem.h"
 #include "./network.h"
 
-
 class ContinuallyAdaptingNetwork : public Network {
 
-public:
+ public:
 
+  ContinuallyAdaptingNetwork(float step_size, int seed, int no_of_input_features);
 
-    ContinuallyAdaptingNetwork(float step_size, int seed, int no_of_input_features);
+  ~ContinuallyAdaptingNetwork();
 
-    ~ContinuallyAdaptingNetwork();
+  void print_graph(Neuron *root);
 
-    void print_graph(Neuron *root);
+  void viz_graph();
 
-    void viz_graph();
+  void set_print_bool();
 
-    void set_print_bool();
+  std::string get_viz_graph();
 
-    std::string get_viz_graph();
+  float introduce_targets(std::vector<float> targets);
 
-    float introduce_targets(std::vector<float> targets);
-
-    float introduce_targets(std::vector<float> targets, float gamma, float lambda);
-    float introduce_targets(std::vector<float> targets, float gamma, float lambda, std::vector<bool> no_grad);
+  float introduce_targets(std::vector<float> targets, float gamma, float lambda);
+  float introduce_targets(std::vector<float> targets, float gamma, float lambda, std::vector<bool> no_grad);
 
 //    void add_memory(float step_size);
-    void add_feature(float step_size);
+  void add_feature(float step_size);
 //    std::vector<float> get_memory_weights();
 };
 

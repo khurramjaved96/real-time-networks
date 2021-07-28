@@ -35,32 +35,32 @@ std::vector<float> sum(std::vector<float> &lhs, std::vector<float> &rhs);
 
 std::vector<int> sum(std::vector<int> &lhs, std::vector<int> &rhs);
 
-int argmax(std::vector<float>);
+int argmax(std::vector < float > );
 
 std::vector<float> mean(const std::vector<std::vector<float>> &);
 
 std::vector<float> one_hot_encode(int no, int total_numbers);
 
 class uniform_random {
-    std::mt19937 mt;
-    std::uniform_real_distribution<float> dist;
+  std::mt19937 mt;
+  std::uniform_real_distribution<float> dist;
 
  public:
-    explicit uniform_random(int seed);
+  explicit uniform_random(int seed);
 
-    std::vector<float> get_random_vector(int size);
+  std::vector<float> get_random_vector(int size);
 };
 
 class normal_random {
-    std::mt19937 mt;
-    std::normal_distribution<float> dist;
+  std::mt19937 mt;
+  std::normal_distribution<float> dist;
 
  public:
-    normal_random(int seed, float mean, float stddev);
+  normal_random(int seed, float mean, float stddev);
 
-    float get_random_number();
+  float get_random_number();
 
-    std::vector<float> get_random_vector(int size);
+  std::vector<float> get_random_vector(int size);
 };
 
 bool to_delete_s(synapse *s);

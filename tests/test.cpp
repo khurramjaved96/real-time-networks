@@ -11,19 +11,18 @@
 #include "include/gradient_testcases.h"
 
 TEST_CASE("Recurrent gradient", "[Gradient estimation]") {
-    REQUIRE(recurrent_network_test());
+  REQUIRE(recurrent_network_test());
 }
 
-
 TEST_CASE("Feedforward deep gradients with variable length paths", "[Gradient estimation]") {
-    REQUIRE(feedforwadtest_relu());
+  REQUIRE(feedforwadtest_relu());
 }
 
 TEST_CASE("Feedforward deep gradients with variable length paths Sigmoid Activation", "[Gradient estimation]") {
-    REQUIRE(feedforwadtest_sigmoid());
+  REQUIRE(feedforwadtest_sigmoid());
 }
 
 TEST_CASE("Feedforward deep gradients with variable length paths LeakyReLU Activation", "[Gradient estimation]") {
-    REQUIRE(feedforwardtest_leaky_relu());
+  REQUIRE(feedforwardtest_leaky_relu());
 }
 //}

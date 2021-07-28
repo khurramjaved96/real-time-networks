@@ -5,8 +5,6 @@
 #ifndef INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_RECURRENT_H_
 #define INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_RECURRENT_H_
 
-
-
 #include <string>
 #include <vector>
 #include <map>
@@ -16,17 +14,15 @@
 #include "../../include/nn/neuron.h"
 #include "../../include/nn/networks/network.h"
 
-
-class ContinuallyAdaptingRecurrentNetworkTest: public Network {
+class ContinuallyAdaptingRecurrentNetworkTest : public Network {
  public:
-    ContinuallyAdaptingRecurrentNetworkTest(float step_size, int seed, int no_of_input_features);
+  ContinuallyAdaptingRecurrentNetworkTest(float step_size, int seed, int no_of_input_features);
 
-    ~ContinuallyAdaptingRecurrentNetworkTest();
+  ~ContinuallyAdaptingRecurrentNetworkTest();
 
-    void add_feature(float step_size);
+  void add_feature(float step_size);
 
-    void step();
+  void step();
 };
-
 
 #endif  // INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_RECURRENT_H_
