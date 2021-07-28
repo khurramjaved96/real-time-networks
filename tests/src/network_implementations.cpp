@@ -68,7 +68,6 @@ TestCase::TestCase(float step_size, int width, int seed) {
     }
 }
 
-
 TestCase::TestCase(float step_size, int width, int seed, bool sigmoid) {
     this->time_step = 0;
 
@@ -119,6 +118,58 @@ TestCase::TestCase(float step_size, int width, int seed, bool sigmoid) {
     }
 }
 
+TestCase::TestCase() {
+
+}
+LeakyReluTest::LeakyReluTest(float step_size, int width, int seed) {
+
+    this->time_step = 0;
+
+    int input_neuron = 3;
+    for (int counter = 0; counter < input_neuron; counter++) {
+        auto n = new LinearNeuron(true, false);
+        this->input_neurons.push_back(n);
+        this->all_neurons.push_back(n);
+    }
+
+    bool relu = true;
+    auto n = new LeakyRelu(false, false, 0.01);
+    this->all_neurons.push_back(n);
+
+    n = new LeakyRelu(false, false, 0.01);
+    this->all_neurons.push_back(n);
+
+    n = new LeakyRelu(false, false, 0.01);
+    this->all_neurons.push_back(n);
+
+    int output_neuros = 1;
+    for (int counter = 0; counter < output_neuros; counter++) {
+        auto n = new LinearNeuron(false, true);
+        this->output_neurons.push_back(n);
+        this->all_neurons.push_back(n);
+    }
+
+    auto inp1 = new synapse(all_neurons[1 - 1], all_neurons[4 - 1], 0.2, step_size);
+    auto inp2 = new synapse(all_neurons[1 - 1], all_neurons[6 - 1], 0.5, step_size);
+    inp1->block_gradients();
+    inp2->block_gradients();
+    this->all_synapses.push_back(inp1);
+    this->all_synapses.push_back(inp2);
+    this->all_synapses.push_back(new synapse(all_neurons[2 - 1], all_neurons[4 - 1], -0.2, step_size));
+    this->all_synapses.push_back(new synapse(all_neurons[2 - 1], all_neurons[5 - 1], 0.7, step_size));
+    this->all_synapses.push_back(new synapse(all_neurons[3 - 1], all_neurons[4 - 1], 0.65, step_size));
+    this->all_synapses.push_back(new synapse(all_neurons[3 - 1], all_neurons[5 - 1], 0.1, step_size));
+    this->all_synapses.push_back(new synapse(all_neurons[3 - 1], all_neurons[7 - 1], -0.1, step_size));
+    this->all_synapses.push_back(new synapse(all_neurons[4 - 1], all_neurons[6 - 1], 0.2, step_size));
+    this->all_synapses.push_back(new synapse(all_neurons[4 - 1], all_neurons[7 - 1], -0.1, step_size));
+    this->all_synapses.push_back(new synapse(all_neurons[4 - 1], all_neurons[5 - 1], -0.2, step_size));
+    this->all_synapses.push_back(new synapse(all_neurons[5 - 1], all_neurons[7 - 1], 0.2, step_size));
+    this->all_synapses.push_back(new synapse(all_neurons[6 - 1], all_neurons[7 - 1], 0.2, step_size));
+
+    for (auto it : this->all_synapses) {
+        sum_of_gradients.push_back(0);
+    }
+}
 
 void TestCase::step() {
     std::for_each(
