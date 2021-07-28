@@ -50,10 +50,10 @@ bool feedforwadtest_sigmoid() {
 //        std::cout << "counter = " << counter << std::endl;
 
 //        print_vector(output);
-    if (counter < 200 and counter >= 100) {
+    if (counter < 200 && counter >= 100) {
       output[0]++;
     }
-    if (counter < 199 and counter > 100) {
+    if (counter < 199 && counter > 100) {
       sum_of_activation += output2[5];
 //            std::cout << output2[5] << std::endl;
     }
@@ -122,10 +122,10 @@ bool feedforwadtest_relu() {
 //        std::cout << "counter = " << counter << std::endl;
 
 //        print_vector(output);
-    if (counter < 200 and counter >= 100) {
+    if (counter < 200 && counter >= 100) {
       output[0]++;
     }
-    if (counter < 199 and counter > 100) {
+    if (counter < 199 && counter > 100) {
       sum_of_activation += output2[5];
 //            std::cout << output2[5] << std::endl;
     }
@@ -187,10 +187,10 @@ bool feedforwardtest_leaky_relu() {
 //        std::cout << "counter = " << counter << std::endl;
 
 //        print_vector(output);
-    if (counter < 200 and counter >= 100) {
+    if (counter < 200 && counter >= 100) {
       output[0]++;
     }
-    if (counter < 199 and counter > 100) {
+    if (counter < 199 && counter > 100) {
       sum_of_activation += output2[5];
 //            std::cout << output2[5] << std::endl;
     }
@@ -252,7 +252,7 @@ bool recurrent_network_test() {
     my_network.step();
     std::vector<float> output = my_network.read_output_values();
 
-    if (counter >= 100 and counter < 200) {
+    if (counter >= 100 && counter < 200) {
       sum_of_state += my_network.read_all_values()[2];
       output[0]++;
     }

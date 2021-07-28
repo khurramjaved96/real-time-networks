@@ -3,8 +3,8 @@
 #include <queue>
 #include <random>
 
-#ifndef FLEXIBLENN_COPY_TASK_H
-#define FLEXIBLENN_COPY_TASK_H
+#ifndef INCLUDE_ENVIRONMENTS_TMAZE_H_
+#define INCLUDE_ENVIRONMENTS_TMAZE_H_
 
 struct Observation {
   int timestep;
@@ -17,10 +17,10 @@ struct Observation {
 };
 
 class TMaze {
-  //obs.state: [110]/[011] at start, [101] in corridor, [010] at junction
-  //actions: N[1000], S[0001], E[0100], W[0010]
-  //corridor goes from E->W
-  //correct directions are state=[110]:N and state=[011]:S
+  // obs.state: [110]/[011] at start, [101] in corridor, [010] at junction
+  // actions: N[1000], S[0001], E[0100], W[0010]
+  // corridor goes from E->W
+  // correct directions are state=[110]:N and state=[011]:S
   std::mt19937 mt;
   int length_of_corridor;
   int current_pos_in_corridor;
@@ -58,5 +58,4 @@ class TMaze {
   const std::vector<float> junction_state = {0, 1, 0};
   const std::vector<float> terminal_state = {0, 0, 0};
 };
-
-#endif //FLEXIBLENN_COPY_TASK_H
+#endif  // INCLUDE_ENVIRONMENTS_TMAZE_H_

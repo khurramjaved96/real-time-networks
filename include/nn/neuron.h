@@ -16,7 +16,7 @@
 #include "./utils.h"
 
 class Neuron : public dynamic_elem {
-public:
+ public:
     static int64_t neuron_id_generator;
     synapse *recurrent_synapse;
     float old_value;
@@ -77,7 +77,7 @@ public:
 
 
 class ReluNeuron : public Neuron {
-public:
+ public:
     float backward(float output_grad);
 
     float forward(float temp_value);
@@ -87,7 +87,7 @@ public:
 };
 
 class SigmoidNeuron : public Neuron {
-public:
+ public:
     float backward(float output_grad);
 
     float forward(float temp_value);
@@ -96,7 +96,7 @@ public:
 };
 
 class LinearNeuron : public Neuron {
-public:
+ public:
     float backward(float output_grad);
 
     float forward(float temp_value);
@@ -106,7 +106,7 @@ public:
 
 class LeakyRelu : public Neuron {
     float negative_slope;
-public:
+ public:
     float backward(float output_grad);
 
     float forward(float temp_value);

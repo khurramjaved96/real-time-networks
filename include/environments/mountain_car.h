@@ -2,10 +2,10 @@
 // Created by taodav on 29/6/21.
 //
 
-#ifndef FLEXIBLENN_MOUNTAIN_CAR_H
-#define FLEXIBLENN_MOUNTAIN_CAR_H
+#ifndef INCLUDE_ENVIRONMENTS_MOUNTAIN_CAR_H_
+#define INCLUDE_ENVIRONMENTS_MOUNTAIN_CAR_H_
 
-#include "tmaze.h"
+#include "./tmaze.h"
 
 class MountainCar {
   Observation current_obs;
@@ -20,9 +20,9 @@ class MountainCar {
   float goal_position;
   int discretization;
   int max_timesteps;
-  MountainCar(int seed, int discretization = 0);
+  explicit MountainCar(int seed, int discretization = 0);
   int get_random_action();
-  unsigned long observation_shape();
+  int observation_shape();
   int n_actions();
   bool at_goal();
   Observation get_current_obs();
@@ -30,4 +30,4 @@ class MountainCar {
   Observation step(int action);
 };
 
-#endif //FLEXIBLENN_MOUNTAIN_CAR_H
+#endif  // INCLUDE_ENVIRONMENTS_MOUNTAIN_CAR_H_

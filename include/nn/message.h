@@ -26,4 +26,4 @@ class message_activation {
   float TH;
 };
 
-#endif  // INCLUDE_NN_MESSAGE_H_p
+#endif  // INCLUDE_NN_MESSAGE_H_

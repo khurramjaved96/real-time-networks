@@ -29,7 +29,7 @@ MountainCar::MountainCar(int seed, int discretization) : mt(seed) {
   this->current_obs = this->reset();
 }
 
-unsigned long MountainCar::observation_shape() {
+int MountainCar::observation_shape() {
   Observation obs = get_current_obs();
   if (this->discretization > 0) {
     return obs.observation.size();
@@ -76,7 +76,6 @@ Observation MountainCar::get_current_obs() {
     this->current_obs.observation = obs;
   }
   return this->current_obs;
-
 }
 
 int MountainCar::get_random_action() {

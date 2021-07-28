@@ -2,8 +2,8 @@
 // Created by Khurram Javed on 2021-04-01.
 //
 
-#ifndef INCLUDE_NN_NETWORKS_ADAPTIVE_NETWORK_H_
-#define INCLUDE_NN_NETWORKS_ADAPTIVE_NETWORK_H_
+#ifndef INCLUDE_NN_NETWORKS_FEEDFORWARD_STATE_VALUE_NETWORK_H_
+#define INCLUDE_NN_NETWORKS_FEEDFORWARD_STATE_VALUE_NETWORK_H_
 
 #include <vector>
 #include <map>
@@ -37,7 +37,6 @@ class ContinuallyAdaptingNetwork : public Network {
 
 //    void add_memory(float step_size);
   void add_feature(float step_size);
-//    std::vector<float> get_memory_weights();
 };
 
-#endif  // INCLUDE_NN_NETWORKS_ADAPTIVE_NETWORK_H_
+#endif  // INCLUDE_NN_NETWORKS_FEEDFORWARD_STATE_VALUE_NETWORK_H_

@@ -40,13 +40,9 @@ void Neuron::fire(int time_step) {
 // Temp hack
 
   if (this->past_activations.size() > 200) {
-//        std::cout << "neuron.cpp: Activations acculumating: Unless propagating networks for over 100 layers, this is a memory leak.\n";
-//        exit(1);
     this->past_activations.pop();
   }
   if (this->error_gradient.size() > 200) {
-//        std::cout << "neuron.cpp: Gradients acculumating: Unless propagating networks for over 100 layers, this is a memory leak.\n";
-//        exit(1);
     this->error_gradient.pop();
   }
 
@@ -308,7 +304,7 @@ void Neuron::propagate_error() {
                 this->backward(this->past_activations.front().gradient_activation);
 
 
-//                      Check that all activaation_time_required are the same
+//                      Check that all activation_time_required are the same
             if (time_check == 99999) {
               time_check = activation_time_required;
             } else {
@@ -642,7 +638,7 @@ float Neuron::introduce_targets(float target, int time_step, float gamma, float 
 
 
 //      Create our error gradient for this neuron
-    message m(int(!no_grad), time_step);
+    message m(static_cast<int>(!no_grad), time_step);
     m.lambda = lambda;
     m.gamma = gamma;
     m.error = error_grad;
@@ -663,13 +659,11 @@ void Neuron::update_utility() {
 }
 
 float SigmoidNeuron::forward(float temp_value) {
-
   return sigmoid(temp_value);
 }
 
 float SigmoidNeuron::backward(float post_activation) {
   return post_activation * (1 - post_activation);
-
 }
 
 float LinearNeuron::forward(float temp_value) {
@@ -691,7 +685,6 @@ float ReluNeuron::backward(float post_activation) {
     return 1;
   else
     return 0;
-
 }
 
 float LeakyRelu::forward(float temp_value) {
@@ -707,14 +700,14 @@ float LeakyRelu::backward(float post_activation) {
     return this->negative_slope;
 }
 
-ReluNeuron::ReluNeuron(bool is_input, bool is_output) : Neuron(is_input, is_output) {};
+ReluNeuron::ReluNeuron(bool is_input, bool is_output) : Neuron(is_input, is_output) {}
 
-SigmoidNeuron::SigmoidNeuron(bool is_input, bool is_output) : Neuron(is_input, is_output) {};
+SigmoidNeuron::SigmoidNeuron(bool is_input, bool is_output) : Neuron(is_input, is_output) {}
 
 LeakyRelu::LeakyRelu(bool is_input, bool is_output, float negative_slope) : Neuron(is_input, is_output) {
   this->negative_slope = negative_slope;
-};
+}
 
-LinearNeuron::LinearNeuron(bool is_input, bool is_output) : Neuron(is_input, is_output) {};
+LinearNeuron::LinearNeuron(bool is_input, bool is_output) : Neuron(is_input, is_output) {}
 
 int64_t Neuron::neuron_id_generator = 0;

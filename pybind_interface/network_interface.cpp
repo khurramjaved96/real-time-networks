@@ -1,6 +1,6 @@
-#include <vector>
 #include <pybind11.h>
 #include <pybind11/stl.h>
+#include <vector>
 #include "../include/nn/networks/network.h"
 #include "../include/nn/networks/feedforward_state_value_network.h"
 #include "../include/nn/networks/recurrent_state_value_network.h"
