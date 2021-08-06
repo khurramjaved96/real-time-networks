@@ -13,4 +13,8 @@ bool feedforwardtest_leaky_relu();
 
 bool recurrent_network_test();
 
+bool feedforward_relu_with_targets_test();
+
+bool forward_pass_without_sideeffects_test();
+
 #endif  // TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H

@@ -15,7 +15,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def("step", &Network::step)
         .def("read_output_values", &Network::read_output_values)
         .def("read_all_values", &Network::read_all_values)
-        .def("introduce_targets", py::overload_cast<std::vector<float>>(&Network::introduce_targets), "targets")
+//        .def("introduce_targets", py::overload_cast<std::vector<float>>(&Network::introduce_targets), "targets")
         .def("introduce_targets", py::overload_cast<std::vector<float>, float, float>(&Network::introduce_targets), "targets, gamma, lambda")
         .def("get_input_size", &Network::get_input_size)
         .def("get_total_synapses", &Network::get_total_synapses)

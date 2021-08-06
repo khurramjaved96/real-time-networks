@@ -82,8 +82,7 @@ void synapse::assign_credit() {
 //  If this condition is met, your gradient flew past its relevant activation - this isn't supposed to happen!
   if (!this->grad_queue_weight_assignment.empty() && this->weight_assignment_past_activations.front().time !=
       (this->grad_queue_weight_assignment.front().time_step -
-          this->grad_queue_weight_assignment.front().distance_travelled -
-          1)) {
+          this->grad_queue_weight_assignment.front().distance_travelled - 1)) {
     if (this->is_recurrent_connection) {
       std::cout << "Is recurrent connection\n";
     }
@@ -104,6 +103,9 @@ void synapse::assign_credit() {
 
 //      As per the trace update rule, our actual credit being assigned is our trace x our TD error.
     this->credit = this->trace * this->grad_queue_weight_assignment.front().error;
+//    if(this->credit > 10){
+//      std::cout << "Credit = " << this->credit <<  "Error " << this->grad_queue_weight_assignment.front().error << std::endl;
+//    }
 
 //      Remove both grad and past activations used
     this->grad_queue_weight_assignment.pop();
@@ -144,19 +146,23 @@ void synapse::update_weight() {
   if (this->idbd) {
     float meta_grad = this->tidbd_old_error * this->trace * this->h_tidbd;
     this->l2_norm_meta_gradient = this->l2_norm_meta_gradient * 0.99 + (1 - 0.99) * (meta_grad * meta_grad);
-
+//
     if (age > 1000) {
 //            if(this->tidbd_old_error > 0){
 //                std::cout << this->tidbd_old_error << "\t" <<  this->trace << this->h_tidbd << std::endl;
 //            }
 //            std::cout << this->tidbd_old_error << "\t"  this->trace << this->h_tidbd << std::endl;
+
+
+
+
       this->log_step_size_tidbd += 1e-4 * meta_grad / (sqrt(this->l2_norm_meta_gradient) + 1e-8);
 //            this->log_step_size_tidbd += 1e-2 * meta_grad;
       this->log_step_size_tidbd = max(this->log_step_size_tidbd, -15);
       this->log_step_size_tidbd = min(this->log_step_size_tidbd, -6);
       this->step_size = exp(this->log_step_size_tidbd);
 //            this->step_size = min(exp(this->log_step_size_tidbd), 0.001);
-      this->weight += (this->step_size * this->credit);
+      this->weight -= (this->step_size * this->credit);
       if ((1 - this->step_size * this->tidbd_old_activation * this->trace) > 0) {
         this->h_tidbd =
             this->h_tidbd * (1 - this->step_size * this->tidbd_old_activation * this->trace) +
@@ -167,7 +173,7 @@ void synapse::update_weight() {
     }
 
   } else {
-    this->weight += (this->step_size * this->credit);
+    this->weight -= (this->step_size * this->credit);
   }
   if (this->is_recurrent_connection) {
     if (this->weight > 0.9) {
@@ -177,5 +183,9 @@ void synapse::update_weight() {
       this->weight = 0;
     }
   }
+
+//  if(std::abs(this->weight) > 1)
+//    std::cout << "ID = " << this->id << " Weight = " << this->weight << " Step size = " << this->step_size << std::endl;
+//}
 }
 

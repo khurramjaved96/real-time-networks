@@ -16,7 +16,6 @@
 #include "include/utils.h"
 #include "include/environments/animal_learning/tracecondioning.h"
 #include "include/nn/networks/feedforward_state_value_network.h"
-#include "include/nn/neural_network.h"
 #include "include/experiment/Experiment.h"
 #include "include/nn/utils.h"
 #include "include/experiment/Metric.h"
@@ -47,13 +46,13 @@ int main(int argc, char *argv[]) {
   float lambda = my_experiment.get_float_param("lambda");
 
   // Initialize our dataset
-  TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
-                                       std::pair<int, int>(interval, interval_up),
-                                       std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
+//  TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
+//                                       std::pair<int, int>(interval, interval_up),
+//                                       std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
 
-//    TraceConditioning tc = TraceConditioning(std::pair<int, int>(interval, interval_up),
-//                                         std::pair<int, int>(interval, interval_up),
-//                                         std::pair<int, int>(200, 220), 0, my_experiment.get_int_param("seed"));
+    TraceConditioning tc = TraceConditioning(std::pair<int, int>(interval, interval_up),
+                                         std::pair<int, int>(interval, interval_up),
+                                         std::pair<int, int>(200, 220), 0, my_experiment.get_int_param("seed"));
 
   int state_size = 0;
   for (int temp = 0; temp < 200; temp++) {
@@ -66,7 +65,7 @@ int main(int argc, char *argv[]) {
 //    exit(1);
 
   std::cout << "Experiment object created \n";
-  int width = my_experiment.get_int_param("width");
+
 
   Metric synapses_metric = Metric(my_experiment.database_name, "error_table",
                                   std::vector < std::string > {"step", "run", "error", "error_type"},
@@ -238,7 +237,7 @@ int main(int argc, char *argv[]) {
     }
 
 //      Generating new features every 80000 steps
-    if (counter % 70000 == 69999) {
+    if (counter % 20000 == 19999) {
 //            if (counter  == 79999) {
 //          First remove all references to is_useless nodes and neurons
       my_network.collect_garbage();

@@ -21,6 +21,7 @@ class message {
 class message_activation {
  public:
   float gradient_activation;
+  float value_at_activation;
   float error_prediction_value;
   int time;
   float TH;

@@ -120,61 +120,54 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 //  Limit our number of synapses to 1m
   if (this->all_synapses.size() < 1000000) {
 //        std::normal_distribution<float> dist(0, 1);
-    std::uniform_int_distribution<int> drinking_dist(100000, 300000);
+    std::uniform_int_distribution<int> drinking_dist(5000, 10000);
     std::uniform_real_distribution<float> dist(-2, 2);
     std::uniform_real_distribution<float> dist_u(0, 1);
     std::uniform_real_distribution<float> dist_recurren(0, 0.99);
 
 //      Create our new neuron
-    Neuron *recurrent_neuron = new ReluNeuron(false, false);
+    Neuron *new_feature = new SigmoidNeuron(false, false);
 //        recurrent_neuron->drinking_age = drinking_dist(this->mt);
-    recurrent_neuron->is_recurrent_neuron = true;
-    recurrent_neuron->increment_reference();
-    recurrent_neuron->increment_reference();
-    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(recurrent_neuron));
-    this->all_neurons.push_back(recurrent_neuron);
+    new_feature->increment_reference();
+    new_feature->increment_reference();
+    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(new_feature));
+    this->all_neurons.push_back(new_feature);
+
+
+    Neuron *bias_unit = new BiasNeuron();
+    bias_unit->increment_reference();
+    bias_unit->increment_reference();
+    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_unit));
+    this->all_neurons.push_back(bias_unit);
+
+    auto bias_syanpse = new synapse(bias_unit, new_feature, 0.1 * dist(this->mt), step_size);
+    bias_syanpse->block_gradients();
+    bias_syanpse->increment_reference();
+    this->all_synapses.push_back(bias_syanpse);
+    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_syanpse));
 
 //      w.p. perc, attach a random neuron (that's not an output neuron) to this neuron
-    float perc = dist_u(mt);
+    float perc = dist_u(mt)*0.1;
     for (auto &n : this->all_neurons) {
       if (!n->is_output_neuron && n->is_mature) {
         if (dist_u(mt) < perc) {
-          auto syn = new synapse(n, recurrent_neuron, 0.001 * dist(this->mt), step_size);
+          auto syn = new synapse(n, new_feature, 0.1 * dist(this->mt), step_size);
           syn->block_gradients();
           syn->increment_reference();
           this->all_synapses.push_back(syn);
-
           this->all_heap_elements.push_back(static_cast<dynamic_elem *>(syn));
         }
       }
     }
-//        if(recurrent_neuron->incoming_synapses.size()==0){
-//            std::cout << "Creating new feature with no incoming neurons\n";
-//            exit(1);
-//        }
-    auto syn_2 = new synapse(recurrent_neuron, recurrent_neuron, dist_recurren(this->mt), step_size);
-    syn_2->block_gradients();
-    syn_2->set_connected_to_recurrence(true);
-    recurrent_neuron->recurrent_synapse = syn_2;
-    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(syn_2));
-    syn_2->increment_reference();
-    this->all_synapses.push_back(syn_2);
-    syn_2->increment_reference();
-
-//        std::cout << last_neuron->incoming_synapses.size() << std::endl;
-//        exit(1);
-
-
-//      Attach this neuron to all output neurons.
-////      Set its weight to either 1 or -1
 
     synapse *output_s_temp;
     if (dist(this->mt) > 0) {
-      output_s_temp = new synapse(recurrent_neuron, this->output_neurons[0], 1, 0);
+      output_s_temp = new synapse(new_feature, this->output_neurons[0], 0, step_size);
     } else {
-      output_s_temp = new synapse(recurrent_neuron, this->output_neurons[0], -1, 0);
+      output_s_temp = new synapse(new_feature, this->output_neurons[0], 0, step_size);
     }
-    output_s_temp->set_shadow_weight(true);
+//    output_s_temp->set_shadow_weight(true);
+    output_s_temp->turn_on_idbd();
     output_s_temp->increment_reference();
     this->all_synapses.push_back(output_s_temp);
     output_s_temp->increment_reference();

@@ -31,8 +31,8 @@
 int Network::get_total_neurons() {
   int tot = 0;
   for (auto it : this->all_neurons) {
-    if (it->is_mature)
-      tot++;
+//    if (it->is_mature)
+    tot++;
   }
   return tot;
 }
@@ -51,8 +51,8 @@ int Network::get_input_size() {
 int Network::get_total_synapses() {
   int tot = 0;
   for (auto it : this->all_synapses) {
-    if (it->output_neuron->is_mature)
-      tot++;
+//    if (it->output_neuron->is_mature)
+    tot++;
   }
   return tot;
 }
@@ -66,7 +66,7 @@ void Network::set_input_values(std::vector<float> const &input_values) {
 //    assert(input_values.size() == this->input_neurons.size());
   for (int i = 0; i < input_values.size(); i++) {
     if (i < this->input_neurons.size()) {
-      this->input_neurons[i]->value_before_firing = input_values[i];
+      this->input_neurons[i]->value = input_values[i];
     } else {
       std::cout << "More input features than input neurons\n";
       exit(1);
@@ -82,13 +82,7 @@ void Network::set_input_values(std::vector<float> const &input_values) {
  * Finally, it updates its weights and prunes is_useless neurons and synapses.
  */
 void Network::step() {
-  std::for_each(
-      std::execution::par_unseq,
-      all_neurons.begin(),
-      all_neurons.end(),
-      [&](Neuron *n) {
-        n->fire(this->time_step);
-      });
+
 
 //  Calculate and temporarily hold our next neuron values.
   std::for_each(
@@ -96,7 +90,15 @@ void Network::step() {
       all_neurons.begin(),
       all_neurons.end(),
       [&](Neuron *n) {
-        n->update_value();
+        n->update_value(this->time_step);
+      });
+
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->fire(this->time_step);
       });
 
 //  Contrary to the name, this function passes gradients BACK to the incoming synapses

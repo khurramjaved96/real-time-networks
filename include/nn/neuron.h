@@ -5,7 +5,6 @@
 #ifndef INCLUDE_NN_NEURON_H_
 #define INCLUDE_NN_NEURON_H_
 
-
 #include <vector>
 #include <queue>
 #include <unordered_set>
@@ -17,101 +16,139 @@
 
 class Neuron : public dynamic_elem {
  public:
-    static int64_t neuron_id_generator;
-    synapse *recurrent_synapse;
-    float old_value;
-    bool is_recurrent_neuron;
-    bool is_input_neuron;
-    float value;
-    int drinking_age;
-    float shadow_error_prediction_before_firing;
-    float shadow_error_prediction;
-    float value_before_firing;
-    int memory_made;
-    float neuron_utility;
-    bool is_output_neuron;
-    bool useless_neuron;
-    int sucesses;
-    int failures;
-    int64_t id;
-    bool is_mature;
-    int neuron_age;
-    float average_activation;
+  static int64_t neuron_id_generator;
+  bool is_input_neuron;
+  float value;
+  int drinking_age;
+  float shadow_error_prediction_before_firing;
+  float shadow_error_prediction;
+  float value_before_firing;
+  int memory_made;
+  float neuron_utility;
+  bool is_output_neuron;
+  bool useless_neuron;
+  int sucesses;
+  int failures;
+  int64_t id;
+  bool is_mature;
+  int neuron_age;
+  float average_activation;
 
-    void forward_gradients();
+  void forward_gradients();
 
-    void update_value();
+  void update_value(int time_step);
 
-    std::queue <message> error_gradient;
-    std::queue <message_activation> past_activations;
-    std::vector<synapse *> outgoing_synapses;
-    std::vector<synapse *> incoming_synapses;
+  std::queue<message> error_gradient;
+  std::queue<message_activation> past_activations;
+  std::vector<synapse *> outgoing_synapses;
+  std::vector<synapse *> incoming_synapses;
 
-    Neuron(bool is_input, bool is_output);
+  int get_no_of_syanpses_with_gradients();
 
-    void fire(int time_step);
+  Neuron(bool is_input, bool is_output);
 
-    float introduce_targets(float target, int timestep);
+  void fire(int time_step);
 
-    float introduce_targets(float target, int timestep, float gamma, float lambda);
+  float introduce_targets(float target, int timestep);
 
-    float introduce_targets(float target, int timestep, float gamma, float lambda, bool no_grad);
+  float introduce_targets(float target, int timestep, float gamma, float lambda);
 
-    void propagate_error();
+  float introduce_targets(float target, int timestep, float gamma, float lambda, bool no_grad);
+
+  void propagate_error();
 
 //    Returns the gradient of the post activation w.r.t pre-activation
-    virtual float backward(float output_grad) = 0;
+  virtual float backward(float output_grad) = 0;
 
-    virtual float forward(float temp_value) = 0;
+  virtual float forward(float temp_value) = 0;
 
-    void propagate_deep_error();
+  virtual float backward_credit(float activation_value, synapse *it);
 
-    void update_utility();
+  void propagate_deep_error();
 
-    void mark_useless_weights();
+  void update_utility();
 
-    void prune_useless_weights();
+  void mark_useless_weights();
 
-    ~Neuron() = default;
+  void prune_useless_weights();
+
+  ~Neuron() = default;
 };
-
 
 class ReluNeuron : public Neuron {
  public:
-    float backward(float output_grad);
+  float backward(float output_grad);
 
-    float forward(float temp_value);
+  float forward(float temp_value);
 
-    ReluNeuron(bool is_input, bool is_output);
+  ReluNeuron(bool is_input, bool is_output);
 
+};
+
+class BiasNeuron : public Neuron {
+ public:
+  BiasNeuron();
+  float backward(float output_grad);
+
+  float forward(float temp_value);
 };
 
 class SigmoidNeuron : public Neuron {
  public:
-    float backward(float output_grad);
+  float backward(float output_grad);
 
-    float forward(float temp_value);
+  float forward(float temp_value);
 
-    SigmoidNeuron(bool is_input, bool is_output);
+  SigmoidNeuron(bool is_input, bool is_output);
 };
 
 class LinearNeuron : public Neuron {
  public:
-    float backward(float output_grad);
+  float backward(float output_grad);
 
-    float forward(float temp_value);
+  float forward(float temp_value);
 
-    LinearNeuron(bool is_input, bool is_output);
+  LinearNeuron(bool is_input, bool is_output);
 };
 
 class LeakyRelu : public Neuron {
-    float negative_slope;
+  float negative_slope;
  public:
-    float backward(float output_grad);
+  float backward(float output_grad);
 
-    float forward(float temp_value);
+  float forward(float temp_value);
 
-    LeakyRelu(bool is_input, bool is_output, float negative_slope);
+  LeakyRelu(bool is_input, bool is_output, float negative_slope);
 };
 
+//class RecurrentNeuron : public Neuron {
+// public:
+//  virtual float backward_credit(float activation_value, synapse *);
+//  RecurrentNeuron(bool is_input, bool is_output, synapse *recurrent_synapse);
+//  ~RecurrentNeuron() = default;
+//  bool is_recurrent_neuron;
+//  synapse *recurrent_synapse;
+//};
+//
+//class RecurrentReluNeuron : public RecurrentNeuron {
+// public:
+//  float backward(float output_grad);
+//
+//  float forward(float temp_value);
+//
+//  RecurrentReluNeuron(bool is_input, bool is_output, synapse *recurrent_synapse);
+//
+//};
+//
+//class RecurrentSigmoidNeuron : public RecurrentNeuron {
+// public:
+//  float backward(float output_grad);
+//
+//  float forward(float temp_value);
+//
+//  RecurrentSigmoidNeuron(bool is_input, bool is_output, synapse *recurrent_synapse);
+//};
+
+
+//
 #endif  // INCLUDE_NN_NEURON_H_

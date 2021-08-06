@@ -32,4 +32,14 @@ class LeakyReluTest : public TestCase {
 
 };
 
+class ReluWithTargets : public TestCase{
+ public:
+  ReluWithTargets();
+};
+
+class ForwardPassWithoutSideEffects : public Network{
+ public:
+  ForwardPassWithoutSideEffects();
+};
+
 #endif  // INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_
