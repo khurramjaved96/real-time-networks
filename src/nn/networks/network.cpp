@@ -239,6 +239,39 @@ float Network::introduce_targets(std::vector<float> targets) {
   return error;
 }
 
+std::vector<float> Network::forward_pass_without_side_effects(std::vector<float> input_values) {
+
+  std::vector<float> backup_values;
+  backup_values.reserve(this->input_neurons.size());
+  for (int i = 0; i < input_values.size(); i++) {
+    if (i < this->input_neurons.size()) {
+      backup_values.push_back(this->input_neurons[i]->value);
+      this->input_neurons[i]->value = input_values[i];
+    } else {
+      std::cout << "More input features than input neurons\n";
+      exit(1);
+    }
+  }
+  std::vector<float> results;
+  for (auto n : this->output_neurons) {
+    float temp_value = 0;
+    for (auto it: n->incoming_synapses) {
+      if (it->in_shadow_mode) {
+//        this->shadow_error_prediction_before_firing += it->weight * it->input_neuron->value;
+      } else {
+        temp_value += it->weight * it->input_neuron->value;
+      }
+    }
+    results.push_back(n->forward(temp_value));
+  }
+  for (int i = 0; i < backup_values.size(); i++) {
+
+    this->input_neurons[i]->value = backup_values[i];
+
+  }
+  return results;
+}
+
 float Network::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
 //  Put all targets into our neurons.
   float error = 0;
