@@ -18,7 +18,7 @@ class ContinuallyAdaptingNetwork : public Network {
 
  public:
 
-  ContinuallyAdaptingNetwork(float step_size, int seed, int no_of_input_features);
+  ContinuallyAdaptingNetwork(float step_size, int seed, int no_of_input_features, int no_of_output_features);
 
   ~ContinuallyAdaptingNetwork();
 

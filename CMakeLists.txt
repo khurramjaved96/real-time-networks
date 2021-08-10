@@ -14,10 +14,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 #Cedar
 set(CMAKE_CXX_FLAGS "-O3 -ltbb -lpthread")
+
+
+
 set(pybind11_DIR "/localscratch/khurram.9427119.0/CAN/lib/python3.7/site-packages/pybind11/share/cmake/pybind11")
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 find_package(pybind11 REQUIRED)
 include_directories("/localscratch/khurram.9427119.0/CAN/lib/python3.7/site-packages/pybind11/include/pybind11")
+
 #include_directories("/project/def-whitem/khurram/miniconda3/bin")
 #include_directories("/project/def-whitem/khurram/miniconda3/lib")
 #include_directories("/cvmfs/soft.computecanada.ca/gentoo/2020/lib64")
@@ -54,9 +58,23 @@ add_executable(TracePatterning src/utils.cpp include/utils.h include/nn/synapse.
         tests/src/network_implementations.cpp src/environments/animal_learning/tracepatterning.cpp tracepatterning_exp.cpp
         include/nn/dynamic_elem.h src/nn/dynamic_elem.cpp include/nn/networks/recurrent_state_value_network.h
         src/nn/networks/adaptive_recurrent_networks.cpp tests/include/fixed_recurrent_network.h
-        include/nn/networks/discrete_actions_value_network.h include/nn/networks/network.h src/nn/networks/network.cpp
-        tests/include/feedforward_gradient_testcase.h include/nn/generators/feedforward_generator.h tracepatterning_exp.cpp tests/src/target_without_sideffects.cpp)
+        include/nn/networks/network.h src/nn/networks/network.cpp
+        tracepatterning_exp.cpp tests/src/target_without_sideffects.cpp)
 
+add_executable(RLexp src/utils.cpp include/utils.h include/nn/synapse.h src/nn/synapse.cpp include/nn/neuron.h
+        src/nn/neuron.cpp include/experiment/Experiment.h src/experiment/Experiment.cpp include/experiment/Database.h
+        src/experiment/Database.cpp include/experiment/Metric.h src/experiment/Metric.cpp include/nn/utils.h src/nn/utils.cpp
+        include/nn/message.h src/nn/message.cpp include/nn/networks/feedforward_state_value_network.h
+        src/nn/networks/feedforward_state_value_network.cpp include/environments/animal_learning/tracecondioning.h
+        src/environments/animal_learning/traceconditioning.cpp tests/include/fixed_feedforward_network.h
+        tests/src/network_implementations.cpp src/environments/animal_learning/tracepatterning.cpp
+        include/nn/dynamic_elem.h src/nn/dynamic_elem.cpp include/nn/networks/recurrent_state_value_network.h
+        src/nn/networks/adaptive_recurrent_networks.cpp tests/include/fixed_recurrent_network.h
+        include/nn/networks/network.h src/nn/networks/network.cpp
+        include/agents/sarsa.h src/agents/sarsa.cpp
+        include/environments/mountain_car.h
+        src/environments/mountain_car.cpp
+        rl_exp.cpp tests/src/target_without_sideffects.cpp)
 
 #Cedar
 #target_link_libraries(FlexibleNN PRIVATE mariadb)
@@ -70,6 +88,9 @@ target_link_libraries(FlexibleNN PUBLIC tbb)
 target_link_libraries(FlexibleNN PUBLIC mariadb)
 target_link_libraries(TracePatterning PUBLIC tbb)
 target_link_libraries(TracePatterning PUBLIC mariadb)
+
+target_link_libraries(RLexp PUBLIC tbb)
+target_link_libraries(RLexp PUBLIC mariadb)
 
 project(FlexibleNN LANGUAGES CXX)
 

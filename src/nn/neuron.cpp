@@ -239,8 +239,19 @@ void Neuron::propagate_error() {
     bool flag = false;
     bool wait = false;
 
+    //    If this is an input neuron, we simply pop the entire grad queue.
+    if (this->is_input_neuron) {
+      for (auto &out_syn : this->outgoing_synapses) {
+        while (!out_syn->grad_queue.empty()) {
+          out_syn->grad_queue.pop();
+        }
+      }
+      return;
+    }
+
 //      We look at all outgoing synapses
     for (auto &output_synapses_iterator : this->outgoing_synapses) {
+
       // Iterate over all outgoing synapses. We want to make sure
 //          Skip this if there are no gradients to propagate for this synapse
       if (!output_synapses_iterator->grad_queue.empty()) {
@@ -331,6 +342,7 @@ void Neuron::propagate_error() {
         it->grad_queue.pop();
       }
     }
+
 
 //      check all errors are the same (from the same target)
     float err = error_vector[0];
@@ -636,7 +648,7 @@ float Neuron::introduce_targets(float target, int time_step, float gamma, float 
 
   if (!this->past_activations.empty()) {
 //      The activation is the output of our NN.
-    float error;
+    float error = 0;
     float error_prediction_error;
     if (!no_grad)
       error =  this->past_activations.front().value_at_activation - target;

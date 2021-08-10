@@ -56,6 +56,8 @@ class Network {
 
   void reset_trace();
 
+  bool any_credit_remaining();
+
 //    virtual void add_feature() = 0;
 };
 

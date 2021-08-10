@@ -292,3 +292,18 @@ void Network::reset_trace() {
         s->reset_trace();
       });
 }
+
+bool Network::any_credit_remaining() {
+  bool remaining = false;
+  std::for_each(
+      std::execution::par_unseq,
+      this->all_synapses.begin(),
+      this->all_synapses.end(),
+      [&](synapse *s) {
+        if(s->credit > 0) {
+          remaining = true;
+        }
+      });
+  return remaining;
+}
+
