@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
   int interval = my_experiment.get_int_param("ISI_low");
   int interval_up = my_experiment.get_int_param("ISI_high");
   float gamma = 1.0 - 1.0 / (static_cast<double>(interval_up));
+//  gamma = 0;
   float lambda = my_experiment.get_float_param("lambda");
 
   // Initialize our dataset
@@ -124,11 +125,13 @@ int main(int argc, char *argv[]) {
   float old_R = 0;
 
 //  start taking steps!
+  auto state_current = tc.step();
+  std::vector<float> state_current_prime;
   for (int counter = 0; counter < my_experiment.get_int_param("steps"); counter++) {
     std::vector<float> temp_target;
 
 //      Get our current state
-    auto state_current = tc.step();
+
     std::vector<float> new_vec;
     for (auto &it : state_current) {
       new_vec.push_back(it);
@@ -136,26 +139,23 @@ int main(int argc, char *argv[]) {
 
 //      Set our input into our NN
     my_network.set_input_values(state_current);
-
-//      "reward" in this case is our unconditioned stimulus
-    old_R = R;
-    R = tc.get_US();
-
-//      THIS is the main call for this network - fire our neurons a step, calculate gradients, backprop, update and
-//      prune if necessary.
     my_network.step();
 
-//      Get the predictions from our output neurons
-    prediction = my_network.read_output_values()[0];
+    real_target = tc.get_target(gamma);
+    state_current_prime = tc.step();
+    R = tc.get_US();
+    prediction = my_network.forward_pass_without_side_effects(state_current_prime)[0];
+
 
 //      Now we calculate our bootstrapped TD target
-    real_target = tc.get_target(gamma);
-    float target = prediction * gamma + old_R;
-    if (counter > 0) {
+
+    float target = prediction * gamma + R;
+    if (counter > 0 || true) {
       float error_short = (my_network.read_output_values()[0] - real_target) *
           (my_network.read_output_values()[0] - real_target);
 
       temp_target.push_back(target);
+//      std::cout << "real target = " << real_target << std::endl;
 
 //          Here we put our targets into our output neurons and calculate our TD error.
       my_network.introduce_targets(temp_target, gamma, lambda);
@@ -184,7 +184,8 @@ int main(int argc, char *argv[]) {
     if (counter % 50000 < 500) {
       std::vector<float> print_vec;
       std::vector<std::string> state_string;
-      std::vector<float> cur_state = tc.get_state();
+      std::vector<float> cur_state = state_current;
+
 //            print_vector(cur_state);
       state_string.push_back(std::to_string(counter));
       state_string.push_back(std::to_string(my_experiment.get_int_param("run")));
@@ -204,7 +205,7 @@ int main(int argc, char *argv[]) {
 //                print_vec.push_back(my_network.read_all_values()[12]);
 //                print_vec.push_back(my_network.read_all_values()[13]);
 //            }
-      print_vec.push_back(target);
+//      print_vec.push_back(target);
 //            state_logger.push_back(state_string);
       print_vector(print_vec);
     }
@@ -237,13 +238,19 @@ int main(int argc, char *argv[]) {
     }
 
 //      Generating new features every 80000 steps
-    if (counter % 20000 == 19999) {
+    if (counter % 800000 == 799999) {
 //            if (counter  == 79999) {
 //          First remove all references to is_useless nodes and neurons
       my_network.collect_garbage();
 
 //          Add 100 new features
-      for (int a = 0; a < 5; a++) {
+      std::cout << "From\tTo\tWeight\tStwp-size\n";
+      for(auto it:  my_network.all_synapses)
+        std::cout << it->input_neuron->id << "\t" << it->output_neuron->id << "\t" << it->weight << "\t" << it->log_step_size_tidbd << "\n";
+
+
+      for (int a = 0; a < 1; a++) {
+
         std::cout << "Adding feature\n";
         my_network.add_feature(my_experiment.get_float_param("step_size"));
       }
@@ -301,6 +308,7 @@ int main(int argc, char *argv[]) {
       std::cout << "Total Neurons Mature = " << my_network.get_total_neurons() << std::endl;
       my_network.set_print_bool();
     }
+    state_current = state_current_prime;
   }
 
   auto end = std::chrono::steady_clock::now();
