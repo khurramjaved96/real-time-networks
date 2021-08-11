@@ -9,10 +9,10 @@ set(CMAKE_CXX_FLAGS "-O3 -lpthread")
 
 add_executable(tests test.cpp ../src/utils.cpp ../include/utils.h ../include/nn/synapse.h ../src/nn/synapse.cpp
         ../include/nn/neuron.h ../src/nn/neuron.cpp ../include/nn/utils.h ../src/nn/utils.cpp ../include/nn/message.h
-        ../src/nn/message.cpp ../include/nn/networks/feedforward_state_value_network.h include/fixed_recurrent_network.h
+        ../src/nn/message.cpp ../include/nn/networks/feedforward_state_value_network.h
         ../src/nn/networks/feedforward_state_value_network.cpp ../include/environments/animal_learning/tracecondioning.h
         ../src/environments/animal_learning/traceconditioning.cpp src/feedforward_gradient_testcase.cpp src/target_without_sideffects.cpp
-        include/fixed_feedforward_network.h src/network_implementations.cpp
+        include/test_case_networks.h src/network_implementations.cpp  include/random_data_generator.h src/random_data_generator.cpp
         ../src/environments/animal_learning/tracepatterning.cpp ../include/nn/dynamic_elem.h ../src/nn/dynamic_elem.cpp
         ../include/nn/networks/recurrent_state_value_network.h  src/catch3/catch_amalgamated.cpp
         include/catch3/catch_amalgamated.hpp ../include/nn/networks/network.h ../src/nn/networks/network.cpp)

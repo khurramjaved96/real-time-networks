@@ -24,6 +24,16 @@ class TestCase : public Network {
   void step();
 };
 
+class LambdaReturnNetwork : public Network {
+
+ public:
+  std::vector<float> sum_of_gradients;
+
+  LambdaReturnNetwork();
+  void step();
+
+};
+
 class LeakyReluTest : public TestCase {
 
  public:
@@ -42,4 +52,21 @@ class ForwardPassWithoutSideEffects : public Network{
   ForwardPassWithoutSideEffects();
 };
 
+
+class MixedActivationTest : public TestCase{
+
+ public:
+  MixedActivationTest();
+};
+
+class ContinuallyAdaptingRecurrentNetworkTest : public Network {
+ public:
+  ContinuallyAdaptingRecurrentNetworkTest(float step_size, int seed, int no_of_input_features);
+
+  ~ContinuallyAdaptingRecurrentNetworkTest();
+
+  void add_feature(float step_size);
+
+  void step();
+};
 #endif  // INCLUDE_NEURAL_NETWORKS_NETWORKS_TEST_H_

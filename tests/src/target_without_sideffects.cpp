@@ -3,13 +3,12 @@
 //
 
 
-#include "../include/gradient_testcases.h"
+#include "../include/test_cases.h"
 
 #include <iostream>
 #include <vector>
 
-#include "../include/fixed_feedforward_network.h"
-#include "../include/fixed_recurrent_network.h"
+#include "../include/test_case_networks.h"
 #include "../../include/utils.h"
 #include "../../include/environments/animal_learning/tracecondioning.h"
 

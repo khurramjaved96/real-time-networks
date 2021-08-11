@@ -7,6 +7,8 @@
 
 bool feedforwadtest_relu();
 
+bool feedforwadtest_relu_random_inputs();
+
 bool feedforwadtest_sigmoid();
 
 bool feedforwardtest_leaky_relu();
@@ -16,5 +18,9 @@ bool recurrent_network_test();
 bool feedforward_relu_with_targets_test();
 
 bool forward_pass_without_sideeffects_test();
+
+bool lambda_return_test();
+
+bool feedforward_mixed_activations();
 
 #endif  // TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H
