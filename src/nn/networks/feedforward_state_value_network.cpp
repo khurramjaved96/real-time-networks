@@ -81,7 +81,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
     }
   }
 }
-
+//
 void ContinuallyAdaptingNetwork::print_graph(Neuron *root) {
   for (auto &os : root->outgoing_synapses) {
     auto current_n = os;
@@ -126,7 +126,7 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
     std::uniform_real_distribution<float> dist_recurren(0, 0.99);
 
 //      Create our new neuron
-    Neuron *new_feature = new SigmoidNeuron(false, false);
+    Neuron *new_feature = new ReluNeuron(false, false);
 //        recurrent_neuron->drinking_age = drinking_dist(this->mt);
     new_feature->increment_reference();
     new_feature->increment_reference();
@@ -140,19 +140,20 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
     this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_unit));
     this->all_neurons.push_back(bias_unit);
 
-    auto bias_syanpse = new synapse(bias_unit, new_feature, 0.1 * dist(this->mt), step_size);
+    auto bias_syanpse = new synapse(bias_unit, new_feature, 0.0001 * dist(this->mt), step_size);
     bias_syanpse->block_gradients();
     bias_syanpse->increment_reference();
     this->all_synapses.push_back(bias_syanpse);
     this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_syanpse));
 
 //      w.p. perc, attach a random neuron (that's not an output neuron) to this neuron
-    float perc = dist_u(mt)*0.1;
+    float perc = dist_u(mt);
     for (auto &n : this->all_neurons) {
       if (!n->is_output_neuron && n->is_mature) {
         if (dist_u(mt) < perc) {
-          auto syn = new synapse(n, new_feature, 0.1 * dist(this->mt), step_size);
+          auto syn = new synapse(n, new_feature, 0.0001 * dist(this->mt), step_size);
           syn->block_gradients();
+//          syn->turn_on_idbd();
           syn->increment_reference();
           this->all_synapses.push_back(syn);
           this->all_heap_elements.push_back(static_cast<dynamic_elem *>(syn));
@@ -162,12 +163,12 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 
     synapse *output_s_temp;
     if (dist(this->mt) > 0) {
-      output_s_temp = new synapse(new_feature, this->output_neurons[0], 0, step_size);
+      output_s_temp = new synapse(new_feature, this->output_neurons[0], 1, 0);
     } else {
-      output_s_temp = new synapse(new_feature, this->output_neurons[0], 0, step_size);
+      output_s_temp = new synapse(new_feature, this->output_neurons[0], -1, 0);
     }
-//    output_s_temp->set_shadow_weight(true);
-    output_s_temp->turn_on_idbd();
+    output_s_temp->set_shadow_weight(true);
+    output_s_temp->turn_off_idbd();
     output_s_temp->increment_reference();
     this->all_synapses.push_back(output_s_temp);
     output_s_temp->increment_reference();
@@ -196,7 +197,7 @@ float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets, 
     exit(1);
   }
   for (int counter = 0; counter < targets.size(); counter++) {
-    error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
+    error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step, gamma, lambda);
   }
   return error * error;
 }
@@ -212,7 +213,7 @@ float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets,
   }
   for (int counter = 0; counter < targets.size(); counter++) {
     error += this->output_neurons[counter]->introduce_targets(targets[counter],
-                                                              this->time_step - 1,
+                                                              this->time_step,
                                                               gamma,
                                                               lambda,
                                                               no_grad[counter]);

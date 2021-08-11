@@ -41,10 +41,6 @@ void Neuron::fire(int time_step) {
 // Temp hack
 
   if (this->past_activations.size() > 200) {
-//    std::cout << "Neuron ID = " << this->id << std::endl;
-//    std::cout << "Neuron age = " << this->neuron_age << std::endl;
-//    std::cout << "Shouldn't accumulate past activations\n";
-//    exit(1);
     this->past_activations.pop();
   }
   if (this->error_gradient.size() > 200) {
@@ -64,7 +60,6 @@ void Neuron::fire(int time_step) {
 //    auto activation_val = std::pair<float, int>(this->gradient_activation, time_step);
 
 
-
   message_activation activation_val;
   activation_val.gradient_activation = this->backward(this->value);
   activation_val.value_at_activation = this->value;
@@ -74,17 +69,6 @@ void Neuron::fire(int time_step) {
   this->past_activations.push(activation_val);
 
 
-
-
-//  Pass this record to our outgoing synapses
-//  for (auto it : this->outgoing_synapses) {
-//    message_activation activation_val2;
-//    activation_val2.gradient_activation = this->value;
-//    activation_val2.time = time_step;
-//    activation_val2.error_prediction_value = this->shadow_error_prediction;
-//    it->weight_assignment_past_activations.push(activation_val2);
-//  }
-//    std::cout << "Fired\n";
 }
 
 /**
@@ -127,7 +111,7 @@ void Neuron::update_value(int time_step) {
     std::cout << "Scaling using factor " << scale << std::endl;
     for (auto it : this->incoming_synapses) {
       if (!it->get_recurrent_status()) {
-//        it->weight = it->weight * scale;
+        it->weight = it->weight * scale;
         it->step_size = 0;
         it->turn_off_idbd();
       }
@@ -142,17 +126,17 @@ void Neuron::update_value(int time_step) {
 //    }
 //        this->outgoing_synapses[0]->set_shadow_weight(false);
 
-//    for (auto out_g : this->outgoing_synapses) {
-////            out_g->weight = out_g->weight * this->average_activation;
-//      if (!out_g->get_recurrent_status()) {
-////                std::cout << "Gets here\n";
-////                exit(1);
-////        out_g->set_shadow_weight(false);
-////        out_g->weight = 0;
-////        out_g->step_size = 1e-7;
-////        out_g->turn_on_idbd();
-//      }
-//    }
+    for (auto out_g : this->outgoing_synapses) {
+//            out_g->weight = out_g->weight * this->average_activation;
+      if (!out_g->get_recurrent_status()) {
+//                std::cout << "Gets here\n";
+//                exit(1);
+        out_g->set_shadow_weight(false);
+        out_g->weight = 0;
+        out_g->step_size = 1e-3;
+        out_g->turn_on_idbd();
+      }
+    }
 //    this->average_activation = 1;
   }
 
@@ -688,7 +672,7 @@ float LinearNeuron::backward(float post_activation) {
 float ReluNeuron::forward(float temp_value) {
   if (temp_value <= 0)
     return 0;
-  this->average_activation = this->average_activation * 0.99 + 0.01 * std::abs(temp_value);
+  this->average_activation = this->average_activation * 0.9 + 0.1 * std::abs(temp_value);
   return temp_value;
 }
 

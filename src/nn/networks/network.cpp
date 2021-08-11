@@ -278,7 +278,7 @@ float Network::introduce_targets(std::vector<float> targets, float gamma, float 
 //  Put all targets into our neurons.
   float error = 0;
   for (int counter = 0; counter < targets.size(); counter++) {
-    error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
+    error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step, gamma, lambda);
   }
   return error * error;
 }
