@@ -68,7 +68,6 @@ void Neuron::fire(int time_step) {
 
   this->past_activations.push(activation_val);
 
-
 }
 
 /**
@@ -395,7 +394,7 @@ void Neuron::propagate_deep_error() {
           assert(!output_synapses_iterator->grad_queue.empty());
 //                  Here we have gradients to process
           activation_time_required = output_synapses_iterator->grad_queue.front().time_step -
-              output_synapses_iterator->grad_queue.front().distance_travelled - 1 ;
+              output_synapses_iterator->grad_queue.front().distance_travelled - 1;
           activation_time_required_list.push_back(activation_time_required);
 
           if (this->past_activations.front().time < activation_time_required) {
@@ -551,7 +550,7 @@ float Neuron::introduce_targets(float target, int time_step) {
 
   if (!this->past_activations.empty()) {
 //      The activation is the output of our NN.
-    float error =  this->past_activations.front().value_at_activation - target;
+    float error = this->past_activations.front().value_at_activation - target;
     float error_grad = error;
 
 //      Create our error gradient for this neuron
@@ -584,7 +583,7 @@ float Neuron::introduce_targets(float target, int time_step, float gamma, float 
     float error;
     float error_prediction_error;
 
-    error =  this->past_activations.front().value_at_activation - target;
+    error = this->past_activations.front().value_at_activation - target;
     error_prediction_error = this->past_activations.front().error_prediction_value - target;
 
     float error_grad = error;
@@ -623,8 +622,8 @@ float Neuron::introduce_targets(float target, int time_step, float gamma, float 
     float error;
     float error_prediction_error;
     if (!no_grad)
-      error =  this->past_activations.front().value_at_activation - target;
-    error_prediction_error =  this->past_activations.front().error_prediction_value - error;
+      error = this->past_activations.front().value_at_activation - target;
+    error_prediction_error = this->past_activations.front().error_prediction_value - error;
 
     float error_grad = error;
 

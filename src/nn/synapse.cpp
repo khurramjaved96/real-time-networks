@@ -40,6 +40,7 @@ synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
   trace = 0;
   propagate_gradients = true;
   synapse_utility = 0;
+  meta_step_size = 1e-4;
 }
 
 void synapse::set_connected_to_recurrence(bool val) {
@@ -52,6 +53,10 @@ void synapse::set_shadow_weight(bool val) {
 
 void synapse::reset_trace() {
   this->trace = 0;
+}
+
+void synapse::set_meta_step_size(float val) {
+  this->meta_step_size = val;
 }
 
 /**
@@ -156,7 +161,7 @@ void synapse::update_weight() {
 
 
 
-      this->log_step_size_tidbd += 1e-4 * meta_grad / (sqrt(this->l2_norm_meta_gradient) + 1e-8);
+      this->log_step_size_tidbd += this->meta_step_size * meta_grad / (sqrt(this->l2_norm_meta_gradient) + 1e-8);
 //            this->log_step_size_tidbd += 1e-2 * meta_grad;
       this->log_step_size_tidbd = max(this->log_step_size_tidbd, -15);
       this->log_step_size_tidbd = min(this->log_step_size_tidbd, -6);

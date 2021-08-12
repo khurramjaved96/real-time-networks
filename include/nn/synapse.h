@@ -17,6 +17,8 @@ class synapse : public dynamic_elem {
   bool is_recurrent_connection;
 
  public:
+  void set_meta_step_size(float);
+  float meta_step_size;
   static int64_t synapse_id_generator;
   int64_t id;
 
