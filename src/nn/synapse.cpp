@@ -151,27 +151,17 @@ void synapse::update_weight() {
   if (this->idbd) {
     float meta_grad = this->tidbd_old_error * this->trace * this->h_tidbd;
     this->l2_norm_meta_gradient = this->l2_norm_meta_gradient * 0.99 + (1 - 0.99) * (meta_grad * meta_grad);
-//
     if (age > 1000) {
-//            if(this->tidbd_old_error > 0){
-//                std::cout << this->tidbd_old_error << "\t" <<  this->trace << this->h_tidbd << std::endl;
-//            }
-//            std::cout << this->tidbd_old_error << "\t"  this->trace << this->h_tidbd << std::endl;
-
-
-
-
       this->log_step_size_tidbd += this->meta_step_size * meta_grad / (sqrt(this->l2_norm_meta_gradient) + 1e-8);
-//            this->log_step_size_tidbd += 1e-2 * meta_grad;
       this->log_step_size_tidbd = max(this->log_step_size_tidbd, -15);
-      this->log_step_size_tidbd = min(this->log_step_size_tidbd, -6);
+      this->log_step_size_tidbd = min(this->log_step_size_tidbd, -3);
       this->step_size = exp(this->log_step_size_tidbd);
-//            this->step_size = min(exp(this->log_step_size_tidbd), 0.001);
       this->weight -= (this->step_size * this->credit);
       if ((1 - this->step_size * this->tidbd_old_activation * this->trace) > 0) {
         this->h_tidbd =
             this->h_tidbd * (1 - this->step_size * this->tidbd_old_activation * this->trace) +
                 this->step_size * this->trace * this->tidbd_old_error;
+//        std::cout << "Decay rate " << (1 - this->step_size * this->tidbd_old_activation * this->trace) << std::endl;
       } else {
         this->h_tidbd = this->step_size * this->trace * this->tidbd_old_error;
       }

@@ -229,11 +229,64 @@ bool train_single_parameter(){
   std::vector<float> target;
   target.push_back(10);
 
-  for(int step = 0; step< 100000 ; step++){
+  std::uniform_real_distribution<float> dist(-0.1, 0.1);
+  std::mt19937 mt;
+  mt.seed(0);
+
+  for(int step = 0; step< 10000 ; step++){
+    target[0] = 50 + dist(mt);
     my_network.set_input_values(inp);
     my_network.step();
-    my_network.introduce_targets(target);
-    if(my_synapse->weight - 10 < 0.01){
+    my_network.introduce_targets(target, 0, 0);
+//    std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
+    if(std::abs(my_synapse->weight - 50) < 0.001){
+      return true;
+    }
+  }
+
+  std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
+  return false;
+}
+
+
+bool train_single_parameter_two_layers(){
+  IDBDLearningNetwork my_network = IDBDLearningNetwork();
+  auto input_neuron = new LinearNeuron(true, false);
+  auto output_neuron = new LinearNeuron(false, true);
+
+  my_network.input_neurons.push_back(input_neuron);
+  my_network.all_neurons.push_back(input_neuron);
+  my_network.output_neurons.push_back(output_neuron);
+  my_network.all_neurons.push_back(output_neuron);
+
+  auto middle_neuron = new LinearNeuron(false, false);
+  middle_neuron->drinking_age = 100000000;
+  my_network.all_neurons.push_back(middle_neuron);
+
+  auto my_synapse = new synapse(input_neuron, middle_neuron, 0, 1e-10);
+  auto my_synapse_out = new synapse(middle_neuron, output_neuron, 1, 0);
+  my_network.all_synapses.push_back(my_synapse);
+  my_network.all_synapses.push_back(my_synapse_out);
+  my_synapse->turn_on_idbd();
+  my_synapse->set_meta_step_size(1e-2);
+
+  std::vector<float> inp;
+  inp.push_back(1);
+//
+  std::vector<float> target;
+  target.push_back(5);
+  std::uniform_real_distribution<float> dist(-1, 1);
+  std::mt19937 mt;
+  mt.seed(0);
+
+
+  for(int step = 0; step< 10000000 ; step++){
+    target[0] = 50 + dist(mt);
+    my_network.set_input_values(inp);
+    my_network.step();
+    my_network.introduce_targets(target, 0, 0);
+//    std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
+    if(std::abs(my_synapse->weight - 50) < 0.0001){
       return true;
     }
   }
