@@ -21,6 +21,8 @@ bool forward_pass_without_sideeffects_test();
 
 bool lambda_return_test();
 
+bool train_single_parameter();
+
 bool feedforward_mixed_activations();
 
 #endif  // TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H

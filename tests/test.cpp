@@ -41,4 +41,8 @@ TEST_CASE("Gradient estimation relu with random inputs", "[Gradient estimation]"
 TEST_CASE("Lambda Returns", "[Gradient estimation]") {
   REQUIRE(lambda_return_test());
 }
+
+TEST_CASE("TIDBD Test", "[Gradient estimation]") {
+  REQUIRE(train_single_parameter());
+}
 //}

@@ -34,6 +34,15 @@ class LambdaReturnNetwork : public Network {
 
 };
 
+class IDBDLearningNetwork : public Network {
+
+ public:
+
+  IDBDLearningNetwork();
+  void step();
+
+};
+
 class LeakyReluTest : public TestCase {
 
  public:

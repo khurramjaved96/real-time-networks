@@ -10,6 +10,9 @@
 #include <vector>
 
 #include "../include/test_case_networks.h"
+#include "../../include/nn/networks/network.h"
+#include "../../include/nn/neuron.h"
+#include "../../include/nn/synapse.h"
 #include "../include/random_data_generator.h"
 #include "../../include/utils.h"
 #include "../../include/environments/animal_learning/tracecondioning.h"
@@ -203,6 +206,39 @@ bool feedforwadtest_relu() {
 
   return true;
 
+}
+
+bool train_single_parameter(){
+  IDBDLearningNetwork my_network = IDBDLearningNetwork();
+  auto input_neuron = new LinearNeuron(true, false);
+  auto output_neuron = new LinearNeuron(false, true);
+
+  my_network.input_neurons.push_back(input_neuron);
+  my_network.all_neurons.push_back(input_neuron);
+  my_network.output_neurons.push_back(output_neuron);
+  my_network.all_neurons.push_back(output_neuron);
+
+  auto my_synapse = new synapse(input_neuron, output_neuron, 0, 1e-10);
+  my_network.all_synapses.push_back(my_synapse);
+  my_synapse->turn_on_idbd();
+  my_synapse->set_meta_step_size(1e-2);
+
+  std::vector<float> inp;
+  inp.push_back(1);
+
+  std::vector<float> target;
+  target.push_back(10);
+
+  for(int step = 0; step< 100000 ; step++){
+    my_network.set_input_values(inp);
+    my_network.step();
+    my_network.introduce_targets(target);
+    if(my_synapse->weight - 10 < 0.01){
+      return true;
+    }
+  }
+  std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
+  return false;
 }
 
 bool lambda_return_test(){

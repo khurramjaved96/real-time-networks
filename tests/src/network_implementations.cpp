@@ -56,6 +56,69 @@ LambdaReturnNetwork::LambdaReturnNetwork() {
 
 }
 
+
+IDBDLearningNetwork::IDBDLearningNetwork() {}
+
+void IDBDLearningNetwork::step() {
+
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->update_value(this->time_step);
+      });
+
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->fire(this->time_step);
+      });
+
+//  Contrary to the name, this function passes gradients BACK to the incoming synapses
+//  of each neuron.
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->forward_gradients();
+      });
+
+//  Now we propagate our error backwards one step
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->propagate_error();
+      });
+
+//  Calculate our credit
+  std::for_each(
+      std::execution::par_unseq,
+      all_synapses.begin(),
+      all_synapses.end(),
+      [&](synapse *s) {
+        s->assign_credit();
+      });
+
+
+  std::for_each(
+      std::execution::par_unseq,
+      all_synapses.begin(),
+      all_synapses.end(),
+      [&](synapse *s) {
+        s->update_weight();
+      });
+
+
+  this->time_step++;
+
+
+}
 void LambdaReturnNetwork::step() {
 
 
