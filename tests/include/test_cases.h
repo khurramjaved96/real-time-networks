@@ -23,6 +23,8 @@ bool lambda_return_test();
 
 bool train_single_parameter();
 
+bool train_single_parameter_tidbd_correction_test();
+
 bool train_single_parameter_two_layers();
 
 bool feedforward_mixed_activations();

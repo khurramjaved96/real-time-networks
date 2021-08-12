@@ -208,6 +208,7 @@ bool feedforwadtest_relu() {
 
 }
 
+
 bool train_single_parameter(){
   IDBDLearningNetwork my_network = IDBDLearningNetwork();
   auto input_neuron = new LinearNeuron(true, false);
@@ -240,6 +241,69 @@ bool train_single_parameter(){
     my_network.introduce_targets(target, 0, 0);
 //    std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
     if(std::abs(my_synapse->weight - 50) < 0.001){
+      return true;
+    }
+  }
+
+  std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
+  return false;
+}
+
+
+
+bool train_single_parameter_tidbd_correction_test(){
+  IDBDLearningNetwork my_network = IDBDLearningNetwork();
+  auto input_neuron = new LinearNeuron(true, false);
+  auto output_neuron = new LinearNeuron(false, true);
+
+  my_network.input_neurons.push_back(input_neuron);
+  my_network.all_neurons.push_back(input_neuron);
+  my_network.output_neurons.push_back(output_neuron);
+  my_network.all_neurons.push_back(output_neuron);
+
+  auto my_synapse = new synapse(input_neuron, output_neuron, 0, 1e-10);
+  my_network.all_synapses.push_back(my_synapse);
+  my_synapse->turn_on_idbd();
+  my_synapse->set_meta_step_size(1e-2);
+
+  std::vector<float> inp;
+  inp.push_back(1);
+
+  std::vector<float> target;
+  target.push_back(10);
+
+  std::uniform_real_distribution<float> dist(-0.1, 0.1);
+  std::mt19937 mt;
+  mt.seed(0);
+  int state = 0;
+  for(int step = 0; step< 100000 ; step++){
+    int feature;
+    int target_c;
+    int lambda = 1;
+    int gamma = 1;
+    if(state == 0){
+      feature = 1;
+      target_c = 0;
+    }
+    else if(state == 1){
+      feature = 0;
+      target_c = 1;
+    }
+    else{
+      feature = 0;
+      target_c = 0;
+      gamma = 0;
+    }
+    inp[0] = feature;
+
+    target[0] = target_c;
+    my_network.set_input_values(inp);
+    my_network.step();
+    my_network.introduce_targets(target, gamma, lambda);
+
+    state = (state + 1)%3;
+//    std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
+    if(std::abs(my_synapse->weight - 1) < 0.001){
       return true;
     }
   }

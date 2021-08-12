@@ -49,4 +49,8 @@ TEST_CASE("TIDBD Test", "[Gradient estimation]") {
 TEST_CASE("TIDBD Test MultiLayer", "[Gradient estimation]") {
   REQUIRE(train_single_parameter_two_layers());
 }
+
+TEST_CASE("TIDBD Test on the simple environment used in the TD(lambda) report", "[Gradient estimation]") {
+  REQUIRE(train_single_parameter_tidbd_correction_test());
+}
 //}
