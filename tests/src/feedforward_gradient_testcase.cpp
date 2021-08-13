@@ -208,8 +208,7 @@ bool feedforwadtest_relu() {
 
 }
 
-
-bool train_single_parameter(){
+bool train_single_parameter() {
   IDBDLearningNetwork my_network = IDBDLearningNetwork();
   auto input_neuron = new LinearNeuron(true, false);
   auto output_neuron = new LinearNeuron(false, true);
@@ -234,13 +233,13 @@ bool train_single_parameter(){
   std::mt19937 mt;
   mt.seed(0);
 
-  for(int step = 0; step< 10000 ; step++){
+  for (int step = 0; step < 10000; step++) {
     target[0] = 50 + dist(mt);
     my_network.set_input_values(inp);
     my_network.step();
     my_network.introduce_targets(target, 0, 0);
 //    std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
-    if(std::abs(my_synapse->weight - 50) < 0.001){
+    if (std::abs(my_synapse->weight - 50) < 0.001) {
       return true;
     }
   }
@@ -249,9 +248,7 @@ bool train_single_parameter(){
   return false;
 }
 
-
-
-bool train_single_parameter_tidbd_correction_test(){
+bool train_single_parameter_tidbd_correction_test() {
   IDBDLearningNetwork my_network = IDBDLearningNetwork();
   auto input_neuron = new LinearNeuron(true, false);
   auto output_neuron = new LinearNeuron(false, true);
@@ -276,20 +273,18 @@ bool train_single_parameter_tidbd_correction_test(){
   std::mt19937 mt;
   mt.seed(0);
   int state = 0;
-  for(int step = 0; step< 100000 ; step++){
+  for (int step = 0; step < 100000; step++) {
     int feature;
     int target_c;
     int lambda = 1;
     int gamma = 1;
-    if(state == 0){
+    if (state == 0) {
       feature = 1;
       target_c = 0;
-    }
-    else if(state == 1){
+    } else if (state == 1) {
       feature = 0;
       target_c = 1;
-    }
-    else{
+    } else {
       feature = 0;
       target_c = 0;
       gamma = 0;
@@ -301,9 +296,9 @@ bool train_single_parameter_tidbd_correction_test(){
     my_network.step();
     my_network.introduce_targets(target, gamma, lambda);
 
-    state = (state + 1)%3;
+    state = (state + 1) % 3;
 //    std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
-    if(std::abs(my_synapse->weight - 1) < 0.001){
+    if (std::abs(my_synapse->weight - 1) < 0.001) {
       return true;
     }
   }
@@ -312,8 +307,7 @@ bool train_single_parameter_tidbd_correction_test(){
   return false;
 }
 
-
-bool train_single_parameter_two_layers(){
+bool train_single_parameter_two_layers() {
   IDBDLearningNetwork my_network = IDBDLearningNetwork();
   auto input_neuron = new LinearNeuron(true, false);
   auto output_neuron = new LinearNeuron(false, true);
@@ -343,14 +337,13 @@ bool train_single_parameter_two_layers(){
   std::mt19937 mt;
   mt.seed(0);
 
-
-  for(int step = 0; step< 10000000 ; step++){
+  for (int step = 0; step < 10000000; step++) {
     target[0] = 50 + dist(mt);
     my_network.set_input_values(inp);
     my_network.step();
     my_network.introduce_targets(target, 0, 0);
 //    std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
-    if(std::abs(my_synapse->weight - 50) < 0.0001){
+    if (std::abs(my_synapse->weight - 50) < 0.0001) {
       return true;
     }
   }
@@ -358,12 +351,12 @@ bool train_single_parameter_two_layers(){
   return false;
 }
 
-bool lambda_return_test(){
+bool lambda_return_test() {
   RandomDataGenerator env = RandomDataGenerator();
   LambdaReturnNetwork my_network = LambdaReturnNetwork();
   bool done = false;
   int counter = 0;
-  while(!done){
+  while (!done) {
     std::vector<float> inp = env.get_input();
     std::vector<float> target = env.get_target();
     done = env.step();
@@ -371,17 +364,16 @@ bool lambda_return_test(){
     my_network.step();
     auto temp_targets = my_network.read_output_values();
 
-    if(counter<=99){
+    if (counter <= 99) {
       my_network.introduce_targets(target, 0.98, 0.94);
-    }
-    else{
+    } else {
       my_network.introduce_targets(temp_targets, 0.98, 0.94);
     }
     counter++;
   }
 //  print_vector(my_network.sum_of_gradients);
   std::vector<float> gt
-      {-129352.5859,  668060.1250,  741512.1875, -446644.2188, 1248485.1250,
+      {-129352.5859, 668060.1250, 741512.1875, -446644.2188, 1248485.1250,
        1298128.0000, 1425246.7500};
   int counter_gt = 0;
   for (auto it: gt) {
