@@ -13,7 +13,6 @@
 #include "../../include/nn/networks/linear_function_approximator.h"
 #include "../../include/nn/utils.h"
 
-
 /**
  * Our main entry function for running all experiments.
  * @param argc Number of arguments
@@ -39,41 +38,36 @@ int policy(std::vector<float> x) {
     return 2;
 }
 
-std::vector<float> compute_monte_carlo_targets(std::vector<float> rewards, float gamma){
+std::vector<float> compute_monte_carlo_targets(std::vector<float> rewards, float gamma) {
   std::vector<float> results;
   float running_sum = 0;
-//  print_vector(rewards);
-  for(int i = rewards.size()-1; i >= 0; i--){
+  for (int i = rewards.size() - 1; i >= 0; i--) {
 
-    running_sum = running_sum*gamma + rewards[i];
+    running_sum = running_sum * gamma + rewards[i];
     results.push_back(running_sum);
   }
-  std::reverse(results.begin(),results.end());
+  std::reverse(results.begin(), results.end());
   return results;
 }
 
-float compute_average_error(std::vector<float> x1, std::vector<float> x2){
+float compute_average_error(std::vector<float> x1, std::vector<float> x2) {
   float sum_of_error = 0;
-  if(x1.size() != x2.size()){
+  if (x1.size() != x2.size()) {
     std::cout << "Vectors not of the same shape\n";
     exit(1);
   }
-  for(int i = 0; i<x1.size(); i++){
-    sum_of_error += (x1[i] - x2[i])*(x1[i] - x2[i]);
+  for (int i = 0; i < x1.size(); i++) {
+    sum_of_error += (x1[i] - x2[i]) * (x1[i] - x2[i]);
   }
   sum_of_error /= x1.size();
   return sqrt(sum_of_error);
 }
 
-
 bool mountain_car_test() {
-
-  ;
 
   float gamma = 1;
   float lambda = 0.9;
 
-  // Initialize our dataset
   int input_feature_size = 30;
   MountainCar tc = MountainCar(0, input_feature_size);
 
@@ -81,14 +75,11 @@ bool mountain_car_test() {
       LinearFunctionApproximator(input_feature_size * 2, tc.n_actions(), 3e-2,
                                  1e-3, true);
 
-  float running_error;
-
-
   int episode = 0;
   int episode_return = 0;
   std::vector<float> episode_predictions;
   std::vector<float> rewards;
-  while(episode < 80) {
+  while (episode < 80) {
     episode_return--;
     auto obs = tc.get_current_obs();
 
@@ -103,43 +94,33 @@ bool mountain_car_test() {
     float actual_prediction = targets[action];
     episode_predictions.push_back(actual_prediction);
 
+//    If at terminal state
     if (tc.at_goal()) {
 
       episode_return = 0;
       std::vector<float> monte_carlo_targets = compute_monte_carlo_targets(rewards, gamma);
-//      print_vector(monte_carlo_targets);
-//      print_vector(episode_predictions);
       float episode_error = compute_average_error(monte_carlo_targets, episode_predictions);
-      if(episode_error < 15){
+      if (episode_error < 15) {
         return true;
       }
-//      std::cout << "Episode no " << episode << std::endl;
-//      std::cout << "Average msre error = " << episode_error << std::endl;
+
       if (episode % 100 == 99) {
-//        std::cout << "Pred\tGT\n";
-        for(int i = 0; i<monte_carlo_targets.size(); i++){
-          std::cout << episode_predictions[i] << "\t" << monte_carlo_targets[i] <<"\n";
+        for (int i = 0; i < monte_carlo_targets.size(); i++) {
+          std::cout << episode_predictions[i] << "\t" << monte_carlo_targets[i] << "\n";
         }
       }
       episode_predictions.clear();
-//      monte_carlo_targets.clear();
       rewards.clear();
-//      exit(1);
       targets[action] = -1;
 
-      float error = my_network.introduce_targets(targets, 0, lambda);
+      my_network.introduce_targets(targets, 0, lambda);
       tc.reset();
-//      std::cout << "Epsilon = " << epsilon << std::endl;
       episode++;
-
-    }
-    else {
+    } else {
       auto next_predictions = my_network.forward_pass_without_side_effects(tc.get_current_obs().observation);
       int next_action = policy(tc.get_current_obs().state);
-      float actual_prediction = targets[action];
       targets[action] = -1 + gamma * next_predictions[next_action];
-
-      float error = my_network.introduce_targets(targets, gamma, lambda);
+      my_network.introduce_targets(targets, gamma, lambda);
     }
   }
   return false;
