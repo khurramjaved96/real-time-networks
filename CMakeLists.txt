@@ -58,6 +58,18 @@ add_executable(TracePatterning src/utils.cpp include/utils.h include/nn/synapse.
         tests/include/feedforward_gradient_testcase.h include/nn/generators/feedforward_generator.h tracepatterning_exp.cpp tests/src/target_without_sideffects.cpp tests/include/random_data_generator.h tests/src/random_data_generator.cpp)
 
 
+add_executable(MountainCar src/utils.cpp include/utils.h include/nn/synapse.h src/nn/synapse.cpp include/nn/neuron.h
+        src/nn/neuron.cpp include/experiment/Experiment.h src/experiment/Experiment.cpp include/experiment/Database.h
+        src/experiment/Database.cpp include/experiment/Metric.h src/experiment/Metric.cpp include/nn/utils.h src/nn/utils.cpp
+        include/nn/message.h src/nn/message.cpp include/nn/networks/feedforward_state_value_network.h
+        src/nn/networks/feedforward_state_value_network.cpp include/environments/animal_learning/tracecondioning.h
+        src/environments/animal_learning/traceconditioning.cpp  src/environments/animal_learning/tracepatterning.cpp
+        include/nn/dynamic_elem.h src/nn/dynamic_elem.cpp include/nn/networks/recurrent_state_value_network.h
+        src/nn/networks/adaptive_recurrent_networks.cpp
+        include/nn/networks/discrete_actions_value_network.h include/nn/networks/network.h src/nn/networks/network.cpp
+         include/nn/generators/feedforward_generator.h include/environments/mountain_car.h src/environments/mountain_car.cpp mountain_car_prediction.cpp  include/nn/networks/linear_function_approximator.h src/nn/networks/linear_function_approximator.cpp include/tiles2.h src/tiles2.cpp tests/src/mountain_car_test.cpp)
+
+
 #Cedar
 #target_link_libraries(FlexibleNN PRIVATE mariadb)
 

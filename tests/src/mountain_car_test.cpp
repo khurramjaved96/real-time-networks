@@ -11,7 +11,6 @@
 #include "../../include/utils.h"
 #include "../../include/environments/mountain_car.h"
 #include "../../include/nn/networks/linear_function_approximator.h"
-#include "../../include/experiment/Experiment.h"
 #include "../../include/nn/utils.h"
 
 
