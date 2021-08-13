@@ -112,6 +112,6 @@ Observation MountainCar::step(int action) {
 
   this->current_obs = obs;
   this->current_obs.is_terminal = this->at_goal();
-  this->current_obs.reward = this->at_goal() ? 0.0 : -1.0;
+  this->current_obs.reward =  -1;
   return get_current_obs();
 }
