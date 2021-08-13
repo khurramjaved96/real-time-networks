@@ -38,19 +38,23 @@ TEST_CASE("Gradient estimation relu with random inputs", "[Gradient estimation]"
   REQUIRE(feedforwadtest_relu_random_inputs());
 }
 
-TEST_CASE("Lambda Returns", "[Gradient estimation]") {
+TEST_CASE("Forward view Lambda returns gradients", "[Gradient estimation]") {
   REQUIRE(lambda_return_test());
 }
 
-TEST_CASE("TIDBD Test", "[Gradient estimation]") {
+TEST_CASE("Step-size adaptation test case (IDBD)", "[Learning]") {
   REQUIRE(train_single_parameter());
 }
 
-TEST_CASE("TIDBD Test MultiLayer", "[Gradient estimation]") {
+TEST_CASE("Step-size adaptation multiple layers test case", "[Learning]") {
   REQUIRE(train_single_parameter_two_layers());
 }
 
-TEST_CASE("TIDBD Test on the simple environment used in the TD(lambda) report", "[Gradient estimation]") {
+TEST_CASE("TIDBD Test on the simple environment used in the TD(lambda) report", "[Learning]") {
   REQUIRE(train_single_parameter_tidbd_correction_test());
+}
+
+TEST_CASE("Mountain car enerty pumping on-policy prediction learning test", "[Learning]") {
+  REQUIRE(mountain_car_test());
 }
 //}
