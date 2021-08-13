@@ -218,7 +218,7 @@ void Neuron::propagate_error() {
   int time_check = 99999;
 
 //  No gradient propagation required for prediction nodes
-  if (this->get_no_of_syanpses_with_gradients() > 0) {
+  if (this->get_no_of_syanpses_with_gradients() > 0 && !is_input_neuron) {
     bool flag = false;
     bool wait = false;
 
