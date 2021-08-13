@@ -29,4 +29,5 @@ bool train_single_parameter_two_layers();
 
 bool feedforward_mixed_activations();
 
+bool mountain_car_test();
 #endif  // TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H
