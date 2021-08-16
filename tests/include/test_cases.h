@@ -7,6 +7,8 @@
 
 bool feedforwadtest_relu();
 
+bool feedforwadtest_relu_random_inputs();
+
 bool feedforwadtest_sigmoid();
 
 bool feedforwardtest_leaky_relu();
@@ -17,4 +19,17 @@ bool feedforward_relu_with_targets_test();
 
 bool forward_pass_without_sideeffects_test();
 
+bool lambda_return_test();
+
+bool train_single_parameter();
+
+bool train_single_parameter_tidbd_correction_test();
+
+bool train_single_parameter_two_layers();
+
+bool train_single_parameter_with_no_grad_synapse();
+
+bool feedforward_mixed_activations();
+
+bool mountain_car_test();
 #endif  // TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H

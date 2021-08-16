@@ -8,6 +8,7 @@
 class message {
  public:
   float gradient;
+  bool remove = false;
   int time_step;
   int distance_travelled;
   float lambda;

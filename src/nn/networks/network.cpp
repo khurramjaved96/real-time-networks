@@ -234,6 +234,10 @@ std::vector<float> Network::read_all_values() {
   return output_vec;
 }
 
+// With this interface, step-size adaptation should only be done for the outgoing prediction weights.
+// For step-size adaptation for preceeding weights, user must use intordue targets with gamma and lambda
+// (pass gamma = lambda = 0 in-case traces are not needed).
+
 float Network::introduce_targets(std::vector<float> targets) {
   float error = 0;
   for (int counter = 0; counter < targets.size(); counter++) {
@@ -279,7 +283,7 @@ float Network::introduce_targets(std::vector<float> targets, float gamma, float 
 //  Put all targets into our neurons.
   float error = 0;
   for (int counter = 0; counter < targets.size(); counter++) {
-    error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step - 1, gamma, lambda);
+    error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step, gamma, lambda);
   }
   return error * error;
 }

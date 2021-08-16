@@ -23,11 +23,29 @@ float relu(float a) {
   return 0;
 }
 
+
+int argmax(std::vector<float> values) {
+  auto it = std::max_element(values.begin(), values.end());
+  int counter = 0;
+  for(auto elem : values){
+    if(*it == elem){
+      return counter;
+    }
+    counter++;
+  }
+  std::cout << "Shouldn't get here\n";
+  exit(1);
+}
+
+
 template<class mytype>
 mytype max(std::vector<mytype> values) {
   auto it = std::max_element(values.begin(), values.end());
   return *it;
 }
+
+
+
 
 bool is_null_ptr(dynamic_elem *elem) {
 //    return true;
