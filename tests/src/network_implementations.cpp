@@ -344,12 +344,17 @@ LeakyReluTest::LeakyReluTest(float step_size, int width, int seed) {
   n = new LeakyRelu(false, false, 0.01);
   this->all_neurons.push_back(n);
 
+
+
   int output_neuros = 1;
   for (int counter = 0; counter < output_neuros; counter++) {
     auto n = new LinearNeuron(false, true);
     this->output_neurons.push_back(n);
     this->all_neurons.push_back(n);
   }
+
+  n = new LeakyRelu(false, false, 0.01);
+  this->all_neurons.push_back(n);
 
   auto inp1 = new synapse(all_neurons[1 - 1], all_neurons[4 - 1], 0.2, step_size);
   auto inp2 = new synapse(all_neurons[1 - 1], all_neurons[6 - 1], 0.5, step_size);
@@ -404,7 +409,7 @@ void TestCase::step() {
       all_neurons.begin(),
       all_neurons.end(),
       [&](Neuron *n) {
-        n->propagate_deep_error();
+        n->propagate_error();
       });
 
   //  Calculate our credit

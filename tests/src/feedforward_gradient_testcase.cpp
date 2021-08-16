@@ -86,13 +86,17 @@ bool feedforwadtest_sigmoid() {
   float running_error = -1;
 
   std::vector<std::vector<float>> input_list;
-  for (int a = 0; a < 200; a++) {
+  for (int a = 0; a < 300; a++) {
     std::vector<float> curr_inp;
 
     if (a < 100) {
-      curr_inp.push_back((a) * 0.01);
-      curr_inp.push_back(10 - ((a) * 0.1));
-      curr_inp.push_back(a);
+      curr_inp.push_back(-10000);
+      curr_inp.push_back(-10000);
+      curr_inp.push_back(-10000);
+    } else if (a < 200) {
+      curr_inp.push_back((a - 100) * 0.01);
+      curr_inp.push_back(10 - ((a - 100) * 0.1));
+      curr_inp.push_back(a - 100);
     } else {
       curr_inp.push_back(0);
       curr_inp.push_back(0);
@@ -111,13 +115,13 @@ bool feedforwadtest_sigmoid() {
 //        std::cout << "counter = " << counter << std::endl;
 
 //        print_vector(output);
-    if (counter < 100) {
+    if (counter < 200 and counter >= 100) {
       output[0]--;
     }
-    if (counter < 199 && counter > 100) {
-      sum_of_activation += output2[5];
-//            std::cout << output2[5] << std::endl;
-    }
+//    if (counter < 199 && counter > 100) {
+//      sum_of_activation += output2[5];
+////            std::cout << output2[5] << std::endl;
+//    }
 
     my_network.introduce_targets(output);
     counter++;
@@ -206,6 +210,55 @@ bool feedforwadtest_relu() {
 
   return true;
 
+}
+
+bool train_single_parameter_with_no_grad_synapse() {
+  IDBDLearningNetwork my_network = IDBDLearningNetwork();
+  auto input_neuron = new LinearNeuron(true, false);
+  auto output_neuron = new LinearNeuron(false, true);
+  auto dead_end_neuron = new LinearNeuron(false, false);
+
+  my_network.all_neurons.push_back(dead_end_neuron);
+
+  my_network.input_neurons.push_back(input_neuron);
+  my_network.all_neurons.push_back(input_neuron);
+  my_network.output_neurons.push_back(output_neuron);
+  my_network.all_neurons.push_back(output_neuron);
+
+  auto middle_neuron = new LinearNeuron(false, false);
+  middle_neuron->drinking_age = 100000000;
+  my_network.all_neurons.push_back(middle_neuron);
+
+  auto my_synapse = new synapse(input_neuron, middle_neuron, 0, 1e-10);
+  auto my_synapse_out = new synapse(middle_neuron, output_neuron, 1, 0);
+  auto my_synapse_dead_end = new synapse(middle_neuron, dead_end_neuron, 1, 0);
+  my_network.all_synapses.push_back(my_synapse);
+  my_network.all_synapses.push_back(my_synapse_out);
+  my_network.all_synapses.push_back(my_synapse_dead_end);
+  my_synapse->turn_on_idbd();
+  my_synapse->set_meta_step_size(1e-2);
+
+  std::vector<float> inp;
+  inp.push_back(1);
+//
+  std::vector<float> target;
+  target.push_back(5);
+  std::uniform_real_distribution<float> dist(-1, 1);
+  std::mt19937 mt;
+  mt.seed(0);
+
+  for (int step = 0; step < 10000000; step++) {
+    target[0] = 50 + dist(mt);
+    my_network.set_input_values(inp);
+    my_network.step();
+    my_network.introduce_targets(target, 0, 0);
+//    std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
+    if (std::abs(my_synapse->weight - 50) < 0.0001) {
+      return true;
+    }
+  }
+  std::cout << "Weight " << my_synapse->weight << " Step-size " << my_synapse->step_size << std::endl;
+  return false;
 }
 
 bool train_single_parameter() {

@@ -54,6 +54,10 @@ TEST_CASE("TIDBD Test on the simple environment used in the TD(lambda) report", 
   REQUIRE(train_single_parameter_tidbd_correction_test());
 }
 
+TEST_CASE("TIDBD test with dead end", "[Learning]") {
+  REQUIRE(train_single_parameter_with_no_grad_synapse());
+}
+
 TEST_CASE("Mountain car enerty pumping on-policy prediction learning test", "[Learning]") {
   REQUIRE(mountain_car_test());
 }

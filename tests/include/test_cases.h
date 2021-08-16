@@ -27,6 +27,8 @@ bool train_single_parameter_tidbd_correction_test();
 
 bool train_single_parameter_two_layers();
 
+bool train_single_parameter_with_no_grad_synapse();
+
 bool feedforward_mixed_activations();
 
 bool mountain_car_test();
