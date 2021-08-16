@@ -50,6 +50,13 @@ int main(int argc, char *argv[]) {
 
     for (int t = 0; t < exp.get_int_param("max_episodic_steps"); t++) {
       int action = agent.step(obs.observation);
+
+//      if (obs.state[1] < 0) {
+//          action = 0;
+//      } else {
+//          action = 2;
+//      }
+
       Observation new_obs = env.step(action);
       tstep++;
 
@@ -62,13 +69,15 @@ int main(int argc, char *argv[]) {
 
       if (is_terminal) {
         episode_loss += agent.post_step(action, next_state, reward, 0);
-        agent.terminal();
         break;
       }
 
       episode_loss += agent.post_step(action, next_state, reward, gamma);
       obs = new_obs;
     }
+
+//  Clean up after an episode by propagating all credit
+//    agent.terminal();
 
 //   Logging after an episode
     std::cout << "### STEP = " << tstep << std::endl;

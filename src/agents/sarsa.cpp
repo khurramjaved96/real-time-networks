@@ -84,17 +84,19 @@ float SarsaAgent::post_step(int action, std::vector<float> next_state, float rew
  * and assign all the credit. Finally we reset all
  */
 void SarsaAgent::terminal() {
-  bool credit_remaining = this->network->any_credit_remaining();
   std::vector<float> zeros;
 
   for (int j = 0; j < this->network->input_neurons.size(); j++) {
     zeros.push_back(0.0);
   }
+  std::vector<float> outputs = this->network->read_output_values();
+  std::vector<bool> no_grad(outputs.size(), true);
 
-  while (credit_remaining) {
+  for (int i = 0; i < 30; i++){
     this->network->set_input_values(zeros);
     this->network->step();
-    credit_remaining = this->network->any_credit_remaining();
+    outputs = this->network->read_output_values();
+    this->network->introduce_targets(outputs, 0, 0, no_grad);
   }
   this->network->reset_trace();
 }

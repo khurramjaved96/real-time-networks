@@ -78,7 +78,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
       this->all_synapses.push_back(s);
       s->increment_reference();
       this->output_synapses.push_back(s);
-      s->turn_on_idbd();
+//      s->turn_on_idbd();
     }
   }
 }

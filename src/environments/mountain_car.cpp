@@ -48,11 +48,11 @@ bool MountainCar::at_goal() {
 Observation MountainCar::get_current_obs() {
   if (this->discretization > 0) {
     std::vector<float> obs;
-    float total_position_range = std::abs(this->max_position - this->min_position);
-    float total_velocity_range = std::abs(this->max_velocity - this->min_velocity);
+    float total_position_range = this->max_position - this->min_position;
+    float total_velocity_range = this->max_velocity - this->min_velocity;
 
-    float biased_position = std::abs(this->current_obs.state[0] - this->min_position);
-    float biased_velocity = std::abs(this->current_obs.state[1] - this->min_velocity);
+    float biased_position = this->current_obs.state[0] - this->min_position;
+    float biased_velocity = this->current_obs.state[1] - this->min_velocity;
 
     int position_idx = static_cast <int> (floor((biased_position / total_position_range) * this->discretization));
     int velocity_idx = static_cast <int> (floor((biased_velocity / total_velocity_range) * this->discretization));
