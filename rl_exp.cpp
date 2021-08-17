@@ -4,6 +4,7 @@
 #include "include/experiment/Experiment.h"
 #include "include/agents/sarsa.h"
 #include "include/environments/mountain_car.h"
+#include "include/nn/networks/linear_function_approximator.h"
 
 /**
  * Main entry point for running Mountain Car Experiments.
@@ -32,8 +33,12 @@ int main(int argc, char *argv[]) {
   MountainCar env(seed, exp.get_int_param("discretization"));
 
 //  Initialize network
-  auto *my_network = new ContinuallyAdaptingNetwork(exp.get_float_param("step_size"),
-                                        seed, env.observation_shape(), env.n_actions());
+//  auto *my_network = new ContinuallyAdaptingNetwork(exp.get_float_param("step_size"),
+//                                        seed, env.observation_shape(), env.n_actions());
+
+  auto *my_network = new LinearFunctionApproximator(env.observation_shape(), env.n_actions(),
+                                                    exp.get_float_param("step_size"),
+                                                    1e-3, false);
 
 //  Initialize agent. Right now we only have our SarsaAgent available.
   SarsaAgent agent(my_network,
@@ -41,6 +46,7 @@ int main(int argc, char *argv[]) {
                    exp.get_float_param("epsilon"),
                    lambda);
   int tstep = 0;
+  int episode = 0;
   while (tstep < exp.get_int_param("steps")){
     float episode_rews = 0;
     float episode_loss = 0;
@@ -75,25 +81,22 @@ int main(int argc, char *argv[]) {
       episode_loss += agent.post_step(action, next_state, reward, gamma);
       obs = new_obs;
     }
+    episode++;
 
-//  Clean up after an episode by propagating all credit
-//    agent.terminal();
 
 //   Logging after an episode
     std::cout << "### STEP = " << tstep << std::endl;
-    std::cout << "Total synapses in the network " << my_network->get_total_synapses() << std::endl;
+    std::cout << "Episode num = " << episode << std::endl;
     std::cout << "Episode return = " << episode_rews << std::endl;
     std::cout << "Episode timesteps = " << ep_timesteps << std::endl;
-    std::cout << "Avg loss = " << episode_loss / ep_timesteps << std::endl;
+    std::cout << "Avg loss = " << episode_loss / (ep_timesteps + 1) << std::endl;
     std::cout << "Total elements = " << my_network->all_heap_elements.size() << std::endl;
     std::cout << "Output synapses = " << my_network->output_synapses.size() << std::endl;
-    std::cout << "Mature synapses = " << my_network->get_total_synapses() << std::endl;
     std::cout << "Total synapses = " << my_network->all_synapses.size() << std::endl;
     std::cout << "Output Neurons = " << my_network->output_neurons.size() << "\t"
               << my_network->input_neurons.size() << std::endl;
     std::cout << "Total Neurons = " << my_network->all_neurons.size() << std::endl;
-    std::cout << "Total Neurons Mature = " << my_network->get_total_neurons() << std::endl;
-    my_network->set_print_bool();
+
   }
 
 }

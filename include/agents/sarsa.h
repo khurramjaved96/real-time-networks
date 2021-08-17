@@ -12,7 +12,7 @@ class SarsaAgent {
   std::uniform_real_distribution<float> exploration_sampler;
 
   public:
-    ContinuallyAdaptingNetwork *network;
+    Network *network;
     int n_actions;
     float epsilon;
     float lambda;
@@ -20,11 +20,10 @@ class SarsaAgent {
 
     std::mt19937 mt;
 
-    SarsaAgent(ContinuallyAdaptingNetwork *in_network, int n_actions, float epsilon, float lambda);
+    SarsaAgent(Network *in_network, int n_actions, float epsilon, float lambda);
     void set_eps(float eps);
     int step(std::vector<float> state);
     float post_step(int action, std::vector<float> next_state, float reward, float gamma);
-    void terminal();
 
 };
 

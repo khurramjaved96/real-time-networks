@@ -21,11 +21,11 @@ MountainCar::MountainCar(int seed, int discretization) : mt(seed) {
   this->max_velocity = 0.07;
   this->min_velocity = -0.07;
   this->goal_position = 0.5;
-  this->max_timesteps = 200;
 
   this->discretization = discretization;
 
-  this->action_sampler = std::uniform_int_distribution<int>(0, 3);
+  this->action_sampler = std::uniform_int_distribution<int>(0, 2);
+  this->state_sampler = std::uniform_real_distribution<float>(-0.6, -0.4);
   this->current_obs = this->reset();
 }
 
@@ -91,7 +91,7 @@ Observation MountainCar::reset() {
   obs.reward = 0.0;
   obs.cmltv_reward = 0;
   obs.is_terminal = false;
-  std::vector<float> state{-0.5, 0.0};
+  std::vector<float> state{this->state_sampler(mt), 0.0};
   obs.state = state;
   this->current_obs = obs;
   return get_current_obs();
@@ -113,5 +113,5 @@ Observation MountainCar::step(int action) {
   this->current_obs = obs;
   this->current_obs.is_terminal = this->at_goal();
   this->current_obs.reward =  -1;
-  return get_current_obs();
+  return this->get_current_obs();
 }

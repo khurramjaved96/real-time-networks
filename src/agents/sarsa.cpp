@@ -4,16 +4,17 @@
 
 #include <cmath>
 
+#include "../../include/utils.h"
 #include "../../include/agents/sarsa.h"
 #include "../../include/nn/networks/feedforward_state_value_network.h"
 
 
-SarsaAgent::SarsaAgent(ContinuallyAdaptingNetwork *in_network, int n_actions, float epsilon, float lambda) {
+SarsaAgent::SarsaAgent(Network *in_network, int n_actions, float epsilon, float lambda) {
   this->network = in_network;
   this->n_actions = n_actions;
   this->epsilon = epsilon;
   this->lambda = lambda;
-  this->action_sampler = std::uniform_int_distribution<int>(0, this->n_actions);
+  this->action_sampler = std::uniform_int_distribution<int>(0, this->n_actions - 1);
   this->steps = 0;
 
   this->exploration_sampler = std::uniform_real_distribution<float>(0,1);
@@ -57,12 +58,15 @@ int SarsaAgent::step(std::vector<float> state) {
  */
 float SarsaAgent::post_step(int action, std::vector<float> next_state, float reward, float gamma) {
 
-  std::vector<float> q_values = this->network->read_output_values();
-  std::vector<bool> no_grad_mask(q_values.size(), true);
-  no_grad_mask[action] = false;
+  std::vector<float> targets = this->network->read_output_values();
+
+  float q_value = targets[action];
+  std::vector<float> next_q_values(targets.size(), 0);
 
   //  Here we need to get q values of next_state
-  std::vector<float> next_q_values = this->network->forward_pass_without_side_effects(next_state);
+  if (gamma > 0) {
+    next_q_values = this->network->forward_pass_without_side_effects(next_state);
+  }
 
   //  Epsilon-greedy actions
   int next_action;
@@ -73,30 +77,11 @@ float SarsaAgent::post_step(int action, std::vector<float> next_state, float rew
   }
 
   float target = reward + gamma * next_q_values[next_action];
+  targets[action] = target;
 
-  this->network->introduce_targets(std::vector<float>(q_values.size(), target), gamma, this->lambda, no_grad_mask);
+  this->network->introduce_targets(targets, gamma, this->lambda);
 
-  return powf(target - q_values[action], 2);
-}
+  float loss = powf(target - q_value, 2);
 
-/**
- * At the end of an episode, we need to propagate all the gradients
- * and assign all the credit. Finally we reset all
- */
-void SarsaAgent::terminal() {
-  std::vector<float> zeros;
-
-  for (int j = 0; j < this->network->input_neurons.size(); j++) {
-    zeros.push_back(0.0);
-  }
-  std::vector<float> outputs = this->network->read_output_values();
-  std::vector<bool> no_grad(outputs.size(), true);
-
-  for (int i = 0; i < 30; i++){
-    this->network->set_input_values(zeros);
-    this->network->step();
-    outputs = this->network->read_output_values();
-    this->network->introduce_targets(outputs, 0, 0, no_grad);
-  }
-  this->network->reset_trace();
+  return loss;
 }

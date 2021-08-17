@@ -223,15 +223,15 @@ void Neuron::propagate_error() {
     bool wait = false;
     bool propagation = true;
 
-    //    If this is an input neuron, we simply pop the entire grad queue.
-    if (this->is_input_neuron) {
-      for (auto &out_syn : this->outgoing_synapses) {
-        while (!out_syn->grad_queue.empty()) {
-          out_syn->grad_queue.pop();
-        }
-      }
-      return;
-    }
+//    //    If this is an input neuron, we simply pop the entire grad queue.
+//    if (this->is_input_neuron) {
+//      for (auto &out_syn : this->outgoing_synapses) {
+//        while (!out_syn->grad_queue.empty()) {
+//          out_syn->grad_queue.pop();
+//        }
+//      }
+//      return;
+//    }
 
 //      We look at all outgoing synapses
     for (auto &output_synapses_iterator : this->outgoing_synapses) {
