@@ -32,4 +32,6 @@ bool train_single_parameter_with_no_grad_synapse();
 bool feedforward_mixed_activations();
 
 bool mountain_car_test();
+
+bool sarsa_lfa_mc_test();
 #endif  // TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H

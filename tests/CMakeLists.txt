@@ -5,7 +5,7 @@ enable_testing()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(CMAKE_CXX_FLAGS "-O3 -lpthread")
+set(CMAKE_CXX_FLAGS "-O3 -ltbb -lpthread")
 
 add_executable(tests test.cpp ../src/utils.cpp ../include/utils.h ../include/nn/synapse.h ../src/nn/synapse.cpp
         ../include/nn/neuron.h ../src/nn/neuron.cpp ../include/nn/utils.h ../src/nn/utils.cpp ../include/nn/message.h
@@ -15,7 +15,11 @@ add_executable(tests test.cpp ../src/utils.cpp ../include/utils.h ../include/nn/
         include/test_case_networks.h src/network_implementations.cpp  include/random_data_generator.h src/random_data_generator.cpp
         ../src/environments/animal_learning/tracepatterning.cpp ../include/nn/dynamic_elem.h ../src/nn/dynamic_elem.cpp
         ../include/nn/networks/recurrent_state_value_network.h  src/catch3/catch_amalgamated.cpp
-        include/catch3/catch_amalgamated.hpp ../include/nn/networks/network.h ../src/nn/networks/network.cpp src/mountain_car_test.cpp ../include/environments/mountain_car.h ../src/environments/mountain_car.cpp ../include/nn/networks/linear_function_approximator.h ../src/nn/networks/linear_function_approximator.cpp)
+        include/catch3/catch_amalgamated.hpp ../include/nn/networks/network.h ../src/nn/networks/network.cpp
+        src/mountain_car_test.cpp ../include/environments/mountain_car.h ../src/environments/mountain_car.cpp
+        ../include/nn/networks/linear_function_approximator.h ../src/nn/networks/linear_function_approximator.cpp
+        ../include/agents/sarsa.h ../src/agents/sarsa.cpp
+        src/sarsa_test.cpp)
 # For code coverage
 if(CMAKE_COMPILER_IS_GNUCXX)
     LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_modules")
