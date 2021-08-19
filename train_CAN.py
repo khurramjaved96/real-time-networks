@@ -239,7 +239,7 @@ def main():  # noqa: C901
     gamma = 0.99
     lmbda = 0.98
     step_size = 0.000001
-    model_CAN = FlexibleNN.ContinuallyAdaptingNetwork(step_size, args.seed, input_size, 1)
+    model_CAN = FlexibleNN.ContinuallyAdaptingNetwork(step_size, args.seed, input_size)
 
     obs = env.reset()
 

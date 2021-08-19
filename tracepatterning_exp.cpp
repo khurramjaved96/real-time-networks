@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 
   // Initialize our network
   ContinuallyAdaptingNetwork my_network = ContinuallyAdaptingNetwork(my_experiment.get_float_param("step_size"),
-                                                                     my_experiment.get_int_param("seed"), state_size, 1);
+                                                                     my_experiment.get_int_param("seed"), state_size);
 
   std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
 //    my_network.viz_graph();
