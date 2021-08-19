@@ -37,8 +37,7 @@
  */
 
 
-ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed,
-                                                       int no_of_input_features) {
+ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed, int no_of_input_features) {
   this->time_step = 0;
   this->mt.seed(seed);
 //  Initialize the neural network input neurons.

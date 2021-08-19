@@ -131,8 +131,7 @@ void Network::step() {
 
 //  Update our weights (based on either normal update or IDBD update
   std::for_each(
-//      std::execution::par_unseq,
-      std::execution::seq,
+      std::execution::par_unseq,
       all_synapses.begin(),
       all_synapses.end(),
       [&](synapse *s) {

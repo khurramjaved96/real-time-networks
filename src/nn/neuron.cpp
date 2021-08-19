@@ -225,7 +225,6 @@ void Neuron::propagate_error() {
 
 //      We look at all outgoing synapses
     for (auto &output_synapses_iterator : this->outgoing_synapses) {
-
       // Iterate over all outgoing synapses. We want to make sure
 //          Skip this if there are no gradients to propagate for this synapse
       if (!output_synapses_iterator->grad_queue.empty()) {
@@ -322,7 +321,6 @@ void Neuron::propagate_error() {
         it->grad_queue.pop();
       }
     }
-
 
 //      check all errors are the same (from the same target)
     float err = error_vector[0];
