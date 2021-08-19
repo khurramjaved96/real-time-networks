@@ -74,6 +74,22 @@ void Network::set_input_values(std::vector<float> const &input_values) {
   }
 }
 
+
+void Network::print_neuron_status() {
+  std::cout << "ID\tActivation Queue\tGrad queue\n";
+  for(auto it : this->all_neurons){
+    std::cout  << it->id << "\t" << it->past_activations.size() << "\t\t" << it->error_gradient.size() <<  std::endl;
+  }
+}
+
+void Network::print_synapse_status() {
+  std::cout << "From\tTo\tQ1\tQ2\tQ3\n";
+  for(auto it : this->all_synapses){
+    std::cout  << it->input_neuron->id << "\t" << it->output_neuron->id << "\t" << it->weight_assignment_past_activations.size() << "\t"
+    << it->grad_queue.size() << "\t" << it->grad_queue_weight_assignment.size() << std::endl;
+  }
+}
+
 /**
  * Step function after putting in the inputs to the neural network.
  * This function takes a step in the NN by firing all neurons.
