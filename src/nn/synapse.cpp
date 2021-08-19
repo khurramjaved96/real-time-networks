@@ -16,6 +16,7 @@ int64_t synapse::synapse_id_generator = 0;
 synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
   references = 0;
   TH = 0;
+
   this->is_recurrent_connection = false;
   input_neuron = input;
   input->increment_reference();
@@ -41,6 +42,9 @@ synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
   propagate_gradients = true;
   synapse_utility = 0;
   meta_step_size = 1e-4;
+  if (input->is_input_neuron) {
+    propagate_gradients = false;
+  }
 }
 
 void synapse::set_connected_to_recurrence(bool val) {
@@ -64,14 +68,36 @@ void synapse::set_meta_step_size(float val) {
  */
 void synapse::assign_credit() {
 //  Another temp hack
+
+//  Utility propagation code starts
+  float diff = this->output_neuron->value - this->output_neuron->forward(
+      this->output_neuron->value_without_activation - this->input_neuron->old_value * this->weight);
+//  0.999 is a hyper-parameter.
+  this->synapse_local_utility_trace = 0.999 * this->synapse_local_utility_trace + 0.001 * std::abs(diff);
+  this->synapse_utility =
+      (synapse_local_utility_trace * this->output_neuron->neuron_utility) / this->output_neuron->sum_of_utility_traces;
+  if (this->synapse_utility > 0.1) {
+    this->synapse_utility_to_distribute = this->synapse_utility - 0.1;
+    this->synapse_utility = 0.1;
+  } else {
+    this->synapse_utility_to_distribute = 0;
+  }
+//  Utility propagation code ends
+
   if (this->grad_queue.size() > 50) {
-    this->grad_queue.pop();
+//    std::cout << "Too many weight assignment activations\n";
+//    exit(1);
+//    this->grad_queue.pop();
   }
   if (this->grad_queue_weight_assignment.size() > 50) {
-    this->grad_queue_weight_assignment.pop();
+//    std::cout << "Too many grad weight assignment activations\n";
+//    exit(1);
+//    this->grad_queue_weight_assignment.pop();
   }
   if (this->weight_assignment_past_activations.size() > 50) {
-    this->weight_assignment_past_activations.pop();
+//    std::cout << "Too many weight assignment activations\n";
+//    exit(1);
+//    this->weight_assignment_past_activations.pop();
   }
 
 //  We go through each gradient that we've put into our synapse

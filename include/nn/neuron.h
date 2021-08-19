@@ -19,12 +19,17 @@ class Neuron : public dynamic_elem {
   static int64_t neuron_id_generator;
   bool is_input_neuron;
   float value;
+  float value_without_activation;
+  float old_value;
+  float old_value_without_activation;
   int drinking_age;
   float shadow_error_prediction_before_firing;
   float shadow_error_prediction;
   float value_before_firing;
   int memory_made;
   float neuron_utility;
+  float neuron_utility_to_distribute;
+  float sum_of_utility_traces;
   bool is_output_neuron;
   bool useless_neuron;
   int sucesses;

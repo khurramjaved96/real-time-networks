@@ -40,17 +40,50 @@ Neuron::Neuron(bool is_input, bool is_output) {
 void Neuron::fire(int time_step) {
 // Temp hack
 
+  // Utility propagation code starts
+  this->neuron_utility = 0;
+  for(auto it: this->outgoing_synapses){
+    this->neuron_utility += it->synapse_utility_to_distribute;
+  }
+  if(this->is_output_neuron)
+    this->neuron_utility = 1;
+
+  this->sum_of_utility_traces  = 0;
+  for(auto it: this->incoming_synapses){
+    this->sum_of_utility_traces += it->synapse_local_utility_trace;
+  }
+  // Utility propagation code starts
+
   if (this->past_activations.size() > 200) {
+//    std::cout << "ID " << this->id << std::endl;
+//    if(this->is_input_neuron){
+//      std::cout << "Is input neuron\n";
+//    }
+//    if(this->is_output_neuron){
+//      std::cout << "Is input neuron\n";
+//    }
+//    std::cout << "Shouldn't accumulate past activations\n";
+//    exit(1);
     this->past_activations.pop();
   }
   if (this->error_gradient.size() > 200) {
+//    std::cout << "ID " << this->id << std::endl;
+//    if(this->is_input_neuron){
+//      std::cout << "Is input neuron\n";
+//    }
+//    if(this->is_output_neuron){
+//      std::cout << "Is input neuron\n";
+//    }
 //    std::cout << "Shouldn't accumulate past gradients\n";
 //    exit(1);
     this->error_gradient.pop();
   }
 
 //  Forward applies the non-linearity
+  this->old_value = this->value;
+  this->old_value_without_activation = this->value_without_activation;
   this->value = this->forward(value_before_firing);
+  this->value_without_activation = value_before_firing;
   this->shadow_error_prediction = shadow_error_prediction_before_firing;
 
   value_before_firing = 0;
@@ -65,8 +98,12 @@ void Neuron::fire(int time_step) {
   activation_val.value_at_activation = this->value;
   activation_val.time = time_step;
   activation_val.error_prediction_value = this->shadow_error_prediction;
-
-  this->past_activations.push(activation_val);
+//  std::cout << "Outgoing synapses with grad = " << std::endl;
+//  std::cout << this->get_no_of_syanpses_with_gradients() << std::endl;
+//  if(this->get_no_of_syanpses_with_gradients() > 0) {
+  if (!this->is_input_neuron)
+    this->past_activations.push(activation_val);
+//  }
 
 }
 
@@ -215,19 +252,29 @@ void Neuron::propagate_error() {
   std::vector<int> queue_len_vector;
   std::vector<float> error_vector;
   std::vector<message> messages_q;
-  int time_check = 99999;
+  int time_check = -99999;
 
 //  No gradient propagation required for prediction nodes
+
+// We need a loop invariant for this function to make sure progress is always made. Things to make sure:
+// 1. A queue for a certain outgoing path won't grow large indefinitely
+// 2. Adding new connections or removing old connections won't cause deadlocks
+// 3. We can never get in a situation in which neither activation nor the gradient is popped. Some number should strictly increase or decrease
+
+// No need to pass gradients if there are no out-going nodes with gradients
   if (this->get_no_of_syanpses_with_gradients() > 0 && !is_input_neuron) {
+//    Variables shared across all out-going synapses
     bool flag = false;
     bool wait = false;
     bool propagation = true;
+    int total_pops = 0;
+    bool all_empty = true;
 
-//      We look at all outgoing synapses
     for (auto &output_synapses_iterator : this->outgoing_synapses) {
       // Iterate over all outgoing synapses. We want to make sure
-//          Skip this if there are no gradients to propagate for this synapse
+//          Skip this if there are no gradients to propagate for this synapse or if we have decided to no propagate gradients for other reasons
       if (!output_synapses_iterator->grad_queue.empty()) {
+        all_empty = true;
 //              This diff in time_step and distance_travelled is essentially "how long until I activate this gradient"
 //              Currently, b/c of grad_temp.distance_travelled = error_gradient.front().distance_travelled + 1
 //              this means this will always be this->past_activations.front().second - 2.
@@ -244,7 +291,7 @@ void Neuron::propagate_error() {
             this->past_activations.front().time > output_synapses_iterator->grad_queue.front().time_step -
                 output_synapses_iterator->grad_queue.front().distance_travelled - 1) {
           output_synapses_iterator->grad_queue.pop();
-          propagation = false;
+          total_pops++;
         }
 
 //              This means all the gradients left past here need to be passed back.
@@ -258,28 +305,23 @@ void Neuron::propagate_error() {
 //              is done propagating backwards.
 //              grad_queue will be empty in the case that you have a few backprop steps before
 //              your corresponding gradient arrives.
-        bool temp_flag = true;
+
         if (output_synapses_iterator->grad_queue.empty()) {
 //                  Waiting for gradient from other paths; skipping propagation
 //          std::cout << "Wating for other grad from other paths\n";
-          temp_flag = false;
+//        If grad queue was not empty in the beginning, but then was made empty,
+//        that means we might have to delay gradient propagation because a new path,
+//        further away from the output has been introduced dynamically
+          propagation = false;
         }
 
-        if (temp_flag) {
-          assert(!output_synapses_iterator->grad_queue.empty());
+        if (propagation) {
 //                  Here we have gradients to process
           int activation_time_required = output_synapses_iterator->grad_queue.front().time_step -
               output_synapses_iterator->grad_queue.front().distance_travelled - 1;
           activation_time_required_list.push_back(activation_time_required);
 
-//                  Check to see if the grad isn't ready to be used.
-//                  This is the case when the activation needed for the grad is not at the head
-          if (this->past_activations.front().time < activation_time_required) {
-//            std::cout << "Wating for the right activation: Exiting\n";
-            wait = true;
-//            exit(1);
-          }
-          if (!wait) {
+          if (this->past_activations.front().time == activation_time_required) {
             time_vector.push_back(output_synapses_iterator->grad_queue.front().time_step);
             distance_vector.push_back(output_synapses_iterator->grad_queue.front().distance_travelled);
             queue_len_vector.push_back(output_synapses_iterator->grad_queue.size());
@@ -295,11 +337,11 @@ void Neuron::propagate_error() {
                 this->past_activations.front().gradient_activation;
 
 
+
 //                      Check that all activation_time_required are the same
-            if (time_check == 99999) {
+            if (time_check == -99999) {
               time_check = activation_time_required;
-            }
-            else {
+            } else {
               if (time_check != activation_time_required) {
                 std::cout << "Mismatch between gradient times. Exiting\n";
                 exit(1);
@@ -312,15 +354,29 @@ void Neuron::propagate_error() {
       }
     }
 
+    if ((total_pops == 0 || all_empty) && !this->past_activations.empty()) {
+//      To satisfy the loop invariant condition in a corner case
+//      this->past_activations.pop();
+    }
     if (flag || time_vector.empty() || !propagation)
       return;
 
 //      Remove all the grads we just processed
+//    At-least one out-going connection that is popped must be empty
+    bool at_least_one_empty = false;
     for (auto &it : this->outgoing_synapses) {
       if (!it->grad_queue.empty() && !wait && it->grad_queue.front().remove) {
         it->grad_queue.pop();
+        if (it->grad_queue.empty())
+          at_least_one_empty = true;
       }
     }
+    if (!at_least_one_empty) {
+      std::cout << "Unnecessary delay. Can mess with gradient alignment. Quitting\n";
+      exit(1);
+    }
+
+
 
 //      check all errors are the same (from the same target)
     float err = error_vector[0];

@@ -66,7 +66,10 @@ void Network::set_input_values(std::vector<float> const &input_values) {
 //    assert(input_values.size() == this->input_neurons.size());
   for (int i = 0; i < input_values.size(); i++) {
     if (i < this->input_neurons.size()) {
+      this->input_neurons[i]->old_value = this->input_neurons[i]->value;
+      this->input_neurons[i]->old_value_without_activation = this->input_neurons[i]->value;
       this->input_neurons[i]->value = input_values[i];
+      this->input_neurons[i]->value_without_activation = input_values[i];
     } else {
       std::cout << "More input features than input neurons\n";
       exit(1);
@@ -97,6 +100,7 @@ void Network::print_synapse_status() {
  * propagates it back. Currently backprop is truncated at 1 step.
  * Finally, it updates its weights and prunes is_useless neurons and synapses.
  */
+
 void Network::step() {
 
 
