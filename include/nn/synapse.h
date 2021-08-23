@@ -32,6 +32,7 @@ class synapse : public dynamic_elem {
   float step_size;
   float TH;
 
+  float utility_to_keep;
   float synapse_utility;
   float synapse_utility_to_distribute;
   float synapse_local_utility_trace = 0;
@@ -67,9 +68,15 @@ class synapse : public dynamic_elem {
 
   void update_utility();
 
+  void memory_leak_patch();
+
   void assign_credit();
 
   void reset_trace();
+
+  void set_utility_to_keep(float);
+
+  float get_utility_to_keep();
 
   ~synapse() = default;
 };

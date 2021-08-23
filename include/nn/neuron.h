@@ -17,6 +17,7 @@
 class Neuron : public dynamic_elem {
  public:
   static int64_t neuron_id_generator;
+  static std::mt19937 gen;
   bool is_input_neuron;
   float value;
   float value_without_activation;
@@ -72,6 +73,10 @@ class Neuron : public dynamic_elem {
   void propagate_deep_error();
 
   void update_utility();
+
+  void memory_leak_patch();
+
+  void normalize_neuron();
 
   void mark_useless_weights();
 

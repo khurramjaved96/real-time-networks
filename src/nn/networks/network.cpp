@@ -31,7 +31,7 @@
 int Network::get_total_neurons() {
   int tot = 0;
   for (auto it : this->all_neurons) {
-//    if (it->is_mature)
+    if (it->is_mature)
     tot++;
   }
   return tot;
@@ -51,7 +51,7 @@ int Network::get_input_size() {
 int Network::get_total_synapses() {
   int tot = 0;
   for (auto it : this->all_synapses) {
-//    if (it->output_neuron->is_mature)
+    if (it->output_neuron->is_mature && it->input_neuron->is_mature)
     tot++;
   }
   return tot;
@@ -79,17 +79,22 @@ void Network::set_input_values(std::vector<float> const &input_values) {
 
 
 void Network::print_neuron_status() {
-  std::cout << "ID\tActivation Queue\tGrad queue\n";
+  std::cout << "ID\tUtility\tAvg activation\n";
   for(auto it : this->all_neurons){
-    std::cout  << it->id << "\t" << it->past_activations.size() << "\t\t" << it->error_gradient.size() <<  std::endl;
+    if(it->is_mature) {
+      std::cout << it->id << "\t" << it->neuron_utility << "\t\t" << it->average_activation << std::endl;
+    }
   }
 }
 
 void Network::print_synapse_status() {
-  std::cout << "From\tTo\tQ1\tQ2\tQ3\n";
+  std::cout << "From\tTo\tWeight\tUtil\tUtiltoD\tStep-size\tAge\n";
   for(auto it : this->all_synapses){
-    std::cout  << it->input_neuron->id << "\t" << it->output_neuron->id << "\t" << it->weight_assignment_past_activations.size() << "\t"
-    << it->grad_queue.size() << "\t" << it->grad_queue_weight_assignment.size() << std::endl;
+    if(it->output_neuron->is_mature && it->input_neuron->is_mature) {
+      std::cout << it->input_neuron->id << "\t" << it->output_neuron->id << "\t" << it->weight << "\t"
+                << it->synapse_utility << "\t" << it->synapse_utility_to_distribute << "\t" << it->step_size << "\t"
+                << it->age << std::endl;
+    }
   }
 }
 
@@ -214,7 +219,6 @@ void Network::step() {
 
   auto it_n = std::remove_if(this->all_neurons.begin(), this->all_neurons.end(), to_delete_n);
   this->all_neurons.erase(it_n, this->all_neurons.end());
-//    }
 
 
   this->time_step++;

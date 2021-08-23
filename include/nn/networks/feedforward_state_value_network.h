@@ -18,6 +18,8 @@ class ContinuallyAdaptingNetwork : public Network {
 
  public:
 
+  Neuron *bias_unit;
+
   ContinuallyAdaptingNetwork(float step_size, int seed, int no_of_input_features);
 
   ~ContinuallyAdaptingNetwork();
