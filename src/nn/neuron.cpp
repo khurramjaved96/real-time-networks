@@ -151,18 +151,17 @@ void Neuron::normalize_neuron() {
     this->is_mature = true;
   }
 
-  if (this->neuron_age == this->drinking_age && !this->is_input_neuron && this->average_activation > 0
-      && !this->is_output_neuron) {
+  if (this->neuron_age == this->drinking_age && !this->is_input_neuron && !this->is_output_neuron) {
 
     float scale = 1 / this->average_activation;
-    if(scale > 30)
+    if(scale > 30 or this->average_activation == 0)
       scale = 30;
 //    std::cout << "Scaling using factor " << scale << std::endl;
     for (auto it : this->incoming_synapses) {
       if (!it->get_recurrent_status()) {
         it->weight = it->weight * scale;
-        it->step_size = 1e-4;
-        it->turn_on_idbd();
+        it->step_size = 0;
+        it->turn_off_idbd();
       }
     }
 
@@ -398,27 +397,36 @@ void Neuron::propagate_error() {
  * Neurons will only be deleted if there are no outgoing synapses (and it's not an output neuron of course!)
  */
 void Neuron::mark_useless_weights() {
-
+//  return;
   std::uniform_real_distribution<float> dist(0, 1);
 //  std::mt19937 gen;
   float rand_val = dist(Neuron::gen);
 //  std::cout << "Rand value == " << rand_val << std::endl;
-  for (auto &it : this->outgoing_synapses) {
+  if(this->neuron_age > this->drinking_age * 4) {
+    for (auto &it : this->outgoing_synapses) {
 //      Only delete weights if they're older than 70k steps
-    if (it->age > drinking_age * 4 && it->synapse_utility < it->utility_to_keep) {
-
-      if(dist(gen) >0.96)
-        it->is_useless = true;
+      if (it->output_neuron->neuron_age > it->output_neuron->drinking_age * 4 && it->synapse_utility < it->utility_to_keep) {
+        if (dist(gen) > 0.99)
+          it->is_useless = true;
+      }
     }
   }
 
 //  if this current neuron has no outgoing synapses and is not an output or input neuron,
-//  delete it and its incoming synapses.
+//  delete it a
+//  nd its incoming synapses.
   if(this->incoming_synapses.empty() && !this->is_input_neuron){
     this->useless_neuron = true;
     for (auto it : this->outgoing_synapses)
       it->is_useless = true;
   }
+
+
+//  if (this->outgoing_synapses.empty() && !this->is_output_neuron && !this->is_input_neuron) {
+//    this->useless_neuron = true;
+//    for (auto it : this->incoming_synapses)
+//      it->is_useless = true;
+//  }
 
   if (this->outgoing_synapses.empty() && !this->is_output_neuron && !this->is_input_neuron) {
     this->useless_neuron = true;
