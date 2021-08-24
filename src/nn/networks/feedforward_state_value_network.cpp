@@ -41,11 +41,11 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
   this->time_step = 0;
   this->mt.seed(seed);
 
-//  this->bias_unit = new BiasNeuron();
-//  bias_unit->increment_reference();
-//  bias_unit->increment_reference();
-//  this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_unit));
-//  this->all_neurons.push_back(bias_unit);
+  this->bias_unit = new BiasNeuron();
+  bias_unit->increment_reference();
+  bias_unit->increment_reference();
+  this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_unit));
+  this->all_neurons.push_back(bias_unit);
 //
 
 //  Initialize the neural network input neurons.
@@ -77,16 +77,16 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
   }
 
 
-//  for (auto &output : this->output_neurons) {
-//    synapse *s = new synapse(bias_unit, output, 0, step_size);
-//    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(s));
-//    s->increment_reference();
-//    this->all_synapses.push_back(s);
-//    s->increment_reference();
-//    this->output_synapses.push_back(s);
-//    s->turn_on_idbd();
-//    s->set_meta_step_size(1e-2);
-//  }
+  for (auto &output : this->output_neurons) {
+    synapse *s = new synapse(bias_unit, output, 0, step_size);
+    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(s));
+    s->increment_reference();
+    this->all_synapses.push_back(s);
+    s->increment_reference();
+    this->output_synapses.push_back(s);
+    s->turn_on_idbd();
+    s->set_meta_step_size(1e-2);
+  }
 //
 //  Connect our input and output neurons with synapses.
   for (auto &input : this->input_neurons) {
@@ -180,10 +180,10 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
       if(this->all_neurons[pos]->is_mature && !this->all_neurons[pos]->is_output_neuron){
         if(std::count(pos_added.begin(), pos_added.end(), pos) == 0) {
           pos_added.push_back(pos);
-          auto syn = new synapse(this->all_neurons[pos], new_feature, 0.001 * dist(this->mt), 3e-3);
+          auto syn = new synapse(this->all_neurons[pos], new_feature, 0.001 * dist(this->mt), 1e-3);
           syn->block_gradients();
           syn->turn_on_idbd();
-          syn->set_meta_step_size(1e-2);
+          syn->set_meta_step_size(1e-3);
           syn->increment_reference();
           this->all_synapses.push_back(syn);
           this->all_heap_elements.push_back(static_cast<dynamic_elem *>(syn));
