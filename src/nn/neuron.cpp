@@ -520,7 +520,7 @@ float Neuron::introduce_targets(float target, int time_step, float gamma, float 
     float error_prediction_error;
 
     error = this->past_activations.front().value_at_activation - target;
-    error_prediction_error = this->past_activations.front().error_prediction_value - target;
+    error_prediction_error = this->past_activations.front().error_prediction_value - error;
 
     float error_grad = error;
 
