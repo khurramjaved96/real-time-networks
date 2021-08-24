@@ -563,7 +563,7 @@ float Neuron::introduce_targets(float target, int time_step, float gamma, float 
 
   if (!this->past_activations.empty()) {
 //      The activation is the output of our NN.
-    float error;
+    float error = 0;
     float error_prediction_error;
     if (!no_grad)
       error = this->past_activations.front().value_at_activation - target;

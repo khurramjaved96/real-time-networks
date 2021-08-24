@@ -58,8 +58,12 @@ TEST_CASE("TIDBD test with dead end", "[Learning]") {
   REQUIRE(train_single_parameter_with_no_grad_synapse());
 }
 
-TEST_CASE("Mountain car enerty pumping on-policy prediction learning test", "[Learning]") {
+TEST_CASE("Mountain car energy pumping on-policy prediction learning test", "[Learning]") {
   REQUIRE(mountain_car_test());
+}
+
+TEST_CASE("Sarsa(lambda) with linear function approximation test", "[Learning]") {
+  REQUIRE(sarsa_lfa_mc_test());
 }
 
 TEST_CASE("LFA test for utility propagation", "[Utility_propagation]") {

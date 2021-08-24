@@ -33,5 +33,7 @@ bool feedforward_mixed_activations();
 
 bool mountain_car_test();
 
+bool sarsa_lfa_mc_test();
+
 bool utility_test();
 #endif  // TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H
