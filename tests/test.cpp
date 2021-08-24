@@ -62,7 +62,7 @@ TEST_CASE("Mountain car energy pumping on-policy prediction learning test", "[Le
   REQUIRE(mountain_car_test());
 }
 
-TEST_CASE("Sarsa(lambda) with linear function approximation test", "[Learning]") {
+TEST_CASE("Sarsa(lambda) with linear function approximation test", "[SarsaControl]") {
   REQUIRE(sarsa_lfa_mc_test());
 }
 
