@@ -18,7 +18,7 @@ add_executable(tests test.cpp ../src/utils.cpp ../include/utils.h ../include/nn/
         include/catch3/catch_amalgamated.hpp ../include/nn/networks/network.h ../src/nn/networks/network.cpp
         src/mountain_car_test.cpp ../include/environments/mountain_car.h ../src/environments/mountain_car.cpp
         ../include/nn/networks/linear_function_approximator.h ../src/nn/networks/linear_function_approximator.cpp
-        ../include/agents/sarsa.h ../src/agents/sarsa.cpp
+        ../include/agents/sarsa.h ../src/agents/sarsa.cpp src/utility_propagation.cpp
         src/sarsa_test.cpp)
 # For code coverage
 if(CMAKE_COMPILER_IS_GNUCXX)

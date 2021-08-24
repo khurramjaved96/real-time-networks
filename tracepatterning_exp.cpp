@@ -47,14 +47,15 @@ int main(int argc, char *argv[]) {
   float lambda = my_experiment.get_float_param("lambda");
 
   // Initialize our dataset
-//  TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
-//                                       std::pair<int, int>(interval, interval_up),
-//                                       std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
+  TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
+                                       std::pair<int, int>(interval, interval_up),
+                                       std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
 
-    TraceConditioning tc = TraceConditioning(std::pair<int, int>(interval, interval_up),
-                                         std::pair<int, int>(interval, interval_up),
-                                         std::pair<int, int>(200, 220), 0, my_experiment.get_int_param("seed"));
+//  TraceConditioning tc = TraceConditioning(std::pair<int, int>(interval, interval_up),
+//                                           std::pair<int, int>(interval, interval_up),
+//                                           std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
 
+//
   int state_size = 0;
   for (int temp = 0; temp < 200; temp++) {
     std::vector<float> cur_state = tc.step();
@@ -66,7 +67,6 @@ int main(int argc, char *argv[]) {
 //    exit(1);
 
   std::cout << "Experiment object created \n";
-
 
   Metric synapses_metric = Metric(my_experiment.database_name, "error_table",
                                   std::vector < std::string > {"step", "run", "error", "error_type"},
@@ -143,6 +143,7 @@ int main(int argc, char *argv[]) {
 
     real_target = tc.get_target(gamma);
     state_current_prime = tc.step();
+
     R = tc.get_US();
     prediction = my_network.forward_pass_without_side_effects(state_current_prime)[0];
 
@@ -150,20 +151,19 @@ int main(int argc, char *argv[]) {
 //      Now we calculate our bootstrapped TD target
 
     float target = prediction * gamma + R;
-    if (counter > 0 || true) {
-      float error_short = (my_network.read_output_values()[0] - real_target) *
-          (my_network.read_output_values()[0] - real_target);
+    float error_short = (my_network.read_output_values()[0] - real_target) *
+        (my_network.read_output_values()[0] - real_target);
 
-      temp_target.push_back(target);
+    temp_target.push_back(target);
 //      std::cout << "real target = " << real_target << std::endl;
 
 //          Here we put our targets into our output neurons and calculate our TD error.
-      my_network.introduce_targets(temp_target, gamma, lambda);
+    my_network.introduce_targets(temp_target, gamma, lambda);
 
-      float beta = 0.9999;
-      running_error[0] = running_error[0] * beta + (1 - beta) * error_short;
-      running_error[1] = running_error[0] / (1 - pow(beta, counter));
-    }
+    float beta = 0.9999;
+    running_error[0] = running_error[0] * beta + (1 - beta) * error_short;
+    running_error[1] = running_error[0] / (1 - pow(beta, counter));
+
 
 //      For logging purposes
     if (counter % 10000 == 0) {
@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
       network_size.push_back(std::to_string(my_network.get_total_neurons()));
       network_size_logger.push_back(network_size);
     }
-    if (counter % 50000 < 500) {
+    if (counter % 50000 < 130) {
       std::vector<float> print_vec;
       std::vector<std::string> state_string;
       std::vector<float> cur_state = state_current;
@@ -236,18 +236,19 @@ int main(int argc, char *argv[]) {
         synapses_state_logger.push_back(output_synapse_state);
       }
     }
-
+//
 //      Generating new features every 80000 steps
-    if (counter % 800000 == 799999) {
+    if (counter % 100000 == 99999) {
 //            if (counter  == 79999) {
 //          First remove all references to is_useless nodes and neurons
       my_network.collect_garbage();
 
 //          Add 100 new features
-      std::cout << "From\tTo\tWeight\tStwp-size\n";
-      for(auto it:  my_network.all_synapses)
-        std::cout << it->input_neuron->id << "\t" << it->output_neuron->id << "\t" << it->weight << "\t" << it->log_step_size_tidbd << "\n";
 
+//      std::cout << "From\tTo\tWeight\tStwp-size\n";
+//      for (auto it:  my_network.all_synapses)
+//        std::cout << it->input_neuron->id << "\t" << it->output_neuron->id << "\t" << it->weight << "\t"
+//                  << it->log_step_size_tidbd << "\n";
 
       for (int a = 0; a < 1; a++) {
 
@@ -293,20 +294,25 @@ int main(int argc, char *argv[]) {
       neuron_activations_metric.add_values(neuron_activations_logger);
       neuron_activations_logger.clear();
     }
-    if (counter % 10000 == 0 || counter % 10000 == 999 || counter % 10000 == 998) {
+    if (counter % 30000 == 0 ) {
+
+      my_network.print_synapse_status();
+      my_network.print_neuron_status();
+
       std::cout << "### STEP = " << counter << std::endl;
       std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
       std::cout << "Running error = ";
       print_vector(running_error);
       std::cout << "Total elements = " << my_network.all_heap_elements.size() << std::endl;
-      std::cout << "Output synapses = " << my_network.output_synapses.size() << std::endl;
+      std::cout << "Total synapses = " << my_network.all_synapses.size() << std::endl;
       std::cout << "Mature synapses = " << my_network.get_total_synapses() << std::endl;
       std::cout << "Total synapses = " << my_network.all_synapses.size() << std::endl;
       std::cout << "Output Neurons = " << my_network.output_neurons.size() << "\t"
                 << my_network.input_neurons.size() << std::endl;
       std::cout << "Total Neurons = " << my_network.all_neurons.size() << std::endl;
       std::cout << "Total Neurons Mature = " << my_network.get_total_neurons() << std::endl;
-      my_network.set_print_bool();
+//      my_network.set_print_bool();
+
     }
     state_current = state_current_prime;
   }

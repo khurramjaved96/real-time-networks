@@ -47,6 +47,7 @@ bool forward_pass_without_sideeffects_test(){
 //    std::cout  << "Actual prediction: " << output[0] << " Output 2 " << output_2[0] << " Predicted: " << prediction << std::endl;
 
     my_network.introduce_targets(output);
+    my_network_2.introduce_targets(output);
     counter++;
   }
 

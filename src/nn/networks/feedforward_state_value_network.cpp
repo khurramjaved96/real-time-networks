@@ -40,6 +40,14 @@
 ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed, int no_of_input_features) {
   this->time_step = 0;
   this->mt.seed(seed);
+
+  this->bias_unit = new BiasNeuron();
+  bias_unit->increment_reference();
+  bias_unit->increment_reference();
+  this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_unit));
+  this->all_neurons.push_back(bias_unit);
+//
+
 //  Initialize the neural network input neurons.
 //  Currently we fix an input size of 10.
   int input_neuron = no_of_input_features;
@@ -60,6 +68,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
   int output_neuros = 1;
   for (int counter = 0; counter < output_neuros; counter++) {
     auto n = new LinearNeuron(false, true);
+    n->is_mature = true;
     this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
     n->increment_reference();
     this->output_neurons.push_back(n);
@@ -68,6 +77,17 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
   }
 
 
+  for (auto &output : this->output_neurons) {
+    synapse *s = new synapse(bias_unit, output, 0, step_size);
+    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(s));
+    s->increment_reference();
+    this->all_synapses.push_back(s);
+    s->increment_reference();
+    this->output_synapses.push_back(s);
+    s->turn_on_idbd();
+    s->set_meta_step_size(1e-2);
+  }
+//
 //  Connect our input and output neurons with synapses.
   for (auto &input : this->input_neurons) {
     for (auto &output : this->output_neurons) {
@@ -78,6 +98,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
       s->increment_reference();
       this->output_synapses.push_back(s);
       s->turn_on_idbd();
+      s->set_meta_step_size(1e-2);
     }
   }
 }
@@ -120,46 +141,70 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size) {
 //  Limit our number of synapses to 1m
   if (this->all_synapses.size() < 1000000) {
 //        std::normal_distribution<float> dist(0, 1);
-    std::uniform_int_distribution<int> drinking_dist(5000, 10000);
+    std::uniform_int_distribution<int> drinking_dist(2000, 40000);
+    std::uniform_int_distribution<int> random_int(0, this->all_neurons.size());
+    std::uniform_int_distribution<int> max_features(1, 20);
     std::uniform_real_distribution<float> dist(-2, 2);
     std::uniform_real_distribution<float> dist_u(0, 1);
     std::uniform_real_distribution<float> dist_recurren(0, 0.99);
 
 //      Create our new neuron
     Neuron *new_feature = new ReluNeuron(false, false);
-//        recurrent_neuron->drinking_age = drinking_dist(this->mt);
+    new_feature->drinking_age = drinking_dist(this->mt);
     new_feature->increment_reference();
     new_feature->increment_reference();
+
     this->all_heap_elements.push_back(static_cast<dynamic_elem *>(new_feature));
     this->all_neurons.push_back(new_feature);
 
-
-    Neuron *bias_unit = new BiasNeuron();
-    bias_unit->increment_reference();
-    bias_unit->increment_reference();
-    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_unit));
-    this->all_neurons.push_back(bias_unit);
-
-    auto bias_syanpse = new synapse(bias_unit, new_feature, 0.0001 * dist(this->mt), step_size);
-    bias_syanpse->block_gradients();
-    bias_syanpse->increment_reference();
-    this->all_synapses.push_back(bias_syanpse);
-    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_syanpse));
+//
+//
+//    auto bias_syanpse = new synapse(this->bias_unit, new_feature, 0.0001 * dist(this->mt), step_size);
+//    bias_syanpse->block_gradients();
+//    bias_syanpse->increment_reference();
+//    this->all_synapses.push_back(bias_syanpse);
+//    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_syanpse));
 
 //      w.p. perc, attach a random neuron (that's not an output neuron) to this neuron
     float perc = dist_u(mt);
-    for (auto &n : this->all_neurons) {
-      if (!n->is_output_neuron && n->is_mature) {
-        if (dist_u(mt) < perc) {
-          auto syn = new synapse(n, new_feature, 0.0001 * dist(this->mt), step_size);
+    float try_counter = 0;
+    float total_features_selected = 0;
+    int features_to_add = max_features(mt);
+    std::vector<int> pos_added;
+    while(true){
+      try_counter ++;
+      if(try_counter == 1000 or total_features_selected == features_to_add)
+        break;
+      int pos = random_int(mt);
+
+      if(this->all_neurons[pos]->is_mature && !this->all_neurons[pos]->is_output_neuron){
+        if(std::count(pos_added.begin(), pos_added.end(), pos) == 0) {
+          pos_added.push_back(pos);
+          auto syn = new synapse(this->all_neurons[pos], new_feature, 0.001 * dist(this->mt), 1e-3);
           syn->block_gradients();
-//          syn->turn_on_idbd();
+          syn->turn_on_idbd();
+          syn->set_meta_step_size(1e-3);
           syn->increment_reference();
           this->all_synapses.push_back(syn);
           this->all_heap_elements.push_back(static_cast<dynamic_elem *>(syn));
+          total_features_selected ++;
         }
       }
     }
+
+//    for (auto &n : this->all_neurons) {
+//      if(n->is_mature && !n->is_output_neuron){
+//        if (dist_u(mt) < perc) {
+//          auto syn = new synapse(n, new_feature, 0.0001 * dist(this->mt), 3e-3);
+//          syn->block_gradients();
+//          syn->turn_on_idbd();
+//          syn->set_meta_step_size(1e-3);
+//          syn->increment_reference();
+//          this->all_synapses.push_back(syn);
+//          this->all_heap_elements.push_back(static_cast<dynamic_elem *>(syn));
+//        }
+//      }
+//    }
 
     synapse *output_s_temp;
     if (dist(this->mt) > 0) {
