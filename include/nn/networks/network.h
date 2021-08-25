@@ -46,6 +46,8 @@ class Network {
 
   float introduce_targets(std::vector<float> targets, float gamma, float lambda);
 
+  float introduce_targets(float targets, float gamma, float lambda, std::vector<bool> no_grad);
+
   std::vector<float> forward_pass_without_side_effects(std::vector<float> input_vector);
 
   int get_input_size();

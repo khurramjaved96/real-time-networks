@@ -57,7 +57,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
 //  Initialize all output neurons.
 //  Similarly, we fix an output size to 1.
 
-  int output_neuros = 1;
+  int output_neuros = 3;
   for (int counter = 0; counter < output_neuros; counter++) {
     auto n = new LinearNeuron(false, true);
     this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
@@ -192,8 +192,8 @@ ContinuallyAdaptingNetwork::~ContinuallyAdaptingNetwork() {
 float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
 //  Put all targets into our neurons.
   float error = 0;
-  if (targets.size() != 1) {
-    std::cout << "Multiple target values passed. This network only learns to make a single prediction.\n";
+  if (targets.size() != this->output_neurons.size()) {
+    std::cout << "Target size and the number of output neurons dont match";
     exit(1);
   }
   for (int counter = 0; counter < targets.size(); counter++) {
