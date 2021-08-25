@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
   std::cout << "Program started \n";
   int interval = my_experiment.get_int_param("ISI_low");
   int interval_up = my_experiment.get_int_param("ISI_high");
-  float gamma = 1.0 - 1.0 / (static_cast<double>(interval_up));
+  float gamma = 1.0 - 2.0 / (static_cast<double>(interval_up+interval));
 //  gamma = 0;
   float lambda = my_experiment.get_float_param("lambda");
 
@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
     }
 //
 //      Generating new features every 80000 steps
-    if (counter % 100000 == 99999) {
+    if (counter % 5000 == 4999) {
 //            if (counter  == 79999) {
 //          First remove all references to is_useless nodes and neurons
       my_network.collect_garbage();

@@ -596,6 +596,17 @@ float SigmoidNeuron::backward(float post_activation) {
   return post_activation * (1 - post_activation);
 }
 
+float Tanh::forward(float temp_value) {
+  float post_activation = tanh(temp_value);
+  this->average_activation = this->average_activation * 0.99 + 0.01 * std::abs(post_activation);
+  return post_activation;
+}
+
+float Tanh::backward(float output_grad) {
+  return 1 - (output_grad*output_grad);
+}
+
+
 float LinearNeuron::forward(float temp_value) {
   if (temp_value != 0)
     this->average_activation = this->average_activation * 0.99 + 0.01 * std::abs(temp_value);
@@ -647,6 +658,8 @@ BiasNeuron::BiasNeuron() : Neuron(true, false) {
 }
 
 SigmoidNeuron::SigmoidNeuron(bool is_input, bool is_output) : Neuron(is_input, is_output) {}
+
+Tanh::Tanh(bool is_input, bool is_output) : Neuron(is_input, is_output){}
 
 LeakyRelu::LeakyRelu(bool is_input, bool is_output, float negative_slope) : Neuron(is_input, is_output) {
   this->negative_slope = negative_slope;

@@ -18,6 +18,10 @@ float sigmoid(float a) {
   return (1.0) / (1.0 + exp(-1 * a));
 }
 
+float tanh(float a){
+  return (exp(2*a) - 1)/(exp(2*a) + 1);
+}
+
 float relu(float a) {
   if (a > 0) return a;
   return 0;
