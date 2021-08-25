@@ -16,6 +16,7 @@ int64_t synapse::synapse_id_generator = 0;
 synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
   references = 0;
   TH = 0;
+
   this->is_recurrent_connection = false;
   input_neuron = input;
   input->increment_reference();
@@ -41,6 +42,19 @@ synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
   propagate_gradients = true;
   synapse_utility = 0;
   meta_step_size = 1e-4;
+  if (input->is_input_neuron) {
+    propagate_gradients = false;
+  }
+  utility_to_keep = 0.0001;
+}
+//
+
+void synapse::set_utility_to_keep(float util) {
+  this->utility_to_keep = util;
+}
+
+float synapse::get_utility_to_keep() {
+  return this->utility_to_keep;
 }
 
 void synapse::set_connected_to_recurrence(bool val) {
@@ -59,11 +73,30 @@ void synapse::set_meta_step_size(float val) {
   this->meta_step_size = val;
 }
 
-/**
- * Calculate and set credit based on gradients in the current synapse.
- */
-void synapse::assign_credit() {
-//  Another temp hack
+void synapse::update_utility() {
+  float diff = this->output_neuron->value - this->output_neuron->forward(
+      this->output_neuron->value_without_activation - this->input_neuron->old_value * this->weight);
+//  0.999 is a hyper-parameter.
+  if(!this->in_shadow_mode ) {
+    this->synapse_local_utility_trace = 0.999 * this->synapse_local_utility_trace + 0.001 * std::abs(diff);
+    this->synapse_utility =
+        (synapse_local_utility_trace * this->output_neuron->neuron_utility)
+            / (this->output_neuron->sum_of_utility_traces + 1e-10);
+    if (this->synapse_utility > this->utility_to_keep) {
+      this->synapse_utility_to_distribute = this->synapse_utility - this->utility_to_keep;
+      this->synapse_utility = this->utility_to_keep;
+    } else {
+      this->synapse_utility_to_distribute = 0;
+    }
+  }
+  else{
+    this->synapse_utility = 0;
+    this->synapse_utility_to_distribute = 0;
+    this->synapse_local_utility_trace = 0;
+  }
+}
+
+void synapse::memory_leak_patch(){
   if (this->grad_queue.size() > 50) {
     this->grad_queue.pop();
   }
@@ -73,6 +106,16 @@ void synapse::assign_credit() {
   if (this->weight_assignment_past_activations.size() > 50) {
     this->weight_assignment_past_activations.pop();
   }
+}
+
+/**
+ * Calculate and set credit based on gradients in the current synapse.
+ */
+void synapse::assign_credit() {
+//  Another temp hack
+
+  this->update_utility();
+  this->memory_leak_patch();
 
 //  We go through each gradient that we've put into our synapse
 //  and see if this gradient's activation time corresponds to the correct past activation
@@ -97,7 +140,8 @@ void synapse::assign_credit() {
 
 //  If we still have gradients left for credit assignment
   if (!this->grad_queue_weight_assignment.empty()) {
-//      We have a match! Here we calculate our update rule. We first update our eligibility trace
+//      We have a match! Here we calculate our update rule. We first update our eligibility trace]
+
     this->trace = this->trace * this->grad_queue_weight_assignment.front().gamma *
         this->grad_queue_weight_assignment.front().lambda +
         this->weight_assignment_past_activations.front().gradient_activation *
@@ -108,9 +152,6 @@ void synapse::assign_credit() {
 
 //      As per the trace update rule, our actual credit being assigned is our trace x our TD error.
     this->credit = this->trace * this->grad_queue_weight_assignment.front().error;
-//    if(this->credit > 10){
-//      std::cout << "Credit = " << this->credit <<  "Error " << this->grad_queue_weight_assignment.front().error << std::endl;
-//    }
 
 //      Remove both grad and past activations used
     this->grad_queue_weight_assignment.pop();
@@ -129,19 +170,13 @@ bool synapse::get_recurrent_status() {
   return is_recurrent_connection;
 }
 
-void synapse::update_utility() {
-  if (this->output_neuron->is_output_neuron) {
-    synapse_utility = std::abs(this->weight * this->input_neuron->average_activation);
-  }
-}
-
 void synapse::turn_on_idbd() {
   this->idbd = true;
   this->log_step_size_tidbd = log(this->step_size);
   this->h_tidbd = 0;
   this->step_size = exp(this->log_step_size_tidbd);
 }
-
+//
 void synapse::turn_off_idbd() {
   this->idbd = false;
 }
@@ -178,9 +213,5 @@ void synapse::update_weight() {
       this->weight = 0;
     }
   }
-
-//  if(std::abs(this->weight) > 1)
-//    std::cout << "ID = " << this->id << " Weight = " << this->weight << " Step size = " << this->step_size << std::endl;
-//}
 }
 

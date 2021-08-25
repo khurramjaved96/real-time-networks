@@ -52,6 +52,10 @@ class Network {
 
   int get_input_size();
 
+  void print_synapse_status();
+
+  void print_neuron_status();
+
   int get_total_synapses();
 
   int get_total_neurons();

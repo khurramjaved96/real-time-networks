@@ -11,6 +11,7 @@ class MountainCar {
   Observation current_obs;
   std::mt19937 mt;
   std::uniform_int_distribution<int> action_sampler;
+  std::uniform_real_distribution<float> state_sampler;
 
  public:
   float max_position;
@@ -19,7 +20,6 @@ class MountainCar {
   float min_velocity;
   float goal_position;
   int discretization;
-  int max_timesteps;
   explicit MountainCar(int seed, int discretization = 0);
   int get_random_action();
   int observation_shape();

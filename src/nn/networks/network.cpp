@@ -31,7 +31,7 @@
 int Network::get_total_neurons() {
   int tot = 0;
   for (auto it : this->all_neurons) {
-//    if (it->is_mature)
+    if (it->is_mature)
     tot++;
   }
   return tot;
@@ -51,7 +51,7 @@ int Network::get_input_size() {
 int Network::get_total_synapses() {
   int tot = 0;
   for (auto it : this->all_synapses) {
-//    if (it->output_neuron->is_mature)
+    if (it->output_neuron->is_mature && it->input_neuron->is_mature)
     tot++;
   }
   return tot;
@@ -66,10 +66,34 @@ void Network::set_input_values(std::vector<float> const &input_values) {
 //    assert(input_values.size() == this->input_neurons.size());
   for (int i = 0; i < input_values.size(); i++) {
     if (i < this->input_neurons.size()) {
+      this->input_neurons[i]->old_value = this->input_neurons[i]->value;
+      this->input_neurons[i]->old_value_without_activation = this->input_neurons[i]->value;
       this->input_neurons[i]->value = input_values[i];
+      this->input_neurons[i]->value_without_activation = input_values[i];
     } else {
       std::cout << "More input features than input neurons\n";
       exit(1);
+    }
+  }
+}
+
+
+void Network::print_neuron_status() {
+  std::cout << "ID\tUtility\tAvg activation\n";
+  for(auto it : this->all_neurons){
+    if(it->is_mature) {
+      std::cout << it->id << "\t" << it->neuron_utility << "\t\t" << it->average_activation << std::endl;
+    }
+  }
+}
+
+void Network::print_synapse_status() {
+  std::cout << "From\tTo\tWeight\tUtil\tUtiltoD\tStep-size\tAge\n";
+  for(auto it : this->all_synapses){
+    if(it->output_neuron->is_mature && it->input_neuron->is_mature) {
+      std::cout << it->input_neuron->id << "\t" << it->output_neuron->id << "\t" << it->weight << "\t"
+                << it->synapse_utility << "\t" << it->synapse_utility_to_distribute << "\t" << it->step_size << "\t"
+                << it->age << std::endl;
     }
   }
 }
@@ -81,6 +105,7 @@ void Network::set_input_values(std::vector<float> const &input_values) {
  * propagates it back. Currently backprop is truncated at 1 step.
  * Finally, it updates its weights and prunes is_useless neurons and synapses.
  */
+
 void Network::step() {
 
 
@@ -194,7 +219,6 @@ void Network::step() {
 
   auto it_n = std::remove_if(this->all_neurons.begin(), this->all_neurons.end(), to_delete_n);
   this->all_neurons.erase(it_n, this->all_neurons.end());
-//    }
 
 
   this->time_step++;

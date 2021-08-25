@@ -103,8 +103,8 @@ float TracePatterning::get_US() {
 }
 
 float TracePatterning::get_target(float gamma) {
-  if (this->remaining_until_US >= 0 && this->valid) {
-    return pow(gamma, this->remaining_until_US);
+  if (this->remaining_until_US > 0 && this->valid) {
+    return pow(gamma, this->remaining_until_US - 1);
   }
   return 0;
 }

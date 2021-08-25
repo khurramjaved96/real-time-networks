@@ -79,7 +79,7 @@ bool mountain_car_test() {
   int episode_return = 0;
   std::vector<float> episode_predictions;
   std::vector<float> rewards;
-  while (episode < 80) {
+  while (episode < 150) {
     episode_return--;
     auto obs = tc.get_current_obs();
 

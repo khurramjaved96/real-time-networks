@@ -174,6 +174,7 @@ void LambdaReturnNetwork::step() {
   this->time_step++;
 
 }
+
 TestCase::TestCase(float step_size, int width, int seed) {
   this->time_step = 0;
 
@@ -353,8 +354,6 @@ LeakyReluTest::LeakyReluTest(float step_size, int width, int seed) {
     this->all_neurons.push_back(n);
   }
 
-  n = new LeakyRelu(false, false, 0.01);
-  this->all_neurons.push_back(n);
 
   auto inp1 = new synapse(all_neurons[1 - 1], all_neurons[4 - 1], 0.2, step_size);
   auto inp2 = new synapse(all_neurons[1 - 1], all_neurons[6 - 1], 0.5, step_size);
@@ -421,8 +420,10 @@ void TestCase::step() {
         s->assign_credit();
       });
 
-  for (int counter = 0; counter < all_synapses.size(); counter++) {
-    this->sum_of_gradients[counter] += all_synapses[counter]->credit;
+  if(all_synapses.size() == this->sum_of_gradients.size()) {
+    for (int counter = 0; counter < all_synapses.size(); counter++) {
+      this->sum_of_gradients[counter] += all_synapses[counter]->credit;
+    }
   }
 
   this->time_step++;
