@@ -24,6 +24,9 @@ comment "For running locally".
   a working mountaincar version.
 
 ## Instructions for python extension
+Note: Not updated to use the latest cpp code. Assumes that the updates
+are one-step late.
+
 * Install pybind11
 * From the project's root directory, use `git clone --recursive https://github.com/DLR-RM/rl-baselines3-zoo`
 * Use CMakeListsPy.txt to compile after adjusting the `include_directories` inside.
