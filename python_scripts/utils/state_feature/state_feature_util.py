@@ -1,8 +1,8 @@
 from enum import Enum
 
 from numpy.core.fromnumeric import resize
-from state_feature.base_state_feature import BaseStateFeature
-from state_feature.tile_coding import *
+from .base_state_feature import BaseStateFeature
+from .tile_coding import *
 import numpy as np
 
 
