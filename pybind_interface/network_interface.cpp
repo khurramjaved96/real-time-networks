@@ -6,6 +6,7 @@
 #include "../include/nn/networks/linear_function_approximator.h"
 #include "../include/nn/networks/recurrent_state_value_network.h"
 #include "../include/nn/networks/expanding_linear_function_approximator.h"
+#include "../include/nn/networks/imprinting_wide_network.h"
 
 namespace py = pybind11;
 
@@ -61,5 +62,11 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def(py::init<int, int, int, float, float, bool>())
         .def("set_input_values", &ExpandingLinearFunctionApproximator::set_input_values)
         .def("step", &ExpandingLinearFunctionApproximator::step);
+
+    py::class_<ImprintingWideNetwork, Network>(m, "ImprintingWideNetwork")
+        .def(py::init<int, int, int, std::vector<std::pair<float,float>>, float, float, float, bool>())
+        .def("step", &ImprintingWideNetwork::step)
+        .def("get_feature_bounds", &ImprintingWideNetwork::get_feature_bounds)
+        .def("get_feature_utilities", &ImprintingWideNetwork::get_feature_utilities);
 
 }

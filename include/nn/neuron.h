@@ -8,6 +8,7 @@
 #include <vector>
 #include <queue>
 #include <unordered_set>
+#include <unordered_map>
 #include <utility>
 #include "./dynamic_elem.h"
 #include "./synapse.h"
@@ -39,6 +40,9 @@ class Neuron : public dynamic_elem {
   bool is_mature;
   int neuron_age;
   float average_activation;
+
+
+  std::pair<float, float> value_ranges;
 
   void forward_gradients();
 
@@ -129,6 +133,24 @@ class LeakyRelu : public Neuron {
   float forward(float temp_value);
 
   LeakyRelu(bool is_input, bool is_output, float negative_slope);
+};
+
+class BoundedNeuron: public Neuron {
+ public:
+  float bound_replacement_prob;
+  // an upper and a lower bound for each incoming synapse id
+  std::unordered_map<int, std::pair<float, float>> activation_bounds;
+
+  //TODO also should handle removal of synapses?
+  void update_activation_bounds(synapse * incoming_synapse);
+
+  float backward(float output_grad);
+
+  float forward(float temp_value);
+
+  BoundedNeuron(bool is_input, bool is_output, float bound_replacement_prob);
+
+  void update_value(int time_step);
 };
 
 //class RecurrentNeuron : public Neuron {

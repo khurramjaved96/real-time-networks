@@ -672,7 +672,89 @@ LinearNeuron::LinearNeuron(bool is_input, bool is_output) : Neuron(is_input, is_
 //    : RecurrentNeuron(is_input, is_output, recurrent_synapse) {}
 //
 
+BoundedNeuron::BoundedNeuron(bool is_input, bool is_output, float bound_replacement_prob) : Neuron(is_input, is_output) {
+  //this->is_mature = true;
+  this->bound_replacement_prob = bound_replacement_prob;
+}
 
+void BoundedNeuron::update_activation_bounds(synapse * incoming_synapse) {
+  // find a random center point and the find random lower and upper bounds that are close to the center point.
+  if (incoming_synapse->weight != 1){
+    std::cout << "neuron.cpp: BoundedNeuron bounds are based on incoming neuron value ranges" << std::endl;
+    exit(1);
+  }
+
+  std::pair<float,float> input_value_bounds = incoming_synapse->input_neuron->value_ranges;
+  std::uniform_real_distribution<float> overall_dist(input_value_bounds.first, input_value_bounds.second);
+  float new_bound_center = overall_dist(gen);
+
+  //TODO 0.05 is hparam
+  float new_bound_max_range = (fabs(input_value_bounds.first) + fabs(input_value_bounds.second)) * 0.1;
+  std::uniform_real_distribution<float> lower_bound_dist(new_bound_center - new_bound_max_range, new_bound_center);
+  std::uniform_real_distribution<float> upper_bound_dist(new_bound_center, new_bound_center + new_bound_max_range);
+
+  this->activation_bounds[incoming_synapse->id] = std::make_pair(lower_bound_dist(gen), upper_bound_dist(gen));
+
+  //Reset the weights of the outgoing synapses
+  //TODO check what else to reset
+  for (auto &it : this->outgoing_synapses) {
+    it->weight = 1e-4;
+    it->reset_trace();
+  }
+
+  std::cout << "bound update.." << std::endl;
+}
+
+float BoundedNeuron ::forward(float temp_value) {
+  return temp_value;
+}
+
+float BoundedNeuron ::backward(float post_activation) {
+  if (!(post_activation == 1 || post_activation == 0)){
+    std::cout << post_activation << std::endl;
+    std::cout << "neuron.cpp: invalid backward activation" << std::endl;
+    exit(1);
+  }
+  if (post_activation = 1)
+    return 1;
+  else
+    return 0;
+}
+
+void BoundedNeuron ::update_value(int time_step) {
+  this->neuron_age++;
+
+  if (this->neuron_age == this->drinking_age * 4 && !this->is_output_neuron) {
+    this->is_mature = true;
+  }
+
+//  Reset our gradient_activation holder
+  this->value_before_firing = 1;
+  this->shadow_error_prediction_before_firing = 0;
+
+//  Age our neuron like a fine wine and set the next values of our neuron.
+  for (auto &it : this->incoming_synapses) {
+    if (it->in_shadow_mode){
+      std::cout << "neuron.cpp: shadowmode not implemented" << std::endl;
+      exit(1);
+    }
+    it->age++;
+    message_activation activation_val;
+    activation_val.gradient_activation = it->input_neuron->value;
+    activation_val.time = time_step - 1;
+    activation_val.error_prediction_value = it->input_neuron->shadow_error_prediction;
+    it->weight_assignment_past_activations.push(activation_val);
+
+    std::uniform_real_distribution<float> dist(0,1);
+    //TODO adjust weight to 00
+    if (dist(gen) <= this->bound_replacement_prob && it->synapse_utility < it->utility_to_keep)
+      update_activation_bounds(it);
+    std::pair<float, float>  it_activation_bounds = this->activation_bounds[it->id];
+    //TODO think about adjusting utility prop. Maybe use neuron's instead. The utility of synapses should be equal right?
+    if (it->input_neuron->value < it_activation_bounds.first || it->input_neuron->value > it_activation_bounds.second)
+      this->value_before_firing = 0;
+  }
+}
 
 
 std::mt19937 Neuron::gen = std::mt19937(0);
