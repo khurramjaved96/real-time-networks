@@ -14,6 +14,8 @@ import FlexibleNN
 from python_scripts.utils.state_feature.state_feature_util import TileCoder
 from python_scripts.utils.tilecoding_wrapper import TileCodedObservation
 from python_scripts.agents.sarsa_control_agent import SarsaControlAgent
+from python_scripts.agents.sarsa_prediction_agent import SarsaPredictionAgent
+from python_scripts.agents.mountaincar_fixed_agent import MountainCarFixed
 
 
 def set_random_seed(seed: int, env: gym.wrappers.time_limit.TimeLimit) -> None:
@@ -57,18 +59,22 @@ def main():  # noqa: C901
 
     env = gym.make(args.env)
     input_size = env.observation_space.shape[0]
-    output_size = env.action_space.n
+    if (False):
+        output_size = env.action_space.n
+    else:
+        output_size = 1
+
+    if args.env == "CartPole-v1":
+        input_range = [(-3,3), (-3.5, 3.5), (-0.25, 0.25), (-3.5, 3.5)]
+    else:
+        input_range = np.array(tuple(zip(env.observation_space.low, env.observation_space.high)))
 
     if args.tilecoding:
-        if args.env == "CartPole-v1":
-            tc_range = [(-3,3), (-3.5, 3.5), (-0.25, 0.25), (-3.5, 3.5)]
-        else:
-            tc_range = np.array(tuple(zip(env.observation_space.low, env.observation_space.high)))
         env = TileCodedObservation(
             env,
             env.observation_space.shape[0],
             args.tilecoding_n_tilings,
-            tc_range,
+            input_range,
             [args.tilecoding_n_tiles] * env.observation_space.shape[0],
             is_expanding=(args.net == "expandingLFA"),
             expanding_initial_size=args.tilecoding_n_tilings * 2,
@@ -97,12 +103,29 @@ def main():  # noqa: C901
                                                                args.step_size,
                                                                args.meta_step_size,
                                                                True)
-    elif args.net == "imprinting":
-        raise NotImplementedError
+    elif args.net == "imprintingWide":
+        #TODO provide seed
+        #TODO not used with tc
+        model = FlexibleNN.ImprintingWideNetwork(input_size,
+                                                 output_size,
+                                                 500,
+                                                 input_range,
+                                                 0.00001,
+                                                 args.step_size,
+                                                 args.meta_step_size,
+                                                 True)
     else:
         raise NotImplementedError
 
-    agent = SarsaControlAgent()
+    if (False):
+        agent = SarsaControlAgent()
+    else:
+        if args.env == "MountainCar-v0":
+            expert_agent = MountainCarFixed()
+        else:
+            raise NotImplementedError
+        agent = SarsaPredictionAgent(expert_agent)
+
     agent.train(env, model, args.n_timesteps, args.epsilon, args.gamma, args.lmbda)
     from IPython import embed; embed()
 
