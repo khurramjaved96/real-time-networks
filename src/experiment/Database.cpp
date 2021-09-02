@@ -94,18 +94,35 @@ std::string Database::vec_to_tuple(std::vector<std::string> row, const std::stri
   return tup;
 }
 
+//int Database::add_rows_to_table(const std::string &database_name, const std::string &table,
+//                                const std::vector<std::string> &keys,
+//                                const std::vector<std::vector<std::string>> &values) {
+//  this->connect_and_use(database_name);
+//  mysql_autocommit(this->mysql, 0);
+//  for (auto &value : values) {
+//    std::string query = "INSERT INTO " + table + vec_to_tuple(keys, "") + " VALUES " + vec_to_tuple(value, "'");
+//    mysql_query(this->mysql, &query[0]);
+//  }
+//  mysql_commit(this->mysql);
+//  mysql_close(this->mysql);
+//  return 0;
+//}
+
+// Much faster
 int Database::add_rows_to_table(const std::string &database_name, const std::string &table,
                                 const std::vector<std::string> &keys,
                                 const std::vector<std::vector<std::string>> &values) {
-  this->connect_and_use(database_name);
-  mysql_autocommit(this->mysql, 0);
-  for (auto &value : values) {
-    std::string query = "INSERT INTO " + table + vec_to_tuple(keys, "") + " VALUES " + vec_to_tuple(value, "'");
+    this->connect_and_use(database_name);
+    std::string query = "INSERT INTO " + table + vec_to_tuple(keys, "") + " VALUES ";
+    for (auto &value : values) {
+        query += vec_to_tuple(value, "'");
+        if (&value != &values.back())
+            query += ",";
+    }
     mysql_query(this->mysql, &query[0]);
-  }
-  mysql_commit(this->mysql);
-  mysql_close(this->mysql);
-  return 0;
+    mysql_commit(this->mysql);
+    mysql_close(this->mysql);
+    return 0;
 }
 
 int
