@@ -108,7 +108,7 @@ def main():  # noqa: C901
         #TODO not used with tc
         model = FlexibleNN.ImprintingWideNetwork(input_size,
                                                  output_size,
-                                                 500,
+                                                 5000,
                                                  input_range,
                                                  0.00001,
                                                  args.step_size,

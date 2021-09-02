@@ -689,7 +689,7 @@ void BoundedNeuron::update_activation_bounds(synapse * incoming_synapse) {
   float new_bound_center = overall_dist(gen);
 
   //TODO 0.05 is hparam
-  float new_bound_max_range = (fabs(input_value_bounds.first) + fabs(input_value_bounds.second)) * 0.1;
+  float new_bound_max_range = (fabs(input_value_bounds.first) + fabs(input_value_bounds.second)) * 0.035;
   std::uniform_real_distribution<float> lower_bound_dist(new_bound_center - new_bound_max_range, new_bound_center);
   std::uniform_real_distribution<float> upper_bound_dist(new_bound_center, new_bound_center + new_bound_max_range);
 
@@ -747,6 +747,7 @@ void BoundedNeuron ::update_value(int time_step) {
 
     std::uniform_real_distribution<float> dist(0,1);
     //TODO adjust weight to 00
+    //TODO synapse_utility is -nan
     if (dist(gen) <= this->bound_replacement_prob && it->synapse_utility < it->utility_to_keep)
       update_activation_bounds(it);
     std::pair<float, float>  it_activation_bounds = this->activation_bounds[it->id];

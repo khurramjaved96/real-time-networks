@@ -63,7 +63,7 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
       n->update_activation_bounds(s);
     }
     for (int out_neuron = 0; out_neuron < no_of_output_neurons; out_neuron++) {
-      auto s = new synapse(n, this->output_neurons[out_neuron], 1e-4, step_size);
+      auto s = new synapse(n, this->output_neurons[out_neuron], 1e-5, step_size);
       this->output_synapses.push_back(s);
       this->all_synapses.push_back(s);
       s->set_meta_step_size(meta_step_size);

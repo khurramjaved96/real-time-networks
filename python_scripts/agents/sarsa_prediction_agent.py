@@ -57,15 +57,19 @@ class SarsaPredictionAgent(BaseAgent):
 
             if done:
                 obs = env.reset()
-                MSRE, return_error, return_target = compute_return_error(eps_rewards, eps_predictions, gamma)
+                # first prediction is always 0 for now
+                MSRE, return_error, return_target = compute_return_error(eps_rewards[1:], eps_predictions[1:], gamma)
                 if eps_count == 0:
                     running_MSRE = MSRE
                 else:
                     running_MSRE = 0.999 * running_MSRE + 0.001 * MSRE
                 print(t, eps_count, MSRE, running_MSRE, prediction)
-                #if (eps_count == 1000):
+                #if (eps_count == 100):
                 #    from IPython import embed; embed()
                 #    exit()
+
+                if (eps_count % 1000 == 0):
+                    print(eps_predictions)
 
                 eps_count += 1
                 eps_rewards = []
