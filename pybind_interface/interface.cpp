@@ -7,12 +7,19 @@
 #include "../include/nn/networks/recurrent_state_value_network.h"
 #include "../include/nn/networks/expanding_linear_function_approximator.h"
 #include "../include/nn/networks/imprinting_wide_network.h"
+#include "../include/nn/synapse.h"
+#include "../include/experiment/Metric.h"
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(FlexibleNN, m) {
     py::class_<Network>(m, "Network")
         .def(py::init<>())
+        .def_readonly("output_neurons", &Network::output_neurons)
+        .def_readonly("all_synapses", &Network::all_synapses)
+        .def_readonly("output_synapses", &Network::output_synapses)
+        .def_readonly("all_neurons", &Network::all_neurons)
+        .def_readonly("input_neurons", &Network::input_neurons)
         .def("get_timestep", &Network::get_timestep)
         .def("set_input_values", &Network::set_input_values)
         .def("step", &Network::step)
@@ -65,8 +72,44 @@ PYBIND11_MODULE(FlexibleNN, m) {
 
     py::class_<ImprintingWideNetwork, Network>(m, "ImprintingWideNetwork")
         .def(py::init<int, int, int, std::vector<std::pair<float,float>>, float, float, float, bool>())
+        .def_readonly("bounded_neurons", &ImprintingWideNetwork::bounded_neurons)
         .def("step", &ImprintingWideNetwork::step)
         .def("get_feature_bounds", &ImprintingWideNetwork::get_feature_bounds)
         .def("get_feature_utilities", &ImprintingWideNetwork::get_feature_utilities);
 
+    py::class_<Metric>(m, "Metric")
+        .def(py::init<std::string, std::string, std::vector<std::string>, std::vector<std::string>, std::vector<std::string>>())
+        .def("add_value", &Metric::add_value)
+        .def("add_values", &Metric::add_values);
+
+    py::class_<Database>(m, "Database")
+        .def(py::init<>())
+        .def("create_database", &Database::create_database);
+
+    py::class_<synapse>(m, "synapse")
+        .def_readonly("id", &synapse::id)
+        .def_readonly("is_useless", &synapse::is_useless)
+        .def_readonly("age", &synapse::age)
+        .def_readonly("weight", &synapse::weight)
+        .def_readonly("credit", &synapse::credit)
+        .def_readonly("trace", &synapse::trace)
+        .def_readonly("meta_step_size", &synapse::meta_step_size)
+        .def_readonly("utility_to_keep", &synapse::utility_to_keep)
+        .def_readonly("synapse_utility", &synapse::synapse_utility)
+        .def_readonly("input_neuron", &synapse::input_neuron)
+        .def_readonly("output_neuron", &synapse::output_neuron);
+
+
+    py::class_<Neuron>(m, "Neuron")
+        .def_readonly("id", &Neuron::id)
+        .def_readonly("useless_neuron", &Neuron::useless_neuron)
+        .def_readonly("neuron_age", &Neuron::neuron_age)
+        .def_readonly("is_input_neuron", &Neuron::is_input_neuron)
+        .def_readonly("is_output_neuron", &Neuron::is_output_neuron)
+        .def_readonly("value", &Neuron::value)
+        .def_readonly("average_activation", &Neuron::average_activation)
+        .def_readonly("neuron_utility", &Neuron::neuron_utility)
+        .def_readonly("sum_of_utility_traces", &Neuron::sum_of_utility_traces)
+        .def_readonly("incoming_synapses", &Neuron::incoming_synapses)
+        .def_readonly("outgoing_synapses", &Neuron::outgoing_synapses);
 }

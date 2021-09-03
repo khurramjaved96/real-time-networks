@@ -11,6 +11,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import FlexibleNN
+from FlexibleNN import Metric, Database
+from python_scripts.utils.utils import get_types
 from python_scripts.utils.state_feature.state_feature_util import TileCoder
 from python_scripts.utils.tilecoding_wrapper import TileCodedObservation
 from python_scripts.agents.sarsa_control_agent import SarsaControlAgent
@@ -36,6 +38,9 @@ def main():  # noqa: C901
     parser = argparse.ArgumentParser()
     parser.add_argument( "-r", "--run-id", help="run id (default: datetime)", default=datetime.now().strftime("%m%d%H%M%S"), type=int,)
     parser.add_argument("-s", "--seed", help="seed", default=0, type=int)
+    parser.add_argument( "--db", help="database name", default="", type=str,)
+    parser.add_argument( "--comment", help="comment for the experiment (can be used to filter within one db)", default="", type=str,)
+    parser.add_argument( "-t", "--task", help="task type: prediction, control (default: prediction)", default="prediction", type=str,)
     parser.add_argument( "--net", help="network type: LFA, expandingLFA, imprinting (default: expandingLFA)", type=str, default="expandingLFA",)
     parser.add_argument( "--n-timesteps", help="number of timesteps", default=1000000, type=int)
 
@@ -54,12 +59,27 @@ def main():  # noqa: C901
 
     args = parser.parse_args()
 
+    if args.db == "":
+        print("db name not provided. Not logging results")
+    else:
+        args.db = "hshah1_" + args.db
+        Database().create_database(args.db)
+        run_metric = Metric(args.db, "runs", list(vars(args).keys()), get_types(list(vars(args).values())), ["run_id"])
+        run_metric.add_value([str(v) for v in list(vars(args).values())])
+
+        episodic_metrics = Metric(args.db, "episodic_metrics", ["run_id", "episode", "timestep", "MSRE", "error"],
+                                  ["int", "int", "int", "real", "real"] ,["run_id", "episode"])
+        neuron_metrics = Metric(args.db, "neuron_metrics", ["run_id", "episode", "timestep", "neuron_id", "value", "avg_value", "neuron_utility"],
+                                ["int", "int", "int", "int", "real", "real", "real"], ["run_id", "timestep", "neuron_id"])
+        synapse_metrics = Metric(args.db, "synapse_metrics", ["run_id", "episode", "timestep", "synapse_id", "weight", "step_size", "synapse_utility"],
+                                 ["int", "int", "int", "int", "real", "real", "real"], ["run_id", "timestep", "synapse_id"])
+
     if args.net == "expandingLFA":
         assert args.tilecoding, f"expandingLFA can only be used with tilecoding"
 
     env = gym.make(args.env)
     input_size = env.observation_space.shape[0]
-    if (False):
+    if args.task == "control":
         output_size = env.action_space.n
     else:
         output_size = 1
@@ -117,7 +137,7 @@ def main():  # noqa: C901
     else:
         raise NotImplementedError
 
-    if (False):
+    if args.task == "control":
         agent = SarsaControlAgent()
     else:
         if args.env == "MountainCar-v0":

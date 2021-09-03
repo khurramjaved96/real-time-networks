@@ -29,3 +29,16 @@ def plot_last_n(rewards_vec, predictions_vec, return_target, return_error, n=100
         ax.grid(color='#666666', linestyle='-', alpha=0.5)
     return fig
 
+def get_types(list_of_values):
+    #returns the appropriate datatype needed by the cpp metric class
+    list_of_types = []
+    for value in list_of_values:
+        if type(value) == str:
+            list_of_types.append("VARCHAR(30)")
+        elif type(value) == int:
+            list_of_types.append("int")
+        elif type(value) == float:
+            list_of_types.append("real")
+        else:
+            raise NotImplementedError
+    return list_of_types

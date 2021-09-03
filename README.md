@@ -20,7 +20,7 @@ comment "For running locally".
 ## Instructions for python classic control
 * Install packages `pip install numpy, matplotlib, gym`
 * Use `CMakeListsPy.txt` to compile
-* Use `Python train_gym.py --env-max-step-per-episode 1000` to train
+* Use `Python train_gym.py --env-max-step-per-episode 1000 -t control` to train
   a working mountaincar version.
 
 ## Instructions for python extension
