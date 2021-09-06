@@ -3,28 +3,27 @@ import random
 import numpy as np
 
 from .base_agent import BaseAgent
-#sys.path.append("../utils")
-#from utils import compute_return_error
+
+# sys.path.append("../utils")
+# from utils import compute_return_error
 from ..utils.utils import compute_return_error
 
 
 class SarsaPredictionAgent(BaseAgent):
-    """Implements the sarsa control agent
-
-    """
+    """Implements the sarsa control agent"""
 
     def __init__(self, expert_agent):
         self.expert_agent = expert_agent
 
-    def train(self, env, model, timesteps, epsilon, gamma, lmbda):
-        """ Train the agent
-            Args:
-                _
-            Return:
-                -
+    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger):
+        """Train the agent
+        Args:
+            _
+        Return:
+            -
         """
         done = True
-        #TODO running error
+        # TODO running error
         eps_count = 0
         eps_rewards = []
         eps_predictions = []
@@ -53,22 +52,24 @@ class SarsaPredictionAgent(BaseAgent):
             obs = next_obs
             action = bootstrap_action
             eps_rewards.append(reward)
-            eps_predictions.append(prediction)
+            eps_predictions.append(prediction[0])
+            logger.log_step_metrics(eps_count, t)
 
             if done:
                 obs = env.reset()
                 # first prediction is always 0 for now
                 MSRE, return_error, return_target = compute_return_error(eps_rewards[1:], eps_predictions[1:], gamma)
+                logger.log_eps_metrics(eps_count, t, MSRE, err, eps_predictions[1:], return_target, return_error)
                 if eps_count == 0:
                     running_MSRE = MSRE
                 else:
                     running_MSRE = 0.999 * running_MSRE + 0.001 * MSRE
                 print(t, eps_count, MSRE, running_MSRE, prediction)
-                #if (eps_count == 100):
+                # if (eps_count == 100):
                 #    from IPython import embed; embed()
                 #    exit()
 
-                if (eps_count % 1000 == 0):
+                if eps_count % 1000 == 0:
                     print(eps_predictions)
 
                 eps_count += 1
@@ -77,11 +78,10 @@ class SarsaPredictionAgent(BaseAgent):
 
                 # reset network state
                 # wont trigger any bounded units with this input
-                #TODO this is currently only for a single layer
+                # TODO this is currently only for a single layer
                 model.set_input_values(np.ones_like(obs) * -np.inf)
-                #model.set_input_values(np.zeros_like(obs)) #for some reason behave better at start
+                # model.set_input_values(np.zeros_like(obs)) #for some reason behave better at start
                 model.step()
                 model.introduce_targets(model.read_output_values(), gamma, lmbda)
                 model.reset_trace()
         env.close()
-

@@ -14,23 +14,24 @@ def compute_return_error(cumulants, predictions, gamma):
 
 
 def plot_last_n(rewards_vec, predictions_vec, return_target, return_error, n=1000):
-    fig, axs = plt.subplots(4,figsize=(30, 35))
+    fig, axs = plt.subplots(4, figsize=(30, 35))
     fig.tight_layout()
     axs[0].step(list(range(n)), rewards_vec[-n:])
     axs[1].step(list(range(n)), predictions_vec[-n:])
     axs[2].step(list(range(n)), return_target[-n:])
     axs[3].step(list(range(n)), return_error[-n:])
 
-    axs[0].title.set_text('reward')
-    axs[1].title.set_text('predictions')
-    axs[2].title.set_text('true target')
-    axs[3].title.set_text('error (prediction : true target)')
+    axs[0].title.set_text("reward")
+    axs[1].title.set_text("predictions")
+    axs[2].title.set_text("true target")
+    axs[3].title.set_text("error (prediction : true target)")
     for ax in axs:
-        ax.grid(color='#666666', linestyle='-', alpha=0.5)
+        ax.grid(color="#666666", linestyle="-", alpha=0.5)
     return fig
 
+
 def get_types(list_of_values):
-    #returns the appropriate datatype needed by the cpp metric class
+    # returns the appropriate datatype needed by the cpp metric class
     list_of_types = []
     for value in list_of_values:
         if type(value) == str:

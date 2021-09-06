@@ -3,20 +3,19 @@ import numpy as np
 
 from .base_agent import BaseAgent
 
-class SarsaControlAgent(BaseAgent):
-    """Implements the sarsa control agent
 
-    """
+class SarsaControlAgent(BaseAgent):
+    """Implements the sarsa control agent"""
 
     def __init__(self):
         pass
 
-    def train(self, env, model, timesteps, epsilon, gamma, lmbda):
-        """ Train the agent
-            Args:
-                _
-            Return:
-                -
+    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger):
+        """Train the agent
+        Args:
+            _
+        Return:
+            -
         """
         done = True
         running_eps_reward = -2000
@@ -57,10 +56,9 @@ class SarsaControlAgent(BaseAgent):
             if done:
                 obs = env.reset()
                 running_eps_reward = 0.01 * eps_rewards + 0.99 * running_eps_reward
-                #print(env.expanding_size)
+                # print(env.expanding_size)
                 print(t, eps_count, eps_rewards, running_eps_reward, qvalues)
                 eps_rewards = 0
                 eps_count += 1
                 model.reset_trace()
         env.close()
-
