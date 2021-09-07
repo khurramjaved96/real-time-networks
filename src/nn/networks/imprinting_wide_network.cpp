@@ -20,7 +20,7 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
                                              int width_of_network,
                                              std::vector<std::pair<float,float>> input_ranges,
                                              float bound_replacement_prob,
-                                             float new_bound_max_range,
+                                             float bound_max_range,
                                              float step_size,
                                              float meta_step_size,
                                              bool tidbd,
@@ -34,7 +34,7 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
   std::uniform_real_distribution<float> dist(0, 1);
 
   this->bound_replacement_prob = bound_replacement_prob;
-  this->new_bound_max_range = new_bound_max_range; //was 0.05
+  this->bound_max_range = bound_max_range; //was 0.05
 
   if (input_ranges.size() != no_of_input_features){
     std::cout << "input_ranges shape should be equal to no_of_input_features" << std::endl;
@@ -50,6 +50,7 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
 
 
   this->bias_unit = new BiasNeuron();
+  this->bias_unit->is_mature = true;
   this->all_neurons.push_back(bias_unit);
 
   for (int neuron_no = 0; neuron_no < no_of_input_features; neuron_no++) {
@@ -69,6 +70,7 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
 
   for (auto &output : this->output_neurons) {
     synapse *s = new synapse(bias_unit, output, 0, step_size);
+    s->disable_utility = true;
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
     s->turn_on_idbd();
@@ -91,7 +93,7 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
 //  }
 
   for (int neuron_no = 0; neuron_no < width_of_network; neuron_no++) {
-    auto n = new BoundedNeuron(false, false, this->bound_replacement_prob, this->new_bound_max_range);
+    auto n = new BoundedNeuron(false, false, this->bound_replacement_prob, this->bound_max_range);
     this->all_neurons.push_back(n);
     for (int inp_neuron = 0; inp_neuron < no_of_input_features; inp_neuron++) {
       auto s = new synapse(this->input_neurons[inp_neuron], n, 1, 0);

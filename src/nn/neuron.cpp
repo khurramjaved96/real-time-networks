@@ -51,7 +51,8 @@ void Neuron::update_utility() {
 
   this->sum_of_utility_traces = 0;
   for (auto it: this->incoming_synapses) {
-    this->sum_of_utility_traces += it->synapse_local_utility_trace;
+    if (!it->disable_utility)
+      this->sum_of_utility_traces += it->synapse_local_utility_trace;
   }
 }
 
@@ -673,9 +674,9 @@ LinearNeuron::LinearNeuron(bool is_input, bool is_output) : Neuron(is_input, is_
 //    : RecurrentNeuron(is_input, is_output, recurrent_synapse) {}
 //
 
-BoundedNeuron::BoundedNeuron(bool is_input, bool is_output, float bound_replacement_prob, float new_bound_max_range) : Neuron(is_input, is_output) {
+BoundedNeuron::BoundedNeuron(bool is_input, bool is_output, float bound_replacement_prob, float bound_max_range) : Neuron(is_input, is_output) {
   this->mark_useless_prob = bound_replacement_prob;
-  this->new_bound_max_range = new_bound_max_range;
+  this->bound_max_range = bound_max_range;
 }
 
 void BoundedNeuron::update_activation_bounds(synapse * incoming_synapse) {
@@ -689,7 +690,7 @@ void BoundedNeuron::update_activation_bounds(synapse * incoming_synapse) {
   std::uniform_real_distribution<float> overall_dist(input_value_bounds.first, input_value_bounds.second);
   float new_bound_center = overall_dist(gen);
 
-  float new_bound_max_range = (fabs(input_value_bounds.first) + fabs(input_value_bounds.second)) * new_bound_max_range;
+  float new_bound_max_range = (fabs(input_value_bounds.first) + fabs(input_value_bounds.second)) * bound_max_range;
   std::uniform_real_distribution<float> lower_bound_dist(new_bound_center - new_bound_max_range, new_bound_center);
   std::uniform_real_distribution<float> upper_bound_dist(new_bound_center, new_bound_center + new_bound_max_range);
 

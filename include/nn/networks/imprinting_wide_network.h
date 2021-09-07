@@ -16,7 +16,7 @@ class ImprintingWideNetwork: public Network {
 
   Neuron *bias_unit;
   float bound_replacement_prob;
-  float new_bound_max_range;
+  float bound_max_range;
   std::vector<BoundedNeuron *> bounded_neurons;
 
   ImprintingWideNetwork(int no_of_input_features,
@@ -24,7 +24,7 @@ class ImprintingWideNetwork: public Network {
                         int width_of_network,
                         std::vector<std::pair<float,float>> input_ranges,
                         float bound_replacement_prob,
-                        float new_bound_max_range,
+                        float bound_max_range,
                         float step_size,
                         float meta_step_size,
                         bool tidbd,

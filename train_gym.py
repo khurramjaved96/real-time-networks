@@ -155,17 +155,18 @@ def main():  # noqa: C901
             True,
         )
     elif args.net == "imprintingWide":
-        # TODO provide seed
         # TODO not used with tc
         model = FlexibleNN.ImprintingWideNetwork(
             input_size,
             output_size,
-            1000,
+            10,
             input_range,
-            0.00001,
+            1-0.00001,
+            0.25,
             args.step_size,
             args.meta_step_size,
-            True
+            True,
+            args.seed,
         )
     else:
         raise NotImplementedError
@@ -174,7 +175,7 @@ def main():  # noqa: C901
         log_to_db=(args.db != ""),
         run_id=args.run_id,
         model=model,
-        commit_frequency=10000,
+        commit_frequency=1000,
         episodic_metrics=episodic_metrics,
         neuron_metrics=neuron_metrics,
         synapse_metrics=synapse_metrics,
@@ -192,6 +193,7 @@ def main():  # noqa: C901
     else:
         raise NotImplementedError
 
+    from IPython import embed; embed()
     agent.train(env, model, args.n_timesteps, args.epsilon, args.gamma, args.lmbda, logger)
     logger.commit_logs()
     from IPython import embed; embed()
