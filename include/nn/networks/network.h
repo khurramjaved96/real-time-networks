@@ -62,6 +62,12 @@ class Network {
 
   void reset_trace();
 
+  void print_graph(Neuron *root);
+
+  void viz_graph();
+
+  std::string get_viz_graph();
+
 //    virtual void add_feature() = 0;
 };
 

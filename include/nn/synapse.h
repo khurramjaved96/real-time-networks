@@ -43,6 +43,7 @@ class synapse : public dynamic_elem {
   float log_step_size_tidbd;
   float h_tidbd;
   bool idbd;
+  bool disable_utility;
 
   void set_connected_to_recurrence(bool);
 

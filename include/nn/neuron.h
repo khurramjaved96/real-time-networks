@@ -40,6 +40,7 @@ class Neuron : public dynamic_elem {
   bool is_mature;
   int neuron_age;
   float average_activation;
+  float mark_useless_prob;
 
 
   std::pair<float, float> value_ranges;
@@ -137,7 +138,7 @@ class LeakyRelu : public Neuron {
 
 class BoundedNeuron: public Neuron {
  public:
-  float bound_replacement_prob;
+  float new_bound_max_range;
   // an upper and a lower bound for each incoming synapse id
   std::unordered_map<int, std::pair<float, float>> activation_bounds;
 
@@ -148,7 +149,7 @@ class BoundedNeuron: public Neuron {
 
   float forward(float temp_value);
 
-  BoundedNeuron(bool is_input, bool is_output, float bound_replacement_prob);
+  BoundedNeuron(bool is_input, bool is_output, float bound_replacement_prob, float new_bound_max_range);
 
   void update_value(int time_step);
 };

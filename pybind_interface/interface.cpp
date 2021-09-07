@@ -32,7 +32,10 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def("get_input_size", &Network::get_input_size)
         .def("get_total_synapses", &Network::get_total_synapses)
         .def("get_total_neurons", &Network::get_total_neurons)
-        .def("reset_trace", &ContinuallyAdaptingNetwork::reset_trace);
+        .def("reset_trace", &Network::reset_trace)
+        .def("print_graph", &Network::print_graph)
+        .def("viz_graph", &Network::viz_graph)
+        .def("get_viz_graph", &Network::get_viz_graph);
 
 //        py::class_<LinearFunctionApproximator>(m, "LinearFunctionApproximator")
 //        .def(py::init<int, int, float, float, bool>())
@@ -51,10 +54,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
 
     py::class_<ContinuallyAdaptingNetwork, Network>(m, "ContinuallyAdaptingNetwork")
         .def(py::init<float, int, int>())
-        .def("print_graph", &ContinuallyAdaptingNetwork::print_graph)
-        .def("viz_graph", &ContinuallyAdaptingNetwork::viz_graph)
         .def("set_print_bool", &ContinuallyAdaptingNetwork::set_print_bool)
-        .def("get_viz_graph", &ContinuallyAdaptingNetwork::get_viz_graph)
         .def("introduce_targets", py::overload_cast<std::vector<float>>(&ContinuallyAdaptingNetwork::introduce_targets), "targets")
         .def("introduce_targets", py::overload_cast<std::vector<float>, float, float>(&ContinuallyAdaptingNetwork::introduce_targets), "targets, gamma, lambda")
         .def("introduce_targets", py::overload_cast<std::vector<float>, float, float, std::vector<bool>>(&ContinuallyAdaptingNetwork::introduce_targets), "targets, gamma, lambda, no_grad")
@@ -71,7 +71,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def("step", &ExpandingLinearFunctionApproximator::step);
 
     py::class_<ImprintingWideNetwork, Network>(m, "ImprintingWideNetwork")
-        .def(py::init<int, int, int, std::vector<std::pair<float,float>>, float, float, float, bool>())
+        .def(py::init<int, int, int, std::vector<std::pair<float,float>>, float, float, float, float, bool, int>())
         .def_readonly("bounded_neurons", &ImprintingWideNetwork::bounded_neurons)
         .def("step", &ImprintingWideNetwork::step)
         .def("get_feature_bounds", &ImprintingWideNetwork::get_feature_bounds)

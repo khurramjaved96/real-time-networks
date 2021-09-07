@@ -340,3 +340,33 @@ void Network::reset_trace() {
         s->reset_trace();
       });
 }
+
+
+
+void Network::print_graph(Neuron *root) {
+  for (auto &os : root->outgoing_synapses) {
+    auto current_n = os;
+
+    if (!current_n->print_status) {
+      std::cout << current_n->input_neuron->id << "\t" << current_n->output_neuron->id << "\t"
+                << os->grad_queue.size() << "\t\t" << current_n->input_neuron->past_activations.size()
+                << "\t\t\t" << current_n->output_neuron->past_activations.size() << "\t\t\t"
+                << current_n->input_neuron->error_gradient.size()
+                << "\t\t" << current_n->credit << std::endl;
+      current_n->print_status = true;
+    }
+    print_graph(current_n->output_neuron);
+  }
+}
+
+void Network::viz_graph() {
+  NetworkVisualizer netviz = NetworkVisualizer(this->all_neurons);
+  netviz.generate_dot(this->time_step);
+  netviz.generate_dot_detailed(this->time_step);
+}
+
+std::string Network::get_viz_graph() {
+  NetworkVisualizer netviz = NetworkVisualizer(this->all_neurons);
+  return netviz.get_graph(this->time_step);
+//    netviz.generate_dot_detailed(this->time_step);
+}
