@@ -34,6 +34,7 @@ pybind11_add_module(FlexibleNN src/utils.cpp include/utils.h include/nn/synapse.
         include/nn/dynamic_elem.h src/nn/dynamic_elem.cpp include/nn/networks/recurrent_state_value_network.h
         src/nn/networks/adaptive_recurrent_networks.cpp
         include/nn/networks/network.h src/nn/networks/network.cpp tests/include/feedforward_gradient_testcase.h
+        include/nn/networks/expanding_linear_function_approximator.h src/nn/networks/expanding_linear_function_approximator.cpp
         pybind_interface/network_interface.cpp)
 
 

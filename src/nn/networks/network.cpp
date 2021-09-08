@@ -311,6 +311,26 @@ float Network::introduce_targets(std::vector<float> targets, float gamma, float 
   return error * error;
 }
 
+float Network::introduce_targets(float targets,
+                                                    float gamma,
+                                                    float lambda,
+                                                    std::vector<bool> no_grad) {
+// All output neurons have the same target to satisfy the assert in neuron.cpp
+  float error = 0;
+  if (no_grad.size() != this->output_neurons.size()) {
+    std::cout << "no_grad.size() != output_neurons.size()";
+    exit(1);
+  }
+  for (int counter = 0; counter < no_grad.size(); counter++) {
+    error += this->output_neurons[counter]->introduce_targets(targets,
+                                                              this->time_step,
+                                                              gamma,
+                                                              lambda,
+                                                              no_grad[counter]);
+  }
+  return error * error;
+}
+
 void Network::reset_trace() {
   std::for_each(
       std::execution::par_unseq,
@@ -319,4 +339,34 @@ void Network::reset_trace() {
       [&](synapse *s) {
         s->reset_trace();
       });
+}
+
+
+
+void Network::print_graph(Neuron *root) {
+  for (auto &os : root->outgoing_synapses) {
+    auto current_n = os;
+
+    if (!current_n->print_status) {
+      std::cout << current_n->input_neuron->id << "\t" << current_n->output_neuron->id << "\t"
+                << os->grad_queue.size() << "\t\t" << current_n->input_neuron->past_activations.size()
+                << "\t\t\t" << current_n->output_neuron->past_activations.size() << "\t\t\t"
+                << current_n->input_neuron->error_gradient.size()
+                << "\t\t" << current_n->credit << std::endl;
+      current_n->print_status = true;
+    }
+    print_graph(current_n->output_neuron);
+  }
+}
+
+void Network::viz_graph() {
+  NetworkVisualizer netviz = NetworkVisualizer(this->all_neurons);
+  netviz.generate_dot(this->time_step);
+  netviz.generate_dot_detailed(this->time_step);
+}
+
+std::string Network::get_viz_graph() {
+  NetworkVisualizer netviz = NetworkVisualizer(this->all_neurons);
+  return netviz.get_graph(this->time_step);
+//    netviz.generate_dot_detailed(this->time_step);
 }

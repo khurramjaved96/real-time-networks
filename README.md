@@ -17,7 +17,17 @@ To compile this project locally, you'll have to link your MariaDB C++ connector 
 in `CMakeLists.txt`. You'll also need to uncomment essentially everything under the 
 comment "For running locally".
 
+## Instructions for python classic control
+* Install packages `pip install numpy, matplotlib, gym`
+* Install `pybind11` and adjust the pybind directory in `CMakeListsPy.txt`
+* Use `CMakeListsPy.txt` to compile
+* Use `Python train_gym.py --env-max-step-per-episode 1000 -t control` to train
+  a working mountaincar version.
+
 ## Instructions for python extension
+Note: Not updated to use the latest cpp code. Assumes that the updates
+are one-step late.
+
 * Install pybind11
 * From the project's root directory, use `git clone --recursive https://github.com/DLR-RM/rl-baselines3-zoo`
 * Use CMakeListsPy.txt to compile after adjusting the `include_directories` inside.
