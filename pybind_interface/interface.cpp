@@ -53,7 +53,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
 
 
     py::class_<ContinuallyAdaptingNetwork, Network>(m, "ContinuallyAdaptingNetwork")
-        .def(py::init<float, int, int>())
+        .def(py::init<float, int, int, float>())
         .def("set_print_bool", &ContinuallyAdaptingNetwork::set_print_bool)
         .def("introduce_targets", py::overload_cast<std::vector<float>>(&ContinuallyAdaptingNetwork::introduce_targets), "targets")
         .def("introduce_targets", py::overload_cast<std::vector<float>, float, float>(&ContinuallyAdaptingNetwork::introduce_targets), "targets, gamma, lambda")
