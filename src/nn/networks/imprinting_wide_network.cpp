@@ -73,8 +73,9 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
     s->disable_utility = true;
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
-    s->turn_on_idbd();
     s->set_meta_step_size(meta_step_size);
+    if (tidbd)
+      s->turn_on_idbd();
   }
 
 

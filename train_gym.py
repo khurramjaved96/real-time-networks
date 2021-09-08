@@ -37,7 +37,7 @@ def main():  # noqa: C901
 
     # fmt: off
     parser = argparse.ArgumentParser()
-    parser.add_argument( "-r", "--run-id", help="run id (default: datetime)", default=datetime.now().strftime("%m%d%H%M%S"), type=int,)
+    parser.add_argument( "-r", "--run-id", help="run id (default: datetime)", default=datetime.now().strftime("%d%H%M%S%f")[:-5], type=int,)
     parser.add_argument("-s", "--seed", help="seed", default=0, type=int)
     parser.add_argument( "--db", help="database name", default="", type=str,)
     parser.add_argument( "-c", "--comment", help="comment for the experiment (can be used to filter within one db)", default="", type=str,)
@@ -51,6 +51,10 @@ def main():  # noqa: C901
     parser.add_argument( "--tilecoding", help="Use tilecoded features (0: dont use, 1: use)", default=1, type=int,)
     parser.add_argument( "--tilecoding-n-tilings", help="Number of tilecoding tilings to use (default: 8)", default=8, type=int,)
     parser.add_argument( "--tilecoding-n-tiles", help="Number of tilecoding tiles per dim (default: 8)", default=8, type=int,)
+
+    parser.add_argument( "--net-width", help="initial width of the network (only for net:imprintingWide)", default=100, type=int)
+    parser.add_argument( "--net-prune-prob", help="pruning prob (per step) for the weights after they have matured", default=0.01, type=float)
+    parser.add_argument( "--imprinting-max-bound-range", help="max range for the random bounds that are found around the random center", default=0.1, type=float)
 
     parser.add_argument("--step-size", help="step size", default=0.01, type=float)
     parser.add_argument( "--meta-step-size", help="tidbd step size", default=1e-3, type=float)
@@ -75,7 +79,7 @@ def main():  # noqa: C901
         episodic_metrics = Metric(
             args.db,
             "episodic_metrics",
-            ["run_id", "episode", "timestep", "MSRE", "error"], ["int", "int", "int", "real", "real"],
+            ["run_id", "episode", "timestep", "MSRE", "running_MSRE", "error"], ["int", "int", "int", "real", "real", "real"],
             ["run_id", "episode"],
         )
         neuron_metrics = Metric(
@@ -159,10 +163,10 @@ def main():  # noqa: C901
         model = FlexibleNN.ImprintingWideNetwork(
             input_size,
             output_size,
-            10,
+            args.net_width,
             input_range,
-            1-0.00001,
-            0.25,
+            1-args.net_prune_prob,
+            args.imprinting_max_bound_range,
             args.step_size,
             args.meta_step_size,
             True,
@@ -175,7 +179,7 @@ def main():  # noqa: C901
         log_to_db=(args.db != ""),
         run_id=args.run_id,
         model=model,
-        commit_frequency=1000,
+        commit_frequency=10000,
         episodic_metrics=episodic_metrics,
         neuron_metrics=neuron_metrics,
         synapse_metrics=synapse_metrics,
@@ -193,7 +197,6 @@ def main():  # noqa: C901
     else:
         raise NotImplementedError
 
-    from IPython import embed; embed()
     agent.train(env, model, args.n_timesteps, args.epsilon, args.gamma, args.lmbda, logger)
     logger.commit_logs()
     from IPython import embed; embed()

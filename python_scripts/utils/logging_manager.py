@@ -49,12 +49,15 @@ class LoggingManager:
         self.prediction_log_vec = []
 
     def log_step_metrics(self, episode, timestep):
+        #if timestep % 5000 == 0:
+        #    self.model.viz_graph()
         if not self.log_to_db:
             return
         max_vals = 20000
         # its so expensive to do a self.model.all_synapses or all_neurons at every step
         if timestep % 50000 == 0 and (len(self.model.all_synapses) > max_vals or len(self.model.all_neurons) > max_vals):
             print("Warning (logging_manager.py): Too many values to log! Truncating...")
+
 
         if timestep % 50000 == 0:
             for neuron in self.model.all_neurons[:max_vals]:
@@ -67,11 +70,11 @@ class LoggingManager:
         if timestep % self.commit_frequency == 0:
             self.commit_logs()
 
-    def log_eps_metrics(self, episode, timestep, MSRE, error, predictions, return_target, return_error):
+    def log_eps_metrics(self, episode, timestep, MSRE, running_MSRE, error, predictions, return_target, return_error):
         if not self.log_to_db:
             return
-        if episode % 500 == 0:
-            self.episodic_log_vec.append(self.items_to_str([self.run_id, episode, timestep, MSRE, error]))
+        if episode % 100 == 0:
+            self.episodic_log_vec.append(self.items_to_str([self.run_id, episode, timestep, MSRE, running_MSRE, error]))
 
         if episode % 500 == 0:
             for t, v in enumerate(zip(predictions, return_target, return_error)):

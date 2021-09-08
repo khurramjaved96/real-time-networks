@@ -35,8 +35,8 @@ class SarsaPredictionAgent(BaseAgent):
             model.step()
             prediction = model.read_output_values()
 
-            if done:  # new episode starts
-                action = self.expert_agent.predict(obs)
+            action = self.expert_agent.predict(obs)
+            #action = self.expert_agent.predict(env.unwrapped.state) #tc
 
             next_obs, reward, done, info = env.step(action)
 
@@ -44,13 +44,11 @@ class SarsaPredictionAgent(BaseAgent):
                 new_target = reward
             else:
                 bootstrap_prediction = model.forward_pass_without_side_effects(next_obs)
-                bootstrap_action = self.expert_agent.predict(next_obs)
                 new_target = reward + gamma * bootstrap_prediction[0]
 
             err = model.introduce_targets([new_target], gamma, lmbda)
 
             obs = next_obs
-            action = bootstrap_action
             eps_rewards.append(reward)
             eps_predictions.append(prediction[0])
             logger.log_step_metrics(eps_count, t)
@@ -58,18 +56,19 @@ class SarsaPredictionAgent(BaseAgent):
             if done:
                 obs = env.reset()
                 # first prediction is always 0 for now
-                MSRE, return_error, return_target = compute_return_error(eps_rewards[1:], eps_predictions[1:], gamma)
-                logger.log_eps_metrics(eps_count, t, MSRE, err, eps_predictions[1:], return_target, return_error)
+                MSRE, return_error, return_target = compute_return_error(eps_rewards, eps_predictions, gamma)
                 if eps_count == 0:
                     running_MSRE = MSRE
                 else:
-                    running_MSRE = 0.999 * running_MSRE + 0.001 * MSRE
+                    running_MSRE = 0.99 * running_MSRE + 0.01 * MSRE
+                logger.log_eps_metrics(eps_count, t, MSRE, running_MSRE, err, eps_predictions, return_target, return_error)
                 print(t, eps_count, MSRE, running_MSRE, prediction)
                 # if (eps_count == 100):
                 #    from IPython import embed; embed()
                 #    exit()
 
                 if eps_count % 1000 == 0:
+                    print(return_target)
                     print(eps_predictions)
 
                 eps_count += 1
