@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   TracePatterning tc = TracePatterning(std::pair<int, int>(interval, interval_up),
                                        std::pair<int, int>(interval, interval_up),
                                        std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
-
+//
 //  TraceConditioning tc = TraceConditioning(std::pair<int, int>(interval, interval_up),
 //                                           std::pair<int, int>(interval, interval_up),
 //                                           std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 
   // Initialize our network
   ContinuallyAdaptingNetwork my_network = ContinuallyAdaptingNetwork(my_experiment.get_float_param("step_size"),
-                                                                     my_experiment.get_int_param("seed"), state_size);
+                                                                     my_experiment.get_int_param("seed"), state_size, my_experiment.get_float_param("util"));
 
   std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
 //    my_network.viz_graph();

@@ -19,6 +19,7 @@ class Neuron : public dynamic_elem {
   static int64_t neuron_id_generator;
   static std::mt19937 gen;
   bool is_input_neuron;
+  bool is_bias_unit;
   float value;
   float value_without_activation;
   float old_value;
@@ -95,6 +96,18 @@ class ReluNeuron : public Neuron {
 
 };
 
+class ReluThresholdNeuron : public Neuron {
+ public:
+  float backward(float output_grad);
+
+  float forward(float temp_value);
+
+  float threshold;
+
+  ReluThresholdNeuron(float threshold);
+
+};
+
 class BiasNeuron : public Neuron {
  public:
   BiasNeuron();
@@ -110,6 +123,15 @@ class SigmoidNeuron : public Neuron {
   float forward(float temp_value);
 
   SigmoidNeuron(bool is_input, bool is_output);
+};
+
+class Tanh : public Neuron {
+ public:
+  float backward(float output_grad);
+
+  float forward(float temp_value);
+
+  Tanh(bool is_input, bool is_output);
 };
 
 class LinearNeuron : public Neuron {

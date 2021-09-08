@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <vector>
 #include "../../include/utils.h"
-//
 
 
 
@@ -29,6 +28,7 @@ Neuron::Neuron(bool is_input, bool is_output) {
   references = 0;
   neuron_utility = 0;
   drinking_age = 5000;
+  is_bias_unit = false;
 }
 
 /**
@@ -136,7 +136,9 @@ void Neuron::update_value(int time_step) {
     activation_val.time = time_step - 1;
     activation_val.error_prediction_value = it->input_neuron->shadow_error_prediction;
     it->weight_assignment_past_activations.push(activation_val);
-
+//    if(this->id == 9){
+//      std::cout << this->value_before_firing << " " << it->weight << " " <<  it->input_neuron->value <<std::endl;
+//    }
     if (it->in_shadow_mode) {
       this->shadow_error_prediction_before_firing += it->weight * it->input_neuron->value;
     } else {
@@ -147,39 +149,40 @@ void Neuron::update_value(int time_step) {
 
 void Neuron::normalize_neuron() {
 
-  if (this->neuron_age == this->drinking_age * 4 && !this->is_output_neuron) {
-    this->is_mature = true;
-  }
-
-  if (this->neuron_age == this->drinking_age && !this->is_input_neuron && !this->is_output_neuron) {
-
-    float scale = 1 / this->average_activation;
-    if(scale > 30 or this->average_activation == 0)
-      scale = 30;
-//    std::cout << "Scaling using factor " << scale << std::endl;
-    for (auto it : this->incoming_synapses) {
-      if (!it->get_recurrent_status()) {
-        it->weight = it->weight * scale;
-        it->step_size = 0;
-        it->turn_off_idbd();
-      }
-    }
-
-
-    for (auto out_g : this->outgoing_synapses) {
-//            out_g->weight = out_g->weight * this->average_activation;
-      if (!out_g->get_recurrent_status()) {
-//                std::cout << "Gets here\n";
-//                exit(1);
-        out_g->set_shadow_weight(false);
-        out_g->weight = 0;
-        out_g->step_size = 1e-4;
-        out_g->set_meta_step_size(1e-2);
-        out_g->turn_on_idbd();
-      }
-    }
-//    this->average_activation = 1;
-  }
+//  if (this->neuron_age == this->drinking_age * 4 && !this->is_output_neuron) {
+//    this->is_mature = true;
+//  }
+//
+//  if (this->neuron_age == this->drinking_age && !this->is_input_neuron && !this->is_output_neuron) {
+//
+//    float scale = 1 / this->average_activation;
+//    if(scale > 30 or this->average_activation == 0)
+//      scale = 30;
+//    scale = 1;
+////    std::cout << "Scaling using factor " << scale << std::endl;
+//    for (auto it : this->incoming_synapses) {
+//      if (!it->get_recurrent_status()) {
+//        it->weight = it->weight * scale;
+//        it->step_size = 0;
+//        it->turn_off_idbd();
+//      }
+//    }
+//
+//
+//    for (auto out_g : this->outgoing_synapses) {
+////            out_g->weight = out_g->weight * this->average_activation;
+//      if (!out_g->get_recurrent_status()) {
+////                std::cout << "Gets here\n";
+////                exit(1);
+//        out_g->set_shadow_weight(false);
+//        out_g->weight = 0;
+//        out_g->step_size = 1e-2;
+//        out_g->set_meta_step_size(1e-2);
+//        out_g->turn_on_idbd();
+//      }
+//    }
+////    this->average_activation = 1;
+//  }
 }
 
 bool to_delete_ss(synapse *s) {
@@ -371,7 +374,7 @@ void Neuron::propagate_error() {
     float err = error_vector[0];
     for (int a = 0; a < error_vector.size(); a++) {
       if (error_vector[a] != err) {
-        std::cout << "Weight = " << this->average_activation << std::endl;
+        std::cout << "Average activation = " << this->average_activation << std::endl;
         std::cout << "Neuron.cpp : Shouldn't happen\n";
         std::cout << error_vector[a] << " " << err << std::endl;
         exit(1);
@@ -406,7 +409,7 @@ void Neuron::mark_useless_weights() {
     for (auto &it : this->outgoing_synapses) {
 //      Only delete weights if they're older than 70k steps
       if (it->output_neuron->neuron_age > it->output_neuron->drinking_age * 4 && it->synapse_utility < it->utility_to_keep) {
-        if (dist(gen) > 0.99)
+        if (dist(gen) > 0.9999)
           it->is_useless = true;
       }
     }
@@ -587,8 +590,9 @@ float Neuron::introduce_targets(float target, int time_step, float gamma, float 
 }
 
 float SigmoidNeuron::forward(float temp_value) {
-  this->average_activation = this->average_activation * 0.99 + 0.01 * std::abs(temp_value);
+
   float post_activation = sigmoid(temp_value);
+//  this->average_activation = this->average_activation * 0.99 + 0.01 * std::abs(post_activation);
   return post_activation;
 }
 
@@ -598,7 +602,7 @@ float SigmoidNeuron::backward(float post_activation) {
 
 float Tanh::forward(float temp_value) {
   float post_activation = tanh(temp_value);
-  this->average_activation = this->average_activation * 0.99 + 0.01 * std::abs(post_activation);
+//  this->average_activation = this->average_activation * 0.99 + 0.01 * std::abs(post_activation);
   return post_activation;
 }
 
@@ -608,8 +612,8 @@ float Tanh::backward(float output_grad) {
 
 
 float LinearNeuron::forward(float temp_value) {
-  if (temp_value != 0)
-    this->average_activation = this->average_activation * 0.99 + 0.01 * std::abs(temp_value);
+//  if (temp_value != 0)
+//    this->average_activation = this->average_activation * 0.99 + 0.01 * std::abs(temp_value);
   return temp_value;
 }
 
@@ -618,14 +622,29 @@ float LinearNeuron::backward(float post_activation) {
 }
 
 float ReluNeuron::forward(float temp_value) {
+
   if (temp_value <= 0)
     return 0;
-  this->average_activation = this->average_activation * 0.9 + 0.1 * std::abs(temp_value);
+//  this->average_activation = this->average_activation * 0.9 + 0.1 * std::abs(temp_value);
   return temp_value;
 }
-
+//
 float ReluNeuron::backward(float post_activation) {
   if (post_activation > 0)
+    return 1;
+  else
+    return 0;
+}
+//
+float ReluThresholdNeuron::forward(float temp_value) {
+  if (temp_value <= this->threshold)
+    return 0;
+  this->average_activation = 1;
+  return 1;
+}
+
+float ReluThresholdNeuron::backward(float post_activation) {
+  if (post_activation > threshold)
     return 1;
   else
     return 0;
@@ -653,7 +672,14 @@ float BiasNeuron::backward(float output_grad) {
 }
 
 ReluNeuron::ReluNeuron(bool is_input, bool is_output) : Neuron(is_input, is_output) {}
-BiasNeuron::BiasNeuron() : Neuron(true, false) {
+
+
+ReluThresholdNeuron::ReluThresholdNeuron(float threshold) : Neuron(false, false) {
+  this->threshold = threshold;
+}
+
+BiasNeuron::BiasNeuron() : Neuron(false, false) {
+  this->is_bias_unit = true;
   this->average_activation = 1;
 }
 
