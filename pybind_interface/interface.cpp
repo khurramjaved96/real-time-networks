@@ -74,6 +74,8 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def(py::init<int, int, int, std::vector<std::pair<float,float>>, float, float, float, float, bool, int>())
         .def_readonly("bounded_neurons", &ImprintingWideNetwork::bounded_neurons)
         .def("step", &ImprintingWideNetwork::step)
+        .def("get_reassigned_bounded_neurons", &ImprintingWideNetwork::get_reassigned_bounded_neurons)
+        .def("replace_lowest_utility_bounded_unit", &ImprintingWideNetwork::replace_lowest_utility_bounded_unit)
         .def("get_feature_bounds", &ImprintingWideNetwork::get_feature_bounds)
         .def("get_feature_utilities", &ImprintingWideNetwork::get_feature_utilities);
 
@@ -112,4 +114,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def_readonly("sum_of_utility_traces", &Neuron::sum_of_utility_traces)
         .def_readonly("incoming_synapses", &Neuron::incoming_synapses)
         .def_readonly("outgoing_synapses", &Neuron::outgoing_synapses);
+
+    py::class_<BoundedNeuron, Neuron>(m, "BoundedNeuron")
+        .def_readonly("num_times_reassigned", &BoundedNeuron::num_times_reassigned);
 }

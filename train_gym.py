@@ -198,6 +198,17 @@ def main():  # noqa: C901
         raise NotImplementedError
 
     agent.train(env, model, args.n_timesteps, args.epsilon, args.gamma, args.lmbda, logger)
+
+
+    if args.db:
+        bound_replacement_metrics = Metric(
+            args.db,
+            "bound_replacement_metrics",
+            ["run_id", "neuron_id", "neuron_age", "neuron_utility", "output_weight", "num_times_replaced" ], ["int", "int", "int", "real", "real", "int"],
+            ["run_id", "neuron_id"],
+        )
+        logger.log_synapse_replacement(bound_replacement_metrics)
+
     logger.commit_logs()
     from IPython import embed; embed()
 

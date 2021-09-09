@@ -115,6 +115,7 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
   }
 }
 
+
 std::vector<std::vector<std::pair<float, float>>> ImprintingWideNetwork::get_feature_bounds(){
   std::vector<std::vector<std::pair<float,float>>> all_bounds;
   for (auto neuron_it : this->all_neurons){
@@ -128,6 +129,7 @@ std::vector<std::vector<std::pair<float, float>>> ImprintingWideNetwork::get_fea
   return all_bounds;
 }
 
+
 std::vector<float> ImprintingWideNetwork::get_feature_utilities(){
   std::vector<float> feature_utilities;
   for (auto neuron_it : this->all_neurons)
@@ -137,7 +139,69 @@ std::vector<float> ImprintingWideNetwork::get_feature_utilities(){
 }
 
 
+BoundedNeuron* ImprintingWideNetwork::get_poorest_bounded_unit(){
+  // returns the BoundedNeuron that has the lowest utility and is_mature
+  float lowest_utility = 1e+10;
+  BoundedNeuron *poorest_neuron = NULL;
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        if (BoundedNeuron *ptr = dynamic_cast<BoundedNeuron*>(n)){
+          if (ptr->neuron_utility < lowest_utility and ptr->is_mature){
+            lowest_utility = ptr->neuron_utility;
+            poorest_neuron = ptr;
+          }
+        }
+      });
+  return poorest_neuron;
+}
+
+
+std::vector <BoundedNeuron *> ImprintingWideNetwork::get_reassigned_bounded_neurons(){
+  std::vector <BoundedNeuron *> neurons;
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        if (BoundedNeuron *ptr = dynamic_cast<BoundedNeuron*>(n)){
+          if (ptr->num_times_reassigned > 1)
+            neurons.push_back(ptr);
+        }
+      });
+  return neurons;
+}
+
+
+void ImprintingWideNetwork::replace_lowest_utility_bounded_unit(){
+  std::uniform_real_distribution<float> dist(0, 1);
+  if (dist(this->mt) > this->bound_replacement_prob){
+    auto n = get_poorest_bounded_unit();
+    if (n == NULL)
+      return;
+
+    std::cout << "Replacing bounds!" << std::endl;
+    for (auto &it : n->incoming_synapses)
+      n->update_activation_bounds(it);
+
+    // Reset the statistics of the neuron and the outgoig synapse
+    for (auto &it : n->outgoing_synapses){
+      it->credit = 0;
+      it->weight = 0.0001 * dist(this->mt);
+      it->trace = 0;
+      it->synapse_utility = 0;
+      it->meta_step_size = 1e-3;
+    }
+    n->neuron_age = 0;
+    n->is_mature = false;
+  }
+}
+
+
 void ImprintingWideNetwork::step() {
+  this->replace_lowest_utility_bounded_unit();
   //  Calculate and temporarily hold our next neuron values.
   std::for_each(
       std::execution::par_unseq,
@@ -196,61 +260,61 @@ void ImprintingWideNetwork::step() {
       });
 
 //  Mark all is_useless weights and neurons for deletion
-  std::for_each(
-      std::execution::par_unseq,
-      all_neurons.begin(),
-      all_neurons.end(),
-      [&](Neuron *n) {
-        n->mark_useless_weights();
-      });
-
-//  Delete our is_useless weights and neurons
-  std::for_each(
-      all_neurons.begin(),
-      all_neurons.end(),
-      [&](Neuron *n) {
-        n->prune_useless_weights();
-      });
-
-//  For all synapses, if the synapse is is_useless set it has 0 references. We remove it.
-
-  std::for_each(
-      std::execution::par_unseq,
-      this->all_synapses.begin(),
-      this->all_synapses.end(),
-      [&](synapse *s) {
-        if (s->is_useless) {
-          s->decrement_reference();
-        }
-      });
-  auto it = std::remove_if(this->all_synapses.begin(), this->all_synapses.end(), to_delete_s);
-  this->all_synapses.erase(it, this->all_synapses.end());
-
-//  Similarly for all outgoing synapses and neurons.
-  std::for_each(
-      std::execution::par_unseq,
-      this->output_synapses.begin(),
-      this->output_synapses.end(),
-      [&](synapse *s) {
-        if (s->is_useless) {
-          s->decrement_reference();
-        }
-      });
-  it = std::remove_if(this->output_synapses.begin(), this->output_synapses.end(), to_delete_s);
-  this->output_synapses.erase(it, this->output_synapses.end());
-
-  std::for_each(
-      std::execution::par_unseq,
-      this->all_neurons.begin(),
-      this->all_neurons.end(),
-      [&](Neuron *s) {
-        if (s->useless_neuron) {
-          s->decrement_reference();
-        }
-      });
-
-  auto it_n = std::remove_if(this->all_neurons.begin(), this->all_neurons.end(), to_delete_n);
-  this->all_neurons.erase(it_n, this->all_neurons.end());
-
+//  std::for_each(
+//      std::execution::par_unseq,
+//      all_neurons.begin(),
+//      all_neurons.end(),
+//      [&](Neuron *n) {
+//        n->mark_useless_weights();
+//      });
+//
+////  Delete our is_useless weights and neurons
+//  std::for_each(
+//      all_neurons.begin(),
+//      all_neurons.end(),
+//      [&](Neuron *n) {
+//        n->prune_useless_weights();
+//      });
+//
+////  For all synapses, if the synapse is is_useless set it has 0 references. We remove it.
+//
+//  std::for_each(
+//      std::execution::par_unseq,
+//      this->all_synapses.begin(),
+//      this->all_synapses.end(),
+//      [&](synapse *s) {
+//        if (s->is_useless) {
+//          s->decrement_reference();
+//        }
+//      });
+//  auto it = std::remove_if(this->all_synapses.begin(), this->all_synapses.end(), to_delete_s);
+//  this->all_synapses.erase(it, this->all_synapses.end());
+//
+////  Similarly for all outgoing synapses and neurons.
+//  std::for_each(
+//      std::execution::par_unseq,
+//      this->output_synapses.begin(),
+//      this->output_synapses.end(),
+//      [&](synapse *s) {
+//        if (s->is_useless) {
+//          s->decrement_reference();
+//        }
+//      });
+//  it = std::remove_if(this->output_synapses.begin(), this->output_synapses.end(), to_delete_s);
+//  this->output_synapses.erase(it, this->output_synapses.end());
+//
+//  std::for_each(
+//      std::execution::par_unseq,
+//      this->all_neurons.begin(),
+//      this->all_neurons.end(),
+//      [&](Neuron *s) {
+//        if (s->useless_neuron) {
+//          s->decrement_reference();
+//        }
+//      });
+//
+//  auto it_n = std::remove_if(this->all_neurons.begin(), this->all_neurons.end(), to_delete_n);
+//  this->all_neurons.erase(it_n, this->all_neurons.end());
+//
   this->time_step++;
 }

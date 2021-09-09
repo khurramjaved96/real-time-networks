@@ -160,6 +160,7 @@ class LeakyRelu : public Neuron {
 
 class BoundedNeuron: public Neuron {
  public:
+  int num_times_reassigned;
   float bound_max_range;
   // an upper and a lower bound for each incoming synapse id
   std::unordered_map<int, std::pair<float, float>> activation_bounds;

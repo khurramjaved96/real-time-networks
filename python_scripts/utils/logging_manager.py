@@ -80,4 +80,11 @@ class LoggingManager:
             for t, v in enumerate(zip(predictions, return_target, return_error)):
                 self.prediction_log_vec.append(self.items_to_str([self.run_id, episode, t, MSRE, v[0], v[1], v[2], "[]"]))
 
+    def log_synapse_replacement(self, bound_replacement_metrics):
+        bound_replacement_vec = []
+        replaced_neurons = self.model.get_reassigned_bounded_neurons()
+        for n in replaced_neurons:
+            bound_replacement_vec.append(self.items_to_str([self.run_id, n.id, n.neuron_age, n.neuron_utility, n.outgoing_synapses[0].weight, n.num_times_reassigned]))
+            bound_replacement_metrics.add_values(bound_replacement_vec)
+
 

@@ -714,11 +714,13 @@ LinearNeuron::LinearNeuron(bool is_input, bool is_output) : Neuron(is_input, is_
 //
 
 BoundedNeuron::BoundedNeuron(bool is_input, bool is_output, float bound_replacement_prob, float bound_max_range) : Neuron(is_input, is_output) {
+  this->num_times_reassigned = -1;
   this->mark_useless_prob = bound_replacement_prob;
   this->bound_max_range = bound_max_range;
 }
 
 void BoundedNeuron::update_activation_bounds(synapse * incoming_synapse) {
+  this->num_times_reassigned += 1;
   // find a random center point and the find random lower and upper bounds that are close to the center point.
   if (incoming_synapse->weight != 1){
     std::cout << "neuron.cpp: BoundedNeuron bounds are based on incoming neuron value ranges" << std::endl;
