@@ -52,6 +52,7 @@ class SarsaPredictionAgent(BaseAgent):
             eps_rewards.append(reward)
             eps_predictions.append(prediction[0])
             logger.log_step_metrics(eps_count, t)
+            logger.log_bounded_unit_activity(eps_count, t)
 
             if done:
                 obs = env.reset()
@@ -62,14 +63,6 @@ class SarsaPredictionAgent(BaseAgent):
                 else:
                     running_MSRE = 0.99 * running_MSRE + 0.01 * MSRE
                 logger.log_eps_metrics(eps_count, t, MSRE, running_MSRE, err, eps_predictions, return_target, return_error)
-                print(t, eps_count, MSRE, running_MSRE, prediction)
-                # if (eps_count == 100):
-                #    from IPython import embed; embed()
-                #    exit()
-
-                if eps_count % 1000 == 0:
-                    print(return_target)
-                    print(eps_predictions)
 
                 eps_count += 1
                 eps_rewards = []

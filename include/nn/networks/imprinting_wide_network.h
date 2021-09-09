@@ -33,6 +33,7 @@ class ImprintingWideNetwork: public Network {
 //  float introduce_targets(std::vector<float> targets);
 
   std::vector <BoundedNeuron *> get_reassigned_bounded_neurons();
+  int count_active_bounded_units();
   BoundedNeuron* get_poorest_bounded_unit();
   void replace_lowest_utility_bounded_unit();
   void step();

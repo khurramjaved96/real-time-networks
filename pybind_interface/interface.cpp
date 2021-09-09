@@ -75,6 +75,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def_readonly("bounded_neurons", &ImprintingWideNetwork::bounded_neurons)
         .def("step", &ImprintingWideNetwork::step)
         .def("get_reassigned_bounded_neurons", &ImprintingWideNetwork::get_reassigned_bounded_neurons)
+        .def("count_active_bounded_units", &ImprintingWideNetwork::count_active_bounded_units)
         .def("replace_lowest_utility_bounded_unit", &ImprintingWideNetwork::replace_lowest_utility_bounded_unit)
         .def("get_feature_bounds", &ImprintingWideNetwork::get_feature_bounds)
         .def("get_feature_utilities", &ImprintingWideNetwork::get_feature_utilities);

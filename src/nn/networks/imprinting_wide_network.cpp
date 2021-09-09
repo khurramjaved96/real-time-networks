@@ -34,7 +34,7 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
   std::uniform_real_distribution<float> dist(0, 1);
 
   this->bound_replacement_prob = bound_replacement_prob;
-  this->bound_max_range = bound_max_range; //was 0.05
+  this->bound_max_range = bound_max_range;
 
   if (input_ranges.size() != no_of_input_features){
     std::cout << "input_ranges shape should be equal to no_of_input_features" << std::endl;
@@ -68,12 +68,13 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
     this->all_neurons.push_back(n);
   }
 
+  // TODO step sizes (bias is disabled)
   for (auto &output : this->output_neurons) {
-    synapse *s = new synapse(bias_unit, output, 0, step_size);
+    synapse *s = new synapse(bias_unit, output, 0,0);
     s->disable_utility = true;
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
-    s->set_meta_step_size(meta_step_size);
+    s->set_meta_step_size(0);
     if (tidbd)
       s->turn_on_idbd();
   }
@@ -100,7 +101,7 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
       auto s = new synapse(this->input_neurons[inp_neuron], n, 1, 0);
       s->disable_utility = true; // dont want to mark_useless or propagate utility to these
       this->all_synapses.push_back(s);
-      n->update_activation_bounds(s);
+      n->update_activation_bounds(s, 1e+10);
       s->set_meta_step_size(0);
     }
     for (int out_neuron = 0; out_neuron < no_of_output_neurons; out_neuron++) {
@@ -140,8 +141,8 @@ std::vector<float> ImprintingWideNetwork::get_feature_utilities(){
 
 
 BoundedNeuron* ImprintingWideNetwork::get_poorest_bounded_unit(){
-  // returns the BoundedNeuron that has the lowest utility and is_mature
-  float lowest_utility = 1e+10;
+  // returns the BoundedNeuron that has the lowest weight and is_mature
+  float lowest_weight = 1e+10;
   BoundedNeuron *poorest_neuron = NULL;
   std::for_each(
       std::execution::par_unseq,
@@ -149,8 +150,8 @@ BoundedNeuron* ImprintingWideNetwork::get_poorest_bounded_unit(){
       all_neurons.end(),
       [&](Neuron *n) {
         if (BoundedNeuron *ptr = dynamic_cast<BoundedNeuron*>(n)){
-          if (ptr->neuron_utility < lowest_utility and ptr->is_mature){
-            lowest_utility = ptr->neuron_utility;
+          if (fabs(ptr->outgoing_synapses[0]->weight) < lowest_weight and ptr->is_mature){
+            lowest_weight = fabs(ptr->outgoing_synapses[0]->weight);
             poorest_neuron = ptr;
           }
         }
@@ -160,6 +161,7 @@ BoundedNeuron* ImprintingWideNetwork::get_poorest_bounded_unit(){
 
 
 std::vector <BoundedNeuron *> ImprintingWideNetwork::get_reassigned_bounded_neurons(){
+  // returns the bounded_units that have had their bounds reassigned
   std::vector <BoundedNeuron *> neurons;
   std::for_each(
       std::execution::par_unseq,
@@ -167,26 +169,51 @@ std::vector <BoundedNeuron *> ImprintingWideNetwork::get_reassigned_bounded_neur
       all_neurons.end(),
       [&](Neuron *n) {
         if (BoundedNeuron *ptr = dynamic_cast<BoundedNeuron*>(n)){
-          if (ptr->num_times_reassigned > 1)
+          if (ptr->num_times_reassigned > 0)
             neurons.push_back(ptr);
         }
       });
   return neurons;
 }
 
+int ImprintingWideNetwork::count_active_bounded_units(){
+  int active_count = 0;
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        if (BoundedNeuron *ptr = dynamic_cast<BoundedNeuron*>(n)){
+          if (ptr->value == 1)
+            active_count += 1;
+        }
+      });
+  return active_count;
+}
 
 void ImprintingWideNetwork::replace_lowest_utility_bounded_unit(){
+  // Replaces bounds for each of its incoming connections
+  // and resets the unit and outgoing synapse statistics
   std::uniform_real_distribution<float> dist(0, 1);
   if (dist(this->mt) > this->bound_replacement_prob){
     auto n = get_poorest_bounded_unit();
     if (n == NULL)
       return;
 
-    std::cout << "Replacing bounds!" << std::endl;
-    for (auto &it : n->incoming_synapses)
-      n->update_activation_bounds(it);
+//    std::cout << std::endl;
+//    std::cout << "Replacing bounds!" << std::endl;
+    n->num_times_reassigned += 1;
+//    std::cout << "nutil: " << n->neuron_utility << " sutil: " << n->outgoing_synapses[0]->synapse_utility << " stotalutil: " << n->outgoing_synapses[0]->synapse_local_utility_trace << std::endl;
+//    std::cout << "out_w: " << n->outgoing_synapses[0]->weight;
+    for (auto &it : n->incoming_synapses){
+//      std::cout << "val: " << it->input_neuron->value << "*" << it->weight << std::endl;
+//      std::cout << "BEFORE: " << n->activation_bounds[it->id].first << ":" << n->activation_bounds[it->id].second << std::endl;
+      n->update_activation_bounds(it, it->input_neuron->value * it->weight); // it->weight = 1
+//      std::cout << "AFTER: " << n->activation_bounds[it->id].first << ":" << n->activation_bounds[it->id].second << std::endl;
+    }
 
     // Reset the statistics of the neuron and the outgoig synapse
+    // TODO should I reset synapse age?
     for (auto &it : n->outgoing_synapses){
       it->credit = 0;
       it->weight = 0.0001 * dist(this->mt);

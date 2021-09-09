@@ -167,6 +167,7 @@ class BoundedNeuron: public Neuron {
 
   //TODO also should handle removal of synapses?
   void update_activation_bounds(synapse * incoming_synapse);
+  void update_activation_bounds(synapse * incoming_synapse, float new_bound_center);
 
   float backward(float output_grad);
 

@@ -103,6 +103,13 @@ def main():  # noqa: C901
             ["int", "int", "int", "real", "real", "real", "real", "JSON"],
             ["run_id", "episode", "timestep"],
         )
+        bounded_unit_metrics= Metric(
+            args.db,
+            "bounded_unit_metrics",
+            ["run_id", "episode", "timestep", "count_active"],
+            ["int", "int", "int", "int"],
+            ["run_id", "timestep"],
+        )
     # fmt: on
 
     if args.net == "expandingLFA":
@@ -184,6 +191,7 @@ def main():  # noqa: C901
         neuron_metrics=neuron_metrics,
         synapse_metrics=synapse_metrics,
         prediction_metrics=prediction_metrics,
+        bounded_unit_metrics=bounded_unit_metrics,
     )
 
     if args.task == "control":
@@ -210,8 +218,6 @@ def main():  # noqa: C901
         logger.log_synapse_replacement(bound_replacement_metrics)
 
     logger.commit_logs()
-    from IPython import embed; embed()
-
 
 if __name__ == "__main__":
     main()
