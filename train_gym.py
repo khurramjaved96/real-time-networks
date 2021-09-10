@@ -70,6 +70,7 @@ def main():  # noqa: C901
         neuron_metrics = None
         synapse_metrics = None
         prediction_metrics = None
+        bounded_unit_metrics = None
     else:
         args.db = "hshah1_" + args.db
         Database().create_database(args.db)
