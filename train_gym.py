@@ -5,6 +5,7 @@ import importlib
 import os
 import sys
 from datetime import datetime
+from time import sleep
 
 import gym
 import numpy as np
@@ -35,6 +36,9 @@ def set_random_seed(seed: int, env: gym.wrappers.time_limit.TimeLimit) -> None:
 
 def main():  # noqa: C901
 
+    # make sure run_ids dont overlap when using parallel
+    sleep(random.random()*10)
+
     # fmt: off
     parser = argparse.ArgumentParser()
     parser.add_argument( "-r", "--run-id", help="run id (default: datetime)", default=datetime.now().strftime("%d%H%M%S%f")[:-5], type=int,)
@@ -55,6 +59,7 @@ def main():  # noqa: C901
     parser.add_argument( "--net-width", help="initial width of the network (only for net:imprintingWide)", default=100, type=int)
     parser.add_argument( "--net-prune-prob", help="pruning prob (per step) for the weights after they have matured", default=0.01, type=float)
     parser.add_argument( "--imprinting-max-bound-range", help="max range for the random bounds that are found around the random center", default=0.1, type=float)
+    parser.add_argument( "--use-imprinting", help="Use imprinted features instead of random (0: dont use, 1: use)", default=1, type=int,)
 
     parser.add_argument("--step-size", help="step size", default=0.01, type=float)
     parser.add_argument( "--meta-step-size", help="tidbd step size", default=1e-3, type=float)
@@ -179,6 +184,7 @@ def main():  # noqa: C901
             args.meta_step_size,
             True,
             args.seed,
+            bool(args.use_imprinting),
         )
     else:
         raise NotImplementedError

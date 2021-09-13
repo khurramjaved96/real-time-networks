@@ -71,7 +71,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def("step", &ExpandingLinearFunctionApproximator::step);
 
     py::class_<ImprintingWideNetwork, Network>(m, "ImprintingWideNetwork")
-        .def(py::init<int, int, int, std::vector<std::pair<float,float>>, float, float, float, float, bool, int>())
+        .def(py::init<int, int, int, std::vector<std::pair<float,float>>, float, float, float, float, bool, int, bool>())
         .def_readonly("bounded_neurons", &ImprintingWideNetwork::bounded_neurons)
         .def("step", &ImprintingWideNetwork::step)
         .def("get_reassigned_bounded_neurons", &ImprintingWideNetwork::get_reassigned_bounded_neurons)

@@ -24,7 +24,8 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
                                              float step_size,
                                              float meta_step_size,
                                              bool tidbd,
-                                             int seed) {
+                                             int seed,
+                                             bool use_imprinting) {
 
 
   // TODO increment references not handled
@@ -35,6 +36,7 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
 
   this->bound_replacement_prob = bound_replacement_prob;
   this->bound_max_range = bound_max_range;
+  this->use_imprinting = use_imprinting;
 
   if (input_ranges.size() != no_of_input_features){
     std::cout << "input_ranges shape should be equal to no_of_input_features" << std::endl;
@@ -49,9 +51,9 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
   }
 
 
-  this->bias_unit = new BiasNeuron();
-  this->bias_unit->is_mature = true;
-  this->all_neurons.push_back(bias_unit);
+//  this->bias_unit = new BiasNeuron();
+//  this->bias_unit->is_mature = true;
+//  this->all_neurons.push_back(bias_unit);
 
   for (int neuron_no = 0; neuron_no < no_of_input_features; neuron_no++) {
     auto n = new LinearNeuron(true, false);
@@ -68,16 +70,16 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
     this->all_neurons.push_back(n);
   }
 
-  // TODO step sizes (bias is disabled)
-  for (auto &output : this->output_neurons) {
-    synapse *s = new synapse(bias_unit, output, 0,0);
-    s->disable_utility = true;
-    this->all_synapses.push_back(s);
-    this->output_synapses.push_back(s);
-    s->set_meta_step_size(0);
-    if (tidbd)
-      s->turn_on_idbd();
-  }
+//  // TODO step sizes (bias is disabled)
+//  for (auto &output : this->output_neurons) {
+//    synapse *s = new synapse(bias_unit, output, 0,0);
+//    s->disable_utility = true;
+//    this->all_synapses.push_back(s);
+//    this->output_synapses.push_back(s);
+//    s->set_meta_step_size(0);
+//   if (tidbd)
+//      s->turn_on_idbd();
+//  }
 
 
 //  Connect our input and output neurons with synapses.
@@ -144,18 +146,14 @@ BoundedNeuron* ImprintingWideNetwork::get_poorest_bounded_unit(){
   // returns the BoundedNeuron that has the lowest weight and is_mature
   float lowest_weight = 1e+10;
   BoundedNeuron *poorest_neuron = NULL;
-  std::for_each(
-      std::execution::par_unseq,
-      all_neurons.begin(),
-      all_neurons.end(),
-      [&](Neuron *n) {
-        if (BoundedNeuron *ptr = dynamic_cast<BoundedNeuron*>(n)){
-          if (fabs(ptr->outgoing_synapses[0]->weight) < lowest_weight and ptr->is_mature){
-            lowest_weight = fabs(ptr->outgoing_synapses[0]->weight);
-            poorest_neuron = ptr;
-          }
-        }
-      });
+  for(auto n : this->all_neurons){
+    if (BoundedNeuron *ptr = dynamic_cast<BoundedNeuron*>(n)){
+      if (fabs(ptr->outgoing_synapses[0]->weight) < lowest_weight and ptr->is_mature){
+        lowest_weight = fabs(ptr->outgoing_synapses[0]->weight);
+        poorest_neuron = ptr;
+      }
+    }
+  }
   return poorest_neuron;
 }
 
@@ -177,6 +175,7 @@ std::vector <BoundedNeuron *> ImprintingWideNetwork::get_reassigned_bounded_neur
 }
 
 int ImprintingWideNetwork::count_active_bounded_units(){
+  // counts the number of bounded units that are active in this timestep
   int active_count = 0;
   std::for_each(
       std::execution::par_unseq,
@@ -200,16 +199,12 @@ void ImprintingWideNetwork::replace_lowest_utility_bounded_unit(){
     if (n == NULL)
       return;
 
-//    std::cout << std::endl;
-//    std::cout << "Replacing bounds!" << std::endl;
     n->num_times_reassigned += 1;
-//    std::cout << "nutil: " << n->neuron_utility << " sutil: " << n->outgoing_synapses[0]->synapse_utility << " stotalutil: " << n->outgoing_synapses[0]->synapse_local_utility_trace << std::endl;
-//    std::cout << "out_w: " << n->outgoing_synapses[0]->weight;
     for (auto &it : n->incoming_synapses){
-//      std::cout << "val: " << it->input_neuron->value << "*" << it->weight << std::endl;
-//      std::cout << "BEFORE: " << n->activation_bounds[it->id].first << ":" << n->activation_bounds[it->id].second << std::endl;
-      n->update_activation_bounds(it, it->input_neuron->value * it->weight); // it->weight = 1
-//      std::cout << "AFTER: " << n->activation_bounds[it->id].first << ":" << n->activation_bounds[it->id].second << std::endl;
+      if (this->use_imprinting)
+        n->update_activation_bounds(it, it->input_neuron->value * it->weight);
+      else
+        n->update_activation_bounds(it); //assign random bounds
     }
 
     // Reset the statistics of the neuron and the outgoig synapse
