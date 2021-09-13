@@ -215,6 +215,8 @@ void ImprintingWideNetwork::replace_lowest_utility_bounded_unit(){
       it->trace = 0;
       it->synapse_utility = 0;
       it->meta_step_size = 1e-3;
+      it->l2_norm_meta_gradient = 100;
+      it->age = 0;
     }
     n->neuron_age = 0;
     n->is_mature = false;
