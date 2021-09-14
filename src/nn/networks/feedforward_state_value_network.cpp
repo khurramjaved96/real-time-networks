@@ -165,21 +165,21 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size, float utility_to_k
 
 //
 //
-    auto bias_syanpse = new synapse(this->bias_unit, new_feature,  -2.5, 0);
-    bias_syanpse->turn_on_idbd();
-    bias_syanpse->set_meta_step_size(0);
-    bias_syanpse->block_gradients();
-    bias_syanpse->increment_reference();
-    bias_syanpse->set_utility_to_keep(utility_to_keep);
-    this->all_synapses.push_back(bias_syanpse);
-    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_syanpse));
+//    auto bias_syanpse = new synapse(this->bias_unit, new_feature,  dist(this->mt)*0.1, step_size);
+//    bias_syanpse->turn_on_idbd();
+//    bias_syanpse->set_meta_step_size(1e-3);
+//    bias_syanpse->block_gradients();
+//    bias_syanpse->increment_reference();
+//    bias_syanpse->set_utility_to_keep(utility_to_keep);
+//    this->all_synapses.push_back(bias_syanpse);
+//    this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_syanpse));
 
 //      w.p. perc, attach a random neuron (that's not an output neuron) to this neuron
     float perc = dist_u(mt);
     float try_counter = 0;
     float total_features_selected = 0;
     int features_to_add = max_features(mt);
-    features_to_add = 3;
+//    features_to_add = 3;
     std::vector<int> pos_added;
     while(true){
       try_counter ++;
