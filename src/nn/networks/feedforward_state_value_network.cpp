@@ -66,7 +66,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
 //  Initialize all output neurons.
 //  Similarly, we fix an output size to 1.
 
-  int output_neuros = 3;
+  int output_neuros = 1;
   for (int counter = 0; counter < output_neuros; counter++) {
     auto n = new LinearNeuron(false, true);
     n->is_mature = true;
