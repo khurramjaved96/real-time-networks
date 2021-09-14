@@ -144,10 +144,10 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size, float utility_to_k
 //  Limit our number of synapses to 1m
   if (this->all_synapses.size() < 1000000) {
 //        std::normal_distribution<float> dist(0, 1);
-    std::uniform_int_distribution<int> drinking_dist(1000, 80000);
-    std::uniform_int_distribution<int> random_int(1, 7);
-    std::uniform_int_distribution<int> max_features(1, 500);
-    std::uniform_real_distribution<float> dist(-2, 2);
+    std::uniform_int_distribution<int> drinking_dist(1000, 40000);
+    std::uniform_int_distribution<int> random_int(0, this->all_neurons.size());
+    std::uniform_int_distribution<int> max_features(1, 100);
+    std::uniform_real_distribution<float> dist(-3, 3);
     std::uniform_real_distribution<float> dist_u(0, 1);
 //    std::uniform_int_distribution<int> dist_u(0, 1);
     std::uniform_real_distribution<float> dist_recurren(0, 0.99);
