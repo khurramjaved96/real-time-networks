@@ -222,14 +222,14 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size, float utility_to_k
 
     synapse *output_s_temp;
     if (dist(this->mt) > 0) {
-      output_s_temp = new synapse(new_feature, this->output_neurons[0], 0, step_size);
+      output_s_temp = new synapse(new_feature, this->output_neurons[0], 1, 0);
     } else {
-      output_s_temp = new synapse(new_feature, this->output_neurons[0], 0, step_size);
+      output_s_temp = new synapse(new_feature, this->output_neurons[0], -1, 0);
     }
-//    output_s_temp->set_shadow_weight(true);
+    output_s_temp->set_shadow_weight(false);
 //    output_s_temp->turn_off_idbd();
     output_s_temp->turn_on_idbd();
-    output_s_temp->set_meta_step_size(1e-2);
+    output_s_temp->set_meta_step_size(3e-3);
     output_s_temp->increment_reference();
     output_s_temp->set_utility_to_keep(utility_to_keep);
     this->all_synapses.push_back(output_s_temp);
