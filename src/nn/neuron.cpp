@@ -154,40 +154,54 @@ void Neuron::update_value(int time_step) {
 
 void Neuron::normalize_neuron() {
 
-//  if (this->neuron_age == this->drinking_age * 4 && !this->is_output_neuron) {
-//    this->is_mature = true;
+  if (this->neuron_age == this->drinking_age * 4 && !this->is_output_neuron) {
+    this->is_mature = true;
+    for (auto it : this->incoming_synapses) {
+      if (!it->get_recurrent_status()) {
+        it->step_size = 0;
+        it->turn_off_idbd();
+      }
+    }
+
+  }
+  if(this->neuron_age % this->drinking_age == 0 && !this->is_input_neuron && !this->is_output_neuron){
+
+    if(this->average_activation < 0){
+      std::cout << "neuron:cpp: Negative max value; shouldn't happen\n";
+      exit(1);
+    }
 //  }
 //
 //  if (this->neuron_age == this->drinking_age && !this->is_input_neuron && !this->is_output_neuron) {
-//
-//    float scale = 1 / this->average_activation;
-//    if(scale > 30 or this->average_activation == 0)
-//      scale = 30;
-//    scale = 1;
-////    std::cout << "Scaling using factor " << scale << std::endl;
-//    for (auto it : this->incoming_synapses) {
-//      if (!it->get_recurrent_status()) {
-//        it->weight = it->weight * scale;
-//        it->step_size = 0;
-//        it->turn_off_idbd();
-//      }
-//    }
-//
-//
-//    for (auto out_g : this->outgoing_synapses) {
-////            out_g->weight = out_g->weight * this->average_activation;
-//      if (!out_g->get_recurrent_status()) {
-////                std::cout << "Gets here\n";
-////                exit(1);
-//        out_g->set_shadow_weight(false);
-//        out_g->weight = 0;
-//        out_g->step_size = 1e-2;
-//        out_g->set_meta_step_size(1e-2);
-//        out_g->turn_on_idbd();
-//      }
-//    }
-////    this->average_activation = 1;
-//  }
+
+    float scale = 1 / this->average_activation;
+    if(scale > 2 or this->average_activation == 0){
+      scale = 2;
+    }
+    else if(scale < 0.2){
+      scale = 0.2;
+    }
+    for (auto it : this->incoming_synapses) {
+      if (!it->get_recurrent_status()) {
+        it->weight = it->weight * scale;
+      }
+    }
+
+
+    for (auto out_g : this->outgoing_synapses) {
+      if (!out_g->get_recurrent_status()) {
+        out_g->set_shadow_weight(false);
+        out_g->weight /= scale;
+        if(out_g->step_size == 0){
+          out_g ->step_size = 1e-5;
+        }
+        out_g->step_size /= scale;
+        out_g->set_meta_step_size(3e-3);
+        out_g->turn_on_idbd();
+      }
+    }
+    this->average_activation = -10;
+  }
 }
 
 bool to_delete_ss(synapse *s) {
