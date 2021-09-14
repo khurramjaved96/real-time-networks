@@ -28,7 +28,7 @@ Neuron::Neuron(bool is_input, bool is_output) {
   references = 0;
   neuron_utility = 0;
   drinking_age = 5000;
-  mark_useless_prob = 0.9999;
+  mark_useless_prob = 0.999;
   is_bias_unit = false;
 }
 
