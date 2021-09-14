@@ -187,10 +187,10 @@ void ContinuallyAdaptingNetwork::add_feature(float step_size, float utility_to_k
         break;
       int pos = random_int(mt);
 //      std::cout << "Pos = " << pos << std::endl;
-      if(this->all_neurons[pos]->is_mature && !this->all_neurons[pos]->is_output_neuron){
+      if(this->all_neurons[pos]->is_mature && !this->all_neurons[pos]->is_output_neuron && this->all_neurons[pos]->neuron_utility >= utility_to_keep){
         if(std::count(pos_added.begin(), pos_added.end(), pos) == 0) {
           pos_added.push_back(pos);
-          auto syn = new synapse(this->all_neurons[pos], new_feature,   1.0, 0);
+          auto syn = new synapse(this->all_neurons[pos], new_feature,   dist(mt)*0.001, 1e-3);
           syn->block_gradients();
 //          syn->turn_on_idbd();
 //          syn->set_meta_step_size(1e-3);
