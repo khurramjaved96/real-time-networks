@@ -79,7 +79,7 @@ void synapse::update_utility() {
       this->output_neuron->value_without_activation - this->input_neuron->old_value * this->weight);
 //  0.999 is a hyper-parameter.
   if(!this->in_shadow_mode && !this->disable_utility) {
-    this->synapse_local_utility_trace = 0.999 * this->synapse_local_utility_trace + 0.001 * std::abs(diff);
+    this->synapse_local_utility_trace = 0.99999 * this->synapse_local_utility_trace + 0.00001 * std::abs(diff);
     this->synapse_utility =
         (synapse_local_utility_trace * this->output_neuron->neuron_utility)
             / (this->output_neuron->sum_of_utility_traces + 1e-10);
