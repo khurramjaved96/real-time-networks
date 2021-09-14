@@ -74,6 +74,9 @@ void Neuron::fire(int time_step) {
   this->old_value = this->value;
   this->old_value_without_activation = this->value_without_activation;
   this->value = this->forward(value_before_firing);
+  if(this->value > this->average_activation){
+    this->average_activation = this->value;
+  }
   this->value_without_activation = value_before_firing;
   this->shadow_error_prediction = shadow_error_prediction_before_firing;
 
