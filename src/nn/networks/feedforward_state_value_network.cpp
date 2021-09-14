@@ -42,6 +42,7 @@ ContinuallyAdaptingNetwork::ContinuallyAdaptingNetwork(float step_size, int seed
   this->mt.seed(seed);
 
   this->bias_unit = new BiasNeuron();
+  this->bias_unit->is_mature = true;
   bias_unit->increment_reference();
   bias_unit->increment_reference();
   this->all_heap_elements.push_back(static_cast<dynamic_elem *>(bias_unit));
