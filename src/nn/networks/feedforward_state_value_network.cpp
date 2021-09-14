@@ -255,7 +255,7 @@ float ContinuallyAdaptingNetwork::introduce_targets(std::vector<float> targets, 
 //  Put all targets into our neurons.
   float error = 0;
   if (targets.size() != this->output_neurons.size()) {
-    std::cout << "Target size and the number of output neurons dont match";
+    std::cout << "Target size and the number of output neurons dont match\n";
     exit(1);
   }
   for (int counter = 0; counter < targets.size(); counter++) {
