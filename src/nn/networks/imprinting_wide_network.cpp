@@ -206,8 +206,9 @@ void ImprintingWideNetwork::replace_lowest_utility_bounded_unit(){
         float imprinting_value = it->input_neuron->value * it->weight;
         // this happens when we pass these values to reset the state after ep ends
         if (std::isnan(imprinting_value) || std::isinf(imprinting_value))
-          return;
-        n->update_activation_bounds(it, imprinting_value);
+          n->update_activation_bounds(it); //assign random bounds
+        else
+          n->update_activation_bounds(it, imprinting_value);
       }
       else
         n->update_activation_bounds(it); //assign random bounds
