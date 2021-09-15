@@ -98,6 +98,7 @@ ImprintingWideNetwork::ImprintingWideNetwork(int no_of_input_features,
 
   for (int neuron_no = 0; neuron_no < width_of_network; neuron_no++) {
     auto n = new BoundedNeuron(false, false, this->bound_replacement_prob, this->bound_max_range);
+    n->is_mature = true;
     this->all_neurons.push_back(n);
     for (int inp_neuron = 0; inp_neuron < no_of_input_features; inp_neuron++) {
       auto s = new synapse(this->input_neurons[inp_neuron], n, 1, 0);
@@ -201,8 +202,13 @@ void ImprintingWideNetwork::replace_lowest_utility_bounded_unit(){
 
     n->num_times_reassigned += 1;
     for (auto &it : n->incoming_synapses){
-      if (this->use_imprinting)
-        n->update_activation_bounds(it, it->input_neuron->value * it->weight);
+      if (this->use_imprinting){
+        float imprinting_value = it->input_neuron->value * it->weight;
+        // this happens when we pass these values to reset the state after ep ends
+        if (std::isnan(imprinting_value) || std::isinf(imprinting_value))
+          return;
+        n->update_activation_bounds(it, imprinting_value);
+      }
       else
         n->update_activation_bounds(it); //assign random bounds
     }

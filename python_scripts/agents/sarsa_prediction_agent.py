@@ -70,10 +70,9 @@ class SarsaPredictionAgent(BaseAgent):
 
                 # reset network state
                 # wont trigger any bounded units with this input
-                # TODO this is currently only for a single layer
-                model.set_input_values(np.ones_like(obs) * -np.inf)
-                # model.set_input_values(np.zeros_like(obs)) #for some reason behave better at start
-                model.step()
-                model.introduce_targets(model.read_output_values(), gamma, lmbda)
+                for _ in range(10):
+                    model.set_input_values(np.ones_like(obs) * -np.inf)
+                    model.step()
+                    model.introduce_targets(model.read_output_values(), gamma, lmbda)
                 model.reset_trace()
         env.close()
