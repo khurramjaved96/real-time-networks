@@ -5,7 +5,7 @@
 #ifndef FLEXIBLENN_SARSA_H
 #define FLEXIBLENN_SARSA_H
 
-#include "../../include/nn/networks/feedforward_state_value_network.h"
+#include "../../include/nn/networks/network.h"
 
 class SarsaAgent {
   std::uniform_int_distribution<int> action_sampler;
