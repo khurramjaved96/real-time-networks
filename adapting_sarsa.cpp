@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
   int total_steps = 1000000;
   int add_feature_every = 10000;
   int seed = 2020;
-  int discretization = 30;
+  int discretization = 0;
   float util_to_keep = 0.001;
 
   MountainCar env(seed + 2020, discretization);

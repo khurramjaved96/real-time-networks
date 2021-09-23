@@ -74,6 +74,8 @@ Observation MountainCar::get_current_obs() {
       }
     }
     this->current_obs.observation = obs;
+  } else {
+    this->current_obs.observation = this->current_obs.state;
   }
   return this->current_obs;
 }
