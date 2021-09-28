@@ -91,6 +91,15 @@ class Neuron : public dynamic_elem {
   ~Neuron() = default;
 };
 
+class LTU : public Neuron {
+ public:
+  float backward(float output_grad);
+  float forward(float temp_value);
+  LTU(bool is_input, bool is_output, float threshold);
+
+  float activation_threshold;
+
+};
 class ReluNeuron : public Neuron {
  public:
   float backward(float output_grad);

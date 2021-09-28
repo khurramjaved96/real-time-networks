@@ -38,6 +38,7 @@ int Network::get_total_neurons() {
 }
 
 Network::Network() {
+  this->time_step = 0;
 }
 
 int64_t Network::get_timestep() {
