@@ -75,6 +75,8 @@ std::vector<float> TracePatterning::reset() {
   this->remaining_until_US_long = ISI_long_sampler(mt);
   this->remaining_steps = this->remaining_until_US_long + ITI_sampler(mt);
   std::vector<float> state_pattern = this->create_pattern();
+  std::uniform_int_distribution<int> valid_or_invalid(0, 1);
+
   for (int a = 0; a < 6; a++)
     this->current_state[a] = state_pattern[a];
   this->valid = false;

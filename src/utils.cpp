@@ -19,6 +19,17 @@ void print_vector(std::vector < float > const &v) {
   std::cout << "]\n";
 }
 
+void print_vector(std::vector < char > const &v) {
+std::cout << "[";
+int counter = 0;
+for (auto i = v.begin(); i != v.end(); ++i){
+std::cout << " " << std::setw(3) << *i << ",";
+if (counter % 50 == 49) std::cout << "\n";
+counter++;
+}
+std::cout << "]\n";
+}
+
 void print_vector(std::vector < int > const &v) {
   std::cout << "[";
   int counter = 0; for (auto i = v.begin(); i != v.end(); ++i) {
@@ -27,6 +38,16 @@ void print_vector(std::vector < int > const &v) {
     counter++;
   }
   std::cout << "]\n";
+}
+
+void print_vector(std::vector < long unsigned int > const &v) {
+std::cout << "[";
+int counter = 0; for (auto i = v.begin(); i != v.end(); ++i) {
+std::cout << " " << std::setw(3) << *i << ",";
+if (counter % 100 == 99) std::cout << "\n";
+counter++;
+}
+std::cout << "]\n";
 }
 
 void print_matrix(std::vector < std::vector < int >> const &v) {
