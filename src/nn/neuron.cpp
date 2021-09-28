@@ -686,11 +686,26 @@ float BiasNeuron::forward(float temp_value) {
   return 1;
 }
 
+
 float BiasNeuron::backward(float output_grad) {
   return 0;
 }
 
+float LTU::forward(float temp_value) {
+  if(temp_value > this->activation_threshold)
+    return 1;
+  return 0;
+}
+
+float LTU::backward(float output_grad) {
+  return 0;
+}
+
 ReluNeuron::ReluNeuron(bool is_input, bool is_output) : Neuron(is_input, is_output) {}
+
+LTU::LTU(bool is_input, bool is_output, float threshold): Neuron(is_input, is_output) {
+  this->activation_threshold = threshold;
+}
 
 
 ReluThresholdNeuron::ReluThresholdNeuron(float threshold) : Neuron(false, false) {

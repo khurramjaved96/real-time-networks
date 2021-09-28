@@ -9,7 +9,6 @@
 #include "../../include/nn/neuron.h"
 #include "../../include/nn/utils.h"
 
-int64_t temp = 0;
 
 int64_t synapse::synapse_id_generator = 0;
 
