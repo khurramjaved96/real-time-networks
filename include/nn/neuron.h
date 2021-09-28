@@ -169,12 +169,14 @@ class LeakyRelu : public Neuron {
 
 class BoundedNeuron: public Neuron {
  public:
+  int num_times_reassigned;
   float bound_max_range;
   // an upper and a lower bound for each incoming synapse id
   std::unordered_map<int, std::pair<float, float>> activation_bounds;
 
   //TODO also should handle removal of synapses?
   void update_activation_bounds(synapse * incoming_synapse);
+  void update_activation_bounds(synapse * incoming_synapse, float new_bound_center);
 
   float backward(float output_grad);
 

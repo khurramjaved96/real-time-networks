@@ -47,7 +47,7 @@ def get_types(list_of_values):
     list_of_types = []
     for value in list_of_values:
         if type(value) == str:
-            list_of_types.append("VARCHAR(30)")
+            list_of_types.append("VARCHAR(80)")
         elif type(value) == int:
             list_of_types.append("int")
         elif type(value) == float:

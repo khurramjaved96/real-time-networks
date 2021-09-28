@@ -10,7 +10,7 @@ INVALID_PLACEHOLDER = 1e+100
 
 
 class LoggingManager:
-    def __init__(self, log_to_db, run_id, model, commit_frequency=1000, episodic_metrics=None, neuron_metrics=None, synapse_metrics=None, prediction_metrics=None):
+    def __init__(self, log_to_db, run_id, model, commit_frequency=1000, episodic_metrics=None, neuron_metrics=None, synapse_metrics=None, prediction_metrics=None, bounded_unit_metrics=None):
         self.log_to_db = log_to_db
         self.run_id = run_id
         self.model = model
@@ -20,11 +20,13 @@ class LoggingManager:
         self.neuron_metrics = neuron_metrics
         self.synapse_metrics = synapse_metrics
         self.prediction_metrics = prediction_metrics
+        self.bounded_unit_metrics = bounded_unit_metrics;
 
         self.episodic_log_vec = []
         self.neuron_log_vec = []
         self.synapse_log_vec = []
         self.prediction_log_vec = []
+        self.bounded_log_vec = []
 
     def items_to_str(self, vec):
         ret_vec = []
@@ -38,15 +40,20 @@ class LoggingManager:
     def commit_logs(self):
         if not self.log_to_db:
             return
-        self.episodic_metrics.add_values(self.episodic_log_vec)
-        self.neuron_metrics.add_values(self.neuron_log_vec)
-        self.synapse_metrics.add_values(self.synapse_log_vec)
-        self.prediction_metrics.add_values(self.prediction_log_vec)
+        try:
+            self.episodic_metrics.add_values(self.episodic_log_vec)
+            self.neuron_metrics.add_values(self.neuron_log_vec)
+            self.synapse_metrics.add_values(self.synapse_log_vec)
+            self.prediction_metrics.add_values(self.prediction_log_vec)
+            self.bounded_unit_metrics.add_values(self.bounded_log_vec)
+        except:
+            print("Failed commitinng logs")
 
         self.episodic_log_vec = []
         self.neuron_log_vec = []
         self.synapse_log_vec = []
         self.prediction_log_vec = []
+        self.bounded_log_vec = []
 
     def log_step_metrics(self, episode, timestep):
         #if timestep % 5000 == 0:
@@ -71,13 +78,38 @@ class LoggingManager:
             self.commit_logs()
 
     def log_eps_metrics(self, episode, timestep, MSRE, running_MSRE, error, predictions, return_target, return_error):
+        if episode % 50 == 0:
+            print(timestep, episode, MSRE, running_MSRE, predictions[-1])
+        if episode % 500 == 0:
+            print(predictions)
+            print(return_target)
         if not self.log_to_db:
             return
         if episode % 100 == 0:
             self.episodic_log_vec.append(self.items_to_str([self.run_id, episode, timestep, MSRE, running_MSRE, error]))
 
         if episode % 500 == 0:
+            print(predictions)
+            print(return_target)
             for t, v in enumerate(zip(predictions, return_target, return_error)):
                 self.prediction_log_vec.append(self.items_to_str([self.run_id, episode, t, MSRE, v[0], v[1], v[2], "[]"]))
+
+    def log_synapse_replacement(self, bound_replacement_metrics):
+        if not self.log_to_db:
+            return
+        bound_replacement_vec = []
+        replaced_neurons = self.model.get_reassigned_bounded_neurons()
+        try:
+            for n in replaced_neurons:
+                bound_replacement_vec.append(self.items_to_str([self.run_id, n.id, n.neuron_age, n.neuron_utility, n.outgoing_synapses[0].weight, n.num_times_reassigned]))
+            bound_replacement_metrics.add_values(bound_replacement_vec)
+        except:
+            print("Syn replacement log failed")
+
+    def log_bounded_unit_activity(self, episode, timestep):
+        if not self.log_to_db:
+            return
+        if episode % 1000 == 0:
+            self.bounded_log_vec.append(self.items_to_str([self.run_id, episode, timestep, self.model.count_active_bounded_units()]))
 
 
