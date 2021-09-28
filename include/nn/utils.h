@@ -10,6 +10,8 @@
 #include <random>
 #include "./neuron.h"
 #include "./synapse.h"
+#include "./synced_neuron.h"
+#include "./synced_synapse.h"
 #include "./dynamic_elem.h"
 
 float sigmoid(float a);
@@ -64,6 +66,10 @@ class normal_random {
 };
 
 bool to_delete_s(synapse *s);
+
+bool to_delete_synced_s(SyncedSynapse *s);
+
+bool to_delete_synced_n(SyncedNeuron *s);
 
 bool to_delete_n(Neuron *s);
 

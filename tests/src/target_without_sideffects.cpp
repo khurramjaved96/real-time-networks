@@ -17,7 +17,7 @@ bool forward_pass_without_sideeffects_test(){
   ForwardPassWithoutSideEffects my_network = ForwardPassWithoutSideEffects();
   ForwardPassWithoutSideEffects my_network_2 = ForwardPassWithoutSideEffects();
   long long int time_step = 0;
-  std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
+//  std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
   float running_error = -1;
 
   std::vector<std::vector<float>> input_list;
