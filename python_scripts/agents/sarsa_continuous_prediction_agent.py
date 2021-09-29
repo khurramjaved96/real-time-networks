@@ -16,7 +16,7 @@ class SarsaContinuousPredictionAgent(BaseAgent):
     def __init__(self, expert_agent):
         self.expert_agent = expert_agent
 
-    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger):
+    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger, args):
         """Train the agent
         Args:
             _
@@ -26,6 +26,7 @@ class SarsaContinuousPredictionAgent(BaseAgent):
         rewards_vec = deque(maxlen=1000)
         predictions_vec = deque(maxlen=1000)
         running_MSRE = -1
+        error_trace = 0;
         obs = env.reset()
         for t in range(timesteps):
 
@@ -41,8 +42,11 @@ class SarsaContinuousPredictionAgent(BaseAgent):
             new_target = reward + gamma * bootstrap_prediction[0]
 
             err = model.introduce_targets([new_target], gamma, lmbda)
-            obs = next_obs
+            error_trace = 0.99 * error_trace + 0.01 * err
+            if abs(error_trace - err) > args.imprinting_err_thresh:
+                model.imprint_LTU_randomly()
 
+            obs = next_obs
             rewards_vec.append(reward)
             predictions_vec.append(prediction[0])
             logger.log_step_metrics(eps_count, t)
@@ -53,5 +57,5 @@ class SarsaContinuousPredictionAgent(BaseAgent):
                     running_MSRE = MSRE
                 else:
                     running_MSRE = 0.99 * running_MSRE + 0.01 * MSRE
-                logger.log_eps_metrics(t, t, MSRE, running_MSRE, err, list(predictions_vec), return_target, return_error)
+                logger.log_eps_metrics(t, t, MSRE, running_MSRE, error_trace, list(predictions_vec), return_target, return_error)
         env.close()

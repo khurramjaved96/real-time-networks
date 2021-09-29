@@ -10,7 +10,7 @@ class SarsaControlAgent(BaseAgent):
     def __init__(self):
         pass
 
-    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger):
+    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger, args):
         """Train the agent
         Args:
             _

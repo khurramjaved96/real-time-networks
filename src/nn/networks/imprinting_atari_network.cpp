@@ -167,7 +167,6 @@ void ImprintingAtariNetwork::imprint_LTU_randomly() {
 
   int total_ones = 0;
   auto new_feature = LTU(false, false, 100000);
-  this->all_neurons.push_back(new_feature);
   for (auto it : interesting_neurons){
     if(prob_sampler(this->mt) > percentage_to_look_at) {
       auto s = new synapse(it, new_feature, 1, 0);
@@ -178,6 +177,7 @@ void ImprintingAtariNetwork::imprint_LTU_randomly() {
   }
 
   if (total_ones != 0){
+    this->all_neurons.push_back(new_feature);
     std::uniform_real_distribution<float> thres_sampler(0, total_ones);
     new_feature->activation_threshold = thres_sampler(this->mt);
 
@@ -189,4 +189,6 @@ void ImprintingAtariNetwork::imprint_LTU_randomly() {
     s->turn_on_idbd();
     s->block_gradients(); //TODO will this affect utility prop?
   }
+  else
+    delete new_feature;
 }

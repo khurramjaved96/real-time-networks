@@ -15,14 +15,15 @@ class SarsaPredictionAgent(BaseAgent):
     def __init__(self, expert_agent):
         self.expert_agent = expert_agent
 
-    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger, args):
+    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger):
         """Train the agent
         Args:
             _
         Return:
             -
         """
-        original_gamma = gamma
+        done = True
+        # TODO running error
         eps_count = 0
         eps_rewards = []
         eps_predictions = []
@@ -39,9 +40,11 @@ class SarsaPredictionAgent(BaseAgent):
 
             next_obs, reward, done, info = env.step(action)
 
-            gamma = 0 if done else original_gamma
-            bootstrap_prediction = model.forward_pass_without_side_effects(next_obs)
-            new_target = reward + gamma * bootstrap_prediction[0]
+            if done:
+                new_target = reward
+            else:
+                bootstrap_prediction = model.forward_pass_without_side_effects(next_obs)
+                new_target = reward + gamma * bootstrap_prediction[0]
 
             err = model.introduce_targets([new_target], gamma, lmbda)
 
@@ -54,7 +57,7 @@ class SarsaPredictionAgent(BaseAgent):
             if done:
                 obs = env.reset()
                 # first prediction is always 0 for now
-                MSRE, return_error, return_target = compute_return_error(eps_rewards, eps_predictions, original_gamma)
+                MSRE, return_error, return_target = compute_return_error(eps_rewards, eps_predictions, gamma)
                 if eps_count == 0:
                     running_MSRE = MSRE
                 else:
@@ -70,6 +73,6 @@ class SarsaPredictionAgent(BaseAgent):
                 for _ in range(10):
                     model.set_input_values(np.ones_like(obs) * -np.inf)
                     model.step()
-                    model.introduce_targets(model.read_output_values(), original_gamma, lmbda)
+                    model.introduce_targets(model.read_output_values(), gamma, lmbda)
                 model.reset_trace()
         env.close()

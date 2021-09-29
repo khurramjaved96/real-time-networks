@@ -14,7 +14,7 @@ class BaseAgent:
         pass
 
     @abstractmethod
-    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger):
+    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger, args):
         """Train the agent
         Args:
             _

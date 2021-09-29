@@ -66,6 +66,7 @@ def main():  # noqa: C901
     parser.add_argument( "--net-prune-prob", help="pruning prob (per step) for the weights after they have matured", default=0.01, type=float)
     parser.add_argument( "--imprinting-max-bound-range", help="max range for the random bounds that are found around the random center", default=0.1, type=float)
     parser.add_argument( "--use-imprinting", help="Use imprinted features instead of random (0: dont use, 1: use)", default=1, type=int,)
+    parser.add_argument( "--imprinting-err-thresh", help="If error_trace-current_error > thresh, do imprinting", default=0.1, type=float)
 
     parser.add_argument("--step-size", help="step size", default=0.01, type=float)
     parser.add_argument( "--meta-step-size", help="tidbd step size", default=1e-3, type=float)
@@ -249,7 +250,7 @@ def main():  # noqa: C901
     else:
         raise NotImplementedError
 
-    agent.train(env, model, args.n_timesteps, args.epsilon, args.gamma, args.lmbda, logger)
+    agent.train(env, model, args.n_timesteps, args.epsilon, args.gamma, args.lmbda, logger, args)
 
 
 #    if args.db:
