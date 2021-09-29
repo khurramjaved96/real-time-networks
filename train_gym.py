@@ -159,11 +159,12 @@ def main():  # noqa: C901
         input_size = env.tc.total_tiles
         args.step_size /= args.tilecoding_n_tilings
     if args.binning:
+        assert not args.tilecoding, f"not to be used with tc"
         env = BinnedObservation(env, args.binning_n_bins)
         input_size = input_size * args.binning_n_bins
 
     if args.env == "PongNoFrameskip-v4":
-        assert args.binning f"Should use binning with Pong"
+        assert args.binning, f"Should use binning with Pong"
 
     if args.env_max_step_per_episode:  # just wrapper thing
         if args.tilecoding:
@@ -191,7 +192,6 @@ def main():  # noqa: C901
             True,
         )
     elif args.net == "imprintingWide":
-        # TODO not used with tc
         model = FlexibleNN.ImprintingWideNetwork(
             input_size,
             output_size,
@@ -204,6 +204,22 @@ def main():  # noqa: C901
             True,
             args.seed,
             bool(args.use_imprinting),
+        )
+    elif args.net == "imprintingAtari":
+        assert args.env in ["PongNoFrameskip-v4"]
+        assert args.net_width == 0, f"net width not implemented"
+        model = FlexibleNN.ImprintingWideNetwork(
+            input_size,
+            output_size,
+            args.net_width,
+            args.step_size,
+            args.meta_step_size,
+            True,
+            args.seed,
+            bool(args.use_imprinting),
+            env.observation_space.shape[0],
+            env.observation_space.shape[1],
+            args.binning_n_bins,
         )
     else:
         raise NotImplementedError

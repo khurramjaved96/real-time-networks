@@ -19,6 +19,7 @@ class BinnedObservation(ObservationWrapper):
         self.nbins = nbins
         self.checked_dims = False
         self.unwrapped_obs = None
+        self.binned_obs = None
 
     def observation(self, observation):
         if not self.checked_dims:
@@ -31,5 +32,5 @@ class BinnedObservation(ObservationWrapper):
         # [H,W] with values indicating bin index
         bins_assignments = np.digitize(latest_obs, np.arange(0,255,255/self.nbins))
         # [nbins,H,W] binary
-        binned_obs = np.array([ 1*(bin_assignments==i+1) for i in range(self.nbins) ])
-        return binned_obs
+        self.binned_obs = np.array([ 1*(bin_assignments==i+1) for i in range(self.nbins) ])
+        return self.binned_obs.flatten()

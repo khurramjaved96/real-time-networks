@@ -29,6 +29,7 @@ class SarsaContinuousPredictionAgent(BaseAgent):
         obs = env.reset()
         for t in range(timesteps):
 
+            from IPython import embed; embed()
             model.set_input_values(obs)
             model.step()
             prediction = model.read_output_values()

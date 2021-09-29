@@ -80,6 +80,10 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def("get_feature_bounds", &ImprintingWideNetwork::get_feature_bounds)
         .def("get_feature_utilities", &ImprintingWideNetwork::get_feature_utilities);
 
+    py::class_<ImprintingAtariNetwork, Network>(m, "ImprintingAtariNetwork")
+        .def(py::init<int, int, int, float, float, bool, int, bool, int, int, int>())
+        .def("step", &ImprintingAtariNetwork::step);
+
     py::class_<Metric>(m, "Metric")
         .def(py::init<std::string, std::string, std::vector<std::string>, std::vector<std::string>, std::vector<std::string>>())
         .def("add_value", &Metric::add_value)
