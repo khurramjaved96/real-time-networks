@@ -30,6 +30,15 @@ SyncedNeuron::SyncedNeuron(bool is_input, bool is_output) {
   is_bias_unit = false;
 }
 
+
+void SyncedNeuron::set_layer_number(int layer) {
+  this->layer_number = layer;
+}
+
+int SyncedNeuron::get_layer_number() {
+  return this->layer_number;
+}
+
 void SyncedNeuron::update_utility() {
 
   this->neuron_utility = 0;

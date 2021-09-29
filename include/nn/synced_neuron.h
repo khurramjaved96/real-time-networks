@@ -22,6 +22,7 @@ class SyncedNeuron : public dynamic_elem {
   static std::mt19937 gen;
   bool is_input_neuron;
   bool is_bias_unit;
+  int layer_number;
   float value;
   float value_without_activation;
   float old_value;
@@ -43,7 +44,11 @@ class SyncedNeuron : public dynamic_elem {
   int neuron_age;
   float average_activation;
   float mark_useless_prob;
-  
+
+  void set_layer_number(int layer);
+
+  int get_layer_number();
+
   void forward_gradients();
 
   void update_value(int time_step);

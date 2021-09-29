@@ -16,7 +16,7 @@
 
 #include "include/utils.h"
 #include "include/environments/supervised_imprinting.h"
-#include "include/nn/networks/imprinting_mnist.h"
+#include "include/nn/networks/layerwise_feedworward.h"
 #include "include/experiment/Experiment.h"
 #include "include/nn/utils.h"
 #include "include/experiment/Metric.h"
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
                                std::vector < std::string > {"int", "int", "real", "real"},
                                std::vector < std::string > {"step", "run"});
 
-  ImprintingMNIST network = ImprintingMNIST(my_experiment.get_float_param("meta_step_size"), my_experiment.get_int_param("seed"), 28*28, 0.001, my_experiment.get_int_param("features"));
+  LayerwiseFeedforward network = LayerwiseFeedforward(my_experiment.get_float_param("meta_step_size"), my_experiment.get_int_param("seed"), 28*28, 0.001);
 
   std::vector<std::vector<std::string>> error_logger;
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
   mnist::MNIST_dataset<std::vector, std::vector<uint8_t>, uint8_t> dataset =
                                                               mnist::read_dataset<std::vector, std::vector, uint8_t, uint8_t>("data/");
   std::mt19937 mt(my_experiment.get_int_param("seed"));
-  int total_data_points = 60000;
+  int total_data_points = 6000;
   std::uniform_int_distribution<int> index_sampler(0, total_data_points - 1);
 
   mnist::binarize_dataset(dataset);
@@ -112,6 +112,15 @@ int main(int argc, char *argv[]){
 
     if (i % 1000 == 0) {
       std::cout << "Step " << i << std::endl;
+
+      std::cout << "Network confing\n";
+      std::cout << "No\tSize\tSynapses\n";
+      for(int layer_no = 0; layer_no < network.LTU_neuron_layers.size(); layer_no++){
+        std::cout <<  layer_no << "\t" << network.LTU_neuron_layers[layer_no].size() << "\t" << network.all_synapses.size() <<  std::endl;
+//        std::cout << "Layer sz\t" << network.LTU_neuron_layers[layer_no].size() << std::endl;
+      }
+
+
       std::cout << "Running accuracy = " << accuracy << std::endl;
       std::cout << "GT " << y_index <<  " Pred = " << argmax(prediction) << std::endl;
       std::cout << " Target\n";
@@ -125,6 +134,7 @@ int main(int argc, char *argv[]){
 //      print_vector(y);
 //      std::cout << "Output val\t";
 //      print_vector(network.read_output_values());
+
       std::cout << "Running error = " << running_error << std::endl;
     }
     if (argmax(prediction) != y_index) {
