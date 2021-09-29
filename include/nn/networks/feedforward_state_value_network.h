@@ -39,6 +39,8 @@ class ContinuallyAdaptingNetwork : public Network {
 
 //    void add_memory(float step_size);
   void add_feature(float step_size, float utility_to_keep);
+
+  void add_feature_binary(float step_size, float utility_to_keep);
 };
 
 #endif  // INCLUDE_NN_NETWORKS_FEEDFORWARD_STATE_VALUE_NETWORK_H_

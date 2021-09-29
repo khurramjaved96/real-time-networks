@@ -106,7 +106,7 @@ bool mountain_car_test() {
 
       if (episode % 100 == 99) {
         for (int i = 0; i < monte_carlo_targets.size(); i++) {
-          std::cout << episode_predictions[i] << "\t" << monte_carlo_targets[i] << "\n";
+//          std::cout << episode_predictions[i] << "\t" << monte_carlo_targets[i] << "\n";
         }
       }
       episode_predictions.clear();

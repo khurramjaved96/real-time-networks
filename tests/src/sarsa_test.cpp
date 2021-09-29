@@ -12,7 +12,7 @@
  */
 
 bool sarsa_lfa_mc_test() {
-  std::cout << "RL experiment started." << std::endl;
+//  std::cout << "RL experiment started." << std::endl;
   float gamma = 0.99;
   float lambda = 0.9;
   float step_size = powf(2, -5);

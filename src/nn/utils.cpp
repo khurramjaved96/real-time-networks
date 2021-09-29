@@ -66,6 +66,14 @@ bool to_delete_n(Neuron *s) {
   return s->useless_neuron;
 }
 
+bool to_delete_synced_s(SyncedSynapse *s) {
+  return s->is_useless;
+}
+
+bool to_delete_synced_n(SyncedNeuron *s) {
+  return s->useless_neuron;
+}
+
 std::vector<float> one_hot_encode(int no, int total) {
   std::vector<float> my_vec;
   my_vec.reserve(total);

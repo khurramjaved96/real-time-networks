@@ -17,6 +17,7 @@ class message {
   float error_shadow_prediction;
 
   message(float m, int t);
+  message();
 };
 
 class message_activation {

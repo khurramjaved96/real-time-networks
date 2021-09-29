@@ -1,5 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import logging
+logger = logging.getLogger('experiment')
+import errno
+import hashlib
+import os
+import os.path
+import random
+
+from collections import namedtuple
+from torch.nn import functional as F
+import numpy as np
+import copy
 
 
 def compute_return_error(cumulants, predictions, gamma):
@@ -43,3 +55,43 @@ def get_types(list_of_values):
         else:
             raise NotImplementedError
     return list_of_types
+
+
+
+def get_run(arg_dict, rank=0):
+    # print(arg_dict)
+    combinations =[]
+
+    if isinstance(arg_dict["seed"], list):
+        combinations.append(len(arg_dict["seed"]))
+
+
+    for key in arg_dict.keys():
+        if isinstance(arg_dict[key], list) and not key=="seed":
+            combinations.append(len(arg_dict[key]))
+
+    total_combinations = np.prod(combinations)
+    selected_combinations = []
+    for base in combinations:
+        selected_combinations.append(rank%base)
+        rank = int(rank/base)
+
+    counter=0
+    result_dict = {}
+
+    result_dict["seed"] = arg_dict["seed"]
+    if isinstance(arg_dict["seed"], list):
+        result_dict["seed"] = arg_dict["seed"][selected_combinations[0]]
+        counter += 1
+    #
+
+    for key in arg_dict.keys():
+        if key !="seed":
+            result_dict[key] = arg_dict[key]
+            if isinstance(arg_dict[key], list):
+                result_dict[key] = arg_dict[key][selected_combinations[counter]]
+                counter+=1
+
+    logger.info("Parameters %s", str(result_dict))
+    # 0/0
+    return result_dict

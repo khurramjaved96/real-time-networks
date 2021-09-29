@@ -1,18 +1,18 @@
 //
-// Created by Khurram Javed on 2021-03-16.
+// Created by Khurram Javed on 2021-09-20.
 //
 
-#include "../../include/nn/synapse.h"
+
+#include "../../include/nn/synced_synapse.h"
 #include <math.h>
 #include <vector>
 #include <iostream>
-#include "../../include/nn/neuron.h"
+#include "../../include/nn/synced_neuron.h"
 #include "../../include/nn/utils.h"
 
+int64_t SyncedSynapse::synapse_id_generator = 0;
 
-int64_t synapse::synapse_id_generator = 0;
-
-synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
+SyncedSynapse::SyncedSynapse(SyncedNeuron *input, SyncedNeuron *output, float w, float step_size) {
   references = 0;
   TH = 0;
 
@@ -49,36 +49,36 @@ synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
 }
 //
 
-void synapse::set_utility_to_keep(float util) {
+void SyncedSynapse::set_utility_to_keep(float util) {
   this->utility_to_keep = util;
 }
 
-float synapse::get_utility_to_keep() {
+float SyncedSynapse::get_utility_to_keep() {
   return this->utility_to_keep;
 }
 
-void synapse::set_connected_to_recurrence(bool val) {
+void SyncedSynapse::set_connected_to_recurrence(bool val) {
   this->is_recurrent_connection = val;
 }
 
-void synapse::set_shadow_weight(bool val) {
+void SyncedSynapse::set_shadow_weight(bool val) {
   this->in_shadow_mode = val;
 }
 
-void synapse::reset_trace() {
+void SyncedSynapse::reset_trace() {
   this->trace = 0;
 }
 
-void synapse::set_meta_step_size(float val) {
+void SyncedSynapse::set_meta_step_size(float val) {
   this->meta_step_size = val;
 }
 
-void synapse::update_utility() {
+void SyncedSynapse::update_utility() {
   float diff = this->output_neuron->value - this->output_neuron->forward(
       this->output_neuron->value_without_activation - this->input_neuron->old_value * this->weight);
 //  0.999 is a hyper-parameter.
-  if(!this->in_shadow_mode && !this->disable_utility) {
-    this->synapse_local_utility_trace = 0.99999 * this->synapse_local_utility_trace + 0.00001 * std::abs(diff);
+  if (!this->in_shadow_mode && !this->disable_utility) {
+    this->synapse_local_utility_trace = 0.999 * this->synapse_local_utility_trace + 0.001 * std::abs(diff);
     this->synapse_utility =
         (synapse_local_utility_trace * this->output_neuron->neuron_utility)
             / (this->output_neuron->sum_of_utility_traces + 1e-10);
@@ -88,100 +88,57 @@ void synapse::update_utility() {
     } else {
       this->synapse_utility_to_distribute = 0;
     }
-  }
-  else{
+  } else {
     this->synapse_utility = 0;
     this->synapse_utility_to_distribute = 0;
     this->synapse_local_utility_trace = 0;
   }
 }
 
-void synapse::memory_leak_patch(){
-  if (this->grad_queue.size() > 50) {
-    this->grad_queue.pop();
-  }
-  if (this->grad_queue_weight_assignment.size() > 50) {
-    this->grad_queue_weight_assignment.pop();
-  }
-  if (this->weight_assignment_past_activations.size() > 50) {
-    this->weight_assignment_past_activations.pop();
-  }
-}
-
 /**
  * Calculate and set credit based on gradients in the current synapse.
  */
-void synapse::assign_credit() {
+void SyncedSynapse::assign_credit() {
 //  Another temp hack
 
   this->update_utility();
-  this->memory_leak_patch();
-
-//  We go through each gradient that we've put into our synapse
-//  and see if this gradient's activation time corresponds to the correct past activation
-  while (!this->grad_queue_weight_assignment.empty() && !this->weight_assignment_past_activations.empty() &&
-      this->weight_assignment_past_activations.front().time >
-          (this->grad_queue_weight_assignment.front().time_step -
-              this->grad_queue_weight_assignment.front().distance_travelled - 1)) {
-//      If it doesn't then remove it
-    this->grad_queue_weight_assignment.pop();
-  }
 
 //  If this condition is met, your gradient flew past its relevant activation - this isn't supposed to happen!
-  if (!this->grad_queue_weight_assignment.empty() && this->weight_assignment_past_activations.front().time !=
-      (this->grad_queue_weight_assignment.front().time_step -
-          this->grad_queue_weight_assignment.front().distance_travelled - 1)) {
-    if (this->is_recurrent_connection) {
-      std::cout << "Is recurrent connection\n";
-    }
-    std::cout << "Synapses.cpp : Shouldn't happen\n";
-    exit(1);
-  }
 
-//  If we still have gradients left for credit assignment
-  if (!this->grad_queue_weight_assignment.empty()) {
-//      We have a match! Here we calculate our update rule. We first update our eligibility trace]
 
-    this->trace = this->trace * this->grad_queue_weight_assignment.front().gamma *
-        this->grad_queue_weight_assignment.front().lambda +
-        this->weight_assignment_past_activations.front().gradient_activation *
-            this->grad_queue_weight_assignment.front().gradient;
+  this->trace = this->trace * this->grad_queue_weight_assignment.gamma *
+      this->grad_queue_weight_assignment.lambda +
+      this->weight_assignment_past_activations.gradient_activation *
+          this->grad_queue_weight_assignment.gradient;
 
-    this->tidbd_old_activation = this->weight_assignment_past_activations.front().gradient_activation;
-    this->tidbd_old_error = this->grad_queue_weight_assignment.front().error;
+  this->tidbd_old_activation = this->weight_assignment_past_activations.gradient_activation;
+  this->tidbd_old_error = this->grad_queue_weight_assignment.error;
 
-//      As per the trace update rule, our actual credit being assigned is our trace x our TD error.
-    this->credit = this->trace * this->grad_queue_weight_assignment.front().error;
+  this->credit = this->trace * this->grad_queue_weight_assignment.error;
 
-//      Remove both grad and past activations used
-    this->grad_queue_weight_assignment.pop();
-    this->weight_assignment_past_activations.pop();
-
-  } else {
-    this->credit = 0;
-  }
 }
 
-void synapse::block_gradients() {
+
+void SyncedSynapse::block_gradients() {
   propagate_gradients = false;
 }
 
-bool synapse::get_recurrent_status() {
+bool SyncedSynapse::get_recurrent_status() {
   return is_recurrent_connection;
 }
 
-void synapse::turn_on_idbd() {
+void SyncedSynapse::turn_on_idbd() {
   this->idbd = true;
   this->log_step_size_tidbd = log(this->step_size);
   this->h_tidbd = 0;
   this->step_size = exp(this->log_step_size_tidbd);
 }
 //
-void synapse::turn_off_idbd() {
+void SyncedSynapse::turn_off_idbd() {
   this->idbd = false;
 }
 
-void synapse::update_weight() {
+void SyncedSynapse::update_weight() {
 //
   if (this->idbd) {
     float meta_grad = this->tidbd_old_error * this->trace * this->h_tidbd;
