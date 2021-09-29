@@ -7,6 +7,7 @@
 #include "../include/nn/networks/recurrent_state_value_network.h"
 #include "../include/nn/networks/expanding_linear_function_approximator.h"
 #include "../include/nn/networks/imprinting_wide_network.h"
+#include "../include/nn/networks/imprinting_atari_network.h"
 #include "../include/nn/synapse.h"
 #include "../include/experiment/Metric.h"
 
@@ -82,7 +83,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
 
     py::class_<ImprintingAtariNetwork, Network>(m, "ImprintingAtariNetwork")
         .def(py::init<int, int, int, float, float, bool, int, bool, int, int, int>())
-        .def("step", &ImprintingAtariNetwork::imprint_LTU_randomly)
+        .def("imprint_LTU_randomly", &ImprintingAtariNetwork::imprint_LTU_randomly)
         .def("step", &ImprintingAtariNetwork::step);
 
     py::class_<Metric>(m, "Metric")

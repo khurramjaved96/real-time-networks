@@ -18,6 +18,9 @@ class ImprintingAtariNetwork: public Network {
   bool use_imprinting;
   float step_size;
   float meta_step_size;
+  int input_H;
+  int input_W;
+  int input_bins;
 
   ImprintingAtariNetwork(int no_of_input_features,
                          int no_of_output_neurons,
