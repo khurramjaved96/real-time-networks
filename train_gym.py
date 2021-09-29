@@ -19,7 +19,9 @@ from python_scripts.utils.logging_manager import LoggingManager
 from python_scripts.utils.tilecoding_wrapper import TileCodedObservation
 from python_scripts.agents.sarsa_control_agent import SarsaControlAgent
 from python_scripts.agents.sarsa_prediction_agent import SarsaPredictionAgent
+from python_scripts.agents.sarsa_continuous_prediction_agent import SarsaContinuousPredictionAgent
 from python_scripts.agents.mountaincar_fixed_agent import MountainCarFixed
+from python_scripts.agents.baselines_expert_agent import BaselinesExpert
 
 
 def set_random_seed(seed: int, env: gym.wrappers.time_limit.TimeLimit) -> None:
@@ -121,8 +123,15 @@ def main():  # noqa: C901
     if args.net == "expandingLFA":
         assert args.tilecoding, f"expandingLFA can only be used with tilecoding"
 
-    env = gym.make(args.env)
-    input_size = env.observation_space.shape[0]
+    if args.env == "PongNoFrameskip-v4":
+        expert_agent = BaselinesExpert(seed=args.seed, env_id=args.env)
+        env = expert_agent.env
+        input_size = env.observation_space.shape[0] * env.observation_space.shape[1]
+        print(f"Using input size of {input_size}")
+    else:
+        env = gym.make(args.env)
+        input_size = env.observation_space.shape[0]
+
     if args.task == "control":
         output_size = env.action_space.n
     else:
@@ -206,9 +215,11 @@ def main():  # noqa: C901
     elif args.task == "prediction":
         if args.env == "MountainCar-v0":
             expert_agent = MountainCarFixed()
+            agent = SarsaPredictionAgent(expert_agent)
+        elif args.env == "PongNoFrameskip-v4":
+            agent = SarsaContinuousPredictionAgent(expert_agent)
         else:
             raise NotImplementedError
-        agent = SarsaPredictionAgent(expert_agent)
     else:
         raise NotImplementedError
 
