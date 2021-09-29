@@ -33,9 +33,7 @@ class SarsaContinuousPredictionAgent(BaseAgent):
             model.step()
             prediction = model.read_output_values()
 
-            #TODO change here for pong
-            action = self.expert_agent.predict(obs)
-            #action = self.expert_agent.predict(env.unwrapped.state) #tc
+            action = self.expert_agent.predict(env.unwrapped_obs)
 
             next_obs, reward, done, info = env.step(action)
             bootstrap_prediction = model.forward_pass_without_side_effects(next_obs)

@@ -17,6 +17,7 @@ from python_scripts.utils.utils import get_types
 from python_scripts.utils.state_feature.state_feature_util import TileCoder
 from python_scripts.utils.logging_manager import LoggingManager
 from python_scripts.utils.tilecoding_wrapper import TileCodedObservation
+from python_scripts.utils.image_binning_wrapper import BinnedObservation
 from python_scripts.agents.sarsa_control_agent import SarsaControlAgent
 from python_scripts.agents.sarsa_prediction_agent import SarsaPredictionAgent
 from python_scripts.agents.sarsa_continuous_prediction_agent import SarsaContinuousPredictionAgent
@@ -54,7 +55,10 @@ def main():  # noqa: C901
     parser.add_argument( "--env", help="environment ID", type=str, default="MountainCar-v0")
     parser.add_argument( "--env-max-step-per-episode", help="Max number of timesteps per episode (default:0, mountaincar:2000)", default=0, type=int,)
 
-    parser.add_argument( "--tilecoding", help="Use tilecoded features (0: dont use, 1: use)", default=1, type=int,)
+    parser.add_argument( "--binning", help="Use binned features (0: dont use, 1: use)", default=0, type=int,)
+    parser.add_argument( "--binning-n-bins", help="Number of binning bins to use (default: 10)", default=10, type=int,)
+
+    parser.add_argument( "--tilecoding", help="Use tilecoded features (0: dont use, 1: use)", default=0, type=int,)
     parser.add_argument( "--tilecoding-n-tilings", help="Number of tilecoding tilings to use (default: 8)", default=8, type=int,)
     parser.add_argument( "--tilecoding-n-tiles", help="Number of tilecoding tiles per dim (default: 8)", default=8, type=int,)
 
@@ -154,6 +158,12 @@ def main():  # noqa: C901
         )
         input_size = env.tc.total_tiles
         args.step_size /= args.tilecoding_n_tilings
+    if args.binning:
+        env = BinnedObservation(env, args.binning_n_bins)
+        input_size = input_size * args.binning_n_bins
+
+    if args.env == "PongNoFrameskip-v4":
+        assert args.binning f"Should use binning with Pong"
 
     if args.env_max_step_per_episode:  # just wrapper thing
         if args.tilecoding:

@@ -21,7 +21,7 @@ comment "For running locally".
 * Install packages `pip install -r requirements.txt`
 * Install `pybind11` and adjust the pybind directory in `CMakeListsPy.txt` (recommended to install it as subdir in this project)
 * Use `CMakeListsPy.txt` to compile
-* Use `Python train_gym.py --env-max-step-per-episode 1000 -t control` to train
+* Use `Python train_gym.py --env-max-step-per-episode 1000 -t control --tilecoding 1` to train
   a working mountaincar version.
 
 ## Instructions for python extension

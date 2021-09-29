@@ -113,7 +113,7 @@ if __name__ == "__main__":
 		if timestep > 30:
 			from IPython import embed; embed()
 		obs, reward, done, infos = env.step(action)
-		if True:
+		if False:
 			env.render("human")
 
 		episode_reward += reward[0]
