@@ -21,6 +21,7 @@ class ImprintingAtariNetwork: public Network {
   int input_H;
   int input_W;
   int input_bins;
+  std::vector <int> input_indices;
   std::vector <Neuron*> imprinted_features;
 
   ImprintingAtariNetwork(int no_of_input_features,
@@ -36,6 +37,7 @@ class ImprintingAtariNetwork: public Network {
                          int input_bins);
 
   void step();
+  void set_input_values(std::vector<float> const &input_values);
   void imprint_LTU_randomly();
 };
 

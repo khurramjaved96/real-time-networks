@@ -1,4 +1,5 @@
 #include "../../../include/nn/networks/imprinting_atari_network.h"
+#include <numeric>
 #include <iostream>
 #include <assert.h>
 #include <cmath>
@@ -37,6 +38,10 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
   this->input_H = input_H;
   this->input_W = input_W;
   this->input_bins = input_bins;
+
+  std::vector<int> inp(no_of_input_features);
+  std::iota(inp.begin(), inp.end(), 0);
+  this->input_indices = inp;
 
   std::uniform_real_distribution<float> dist(0, 1);
 
@@ -155,20 +160,20 @@ void ImprintingAtariNetwork::step() {
   auto it_n = std::remove_if(this->all_neurons.begin(), this->all_neurons.end(), to_delete_n);
   this->all_neurons.erase(it_n, this->all_neurons.end());
 
-  auto it_n = std::remove_if(this->imprinted_features.begin(), this->imprinted_features.end(), to_delete_n);
-  this->imprinted_features.erase(it_n, this->imprinted_features.end());
+  auto it_n1 = std::remove_if(this->imprinted_features.begin(), this->imprinted_features.end(), to_delete_n);
+  this->imprinted_features.erase(it_n1, this->imprinted_features.end());
 
   this->time_step++;
 }
 
 
 void ImprintingAtariNetwork::imprint_LTU_randomly() {
-  std::uniform_real_distribution<float> prob_sampler(0, 1);
+  std::uniform_real_distribution<float> prob_sampler(0, 0.5);
   float percentage_to_look_at = prob_sampler(this->mt);
 
   std::vector <Neuron *> interesting_neurons;
   for (auto &it : this->all_neurons) {
-    if (it->value != it->old_value && it->is_mature && !it->useless_neuron && !it->is_output_neuron)
+    if (it->value != it->old_value && it->is_mature && !it->useless_neuron && !it->is_output_neuron && it->is_input_neuron)
       interesting_neurons.push_back(it);
   }
 
@@ -198,7 +203,53 @@ void ImprintingAtariNetwork::imprint_LTU_randomly() {
     s->set_meta_step_size(this->meta_step_size);
     s->turn_on_idbd();
     s->block_gradients(); //TODO will this affect utility prop?
+    std::cout << "Interesting: " << interesting_neurons.size() << " Imprinted features total_ones: " << total_ones << " thresh: " << new_feature->activation_threshold << " weight: " << imprinting_weight << " total current features: " << this->imprinted_features.size() << " total syn: " << this->all_synapses.size() << std::endl;
+
   }
   else
     delete new_feature;
+}
+
+
+
+//void ImprintingAtariNetwork::set_input_values(std::vector<float> const &input_values) {
+////    assert(input_values.size() == this->input_neurons.size());
+//  for (int i = 0; i < input_values.size(); i++) {
+//    if (i < this->input_neurons.size()) {
+//      this->input_neurons[i]->old_value = this->input_neurons[i]->value;
+//      this->input_neurons[i]->old_value_without_activation = this->input_neurons[i]->value;
+//      this->input_neurons[i]->value = input_values[i];
+//      this->input_neurons[i]->value_without_activation = input_values[i];
+//    } else {
+//      std::cout << "More input features than input neurons\n";
+//      exit(1);
+//    }
+//  }
+//}
+
+void ImprintingAtariNetwork::set_input_values(std::vector<float> const &input_values) {
+  if (input_values.size() != this->input_neurons.size()){
+    std::cout << "err size in set_input_values()" << std::endl;
+    exit(1);
+  }
+
+  std::for_each(
+      std::execution::par_unseq,
+      this->input_indices.begin(),
+      this->input_indices.end(),
+      [&](int i) {
+        this->input_neurons[i]->old_value = this->input_neurons[i]->value;
+        this->input_neurons[i]->old_value_without_activation = this->input_neurons[i]->value;
+        this->input_neurons[i]->value = input_values[i];
+        this->input_neurons[i]->value_without_activation = input_values[i];
+      });
+
+//  for (int i = 0; i < input_values.size(); i++) {
+//    if (i < this->input_neurons.size()) {
+//      if (this->input_neurons[i]->value != input_values[i] or this->input_neurons[i]->value_without_activation != input_values[i]){
+//        std::cout << "bugged!~" << std::endl;
+//        exit(1);
+//      }
+//    }
+//  }
 }

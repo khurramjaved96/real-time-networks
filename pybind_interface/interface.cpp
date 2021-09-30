@@ -85,6 +85,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def(py::init<int, int, int, float, float, bool, int, bool, int, int, int>())
         .def_readonly("imprinted_features", &ImprintingAtariNetwork::imprinted_features)
         .def("imprint_LTU_randomly", &ImprintingAtariNetwork::imprint_LTU_randomly)
+        .def("set_input_values", &ImprintingAtariNetwork::set_input_values)
         .def("step", &ImprintingAtariNetwork::step);
 
     py::class_<Metric>(m, "Metric")

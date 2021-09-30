@@ -78,9 +78,9 @@ class LoggingManager:
             self.commit_logs()
 
     def log_eps_metrics(self, episode, timestep, MSRE, running_MSRE, error, predictions, return_target, return_error):
-        if episode % 50 == 0:
-            print(timestep, episode, MSRE, running_MSRE, predictions[-1])
-        if episode % 500 == 0:
+        if episode % 1 == 0:
+            print(">>",timestep, episode, MSRE, running_MSRE, predictions[-1])
+        if episode % 1 == 0:
             print(predictions)
             print(return_target)
         if not self.log_to_db:

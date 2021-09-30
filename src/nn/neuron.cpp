@@ -71,9 +71,13 @@ void Neuron::fire(int time_step) {
   this->memory_leak_patch();
 
 //  Forward applies the non-linearity
-  this->old_value = this->value;
-  this->old_value_without_activation = this->value_without_activation;
-  this->value = this->forward(value_before_firing);
+  if (!this->is_input_neuron){
+    // this is already updated in set_input_values
+    this->old_value = this->value;
+    this->old_value_without_activation = this->value_without_activation;
+    // value always end up being set to zeros for input_neurons, dont want that
+    this->value = this->forward(value_before_firing);
+  }
   if(this->value > this->average_activation){
     this->average_activation = this->value;
   }

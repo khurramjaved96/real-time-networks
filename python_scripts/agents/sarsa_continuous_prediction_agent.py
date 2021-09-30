@@ -27,6 +27,7 @@ class SarsaContinuousPredictionAgent(BaseAgent):
         predictions_vec = deque(maxlen=1000)
         running_MSRE = -1
         error_trace = 0;
+        eps = 0
         obs = env.reset()
         for t in range(timesteps):
             model.set_input_values(obs)
@@ -48,7 +49,9 @@ class SarsaContinuousPredictionAgent(BaseAgent):
             obs = next_obs
             rewards_vec.append(reward)
             predictions_vec.append(prediction[0])
-            logger.log_step_metrics(t/10, t)
+            if done:
+                eps += 1
+            logger.log_step_metrics(eps, t)
 
             if t % 1000 == 0:
                 MSRE, return_error, return_target = compute_return_error(list(rewards_vec), list(predictions_vec), gamma)
@@ -56,5 +59,5 @@ class SarsaContinuousPredictionAgent(BaseAgent):
                     running_MSRE = MSRE
                 else:
                     running_MSRE = 0.99 * running_MSRE + 0.01 * MSRE
-                logger.log_eps_metrics(t/10, t, MSRE, running_MSRE, error_trace, list(predictions_vec), return_target, return_error)
+                logger.log_eps_metrics(eps, t, MSRE, running_MSRE, error_trace, list(predictions_vec), return_target, return_error)
         env.close()
