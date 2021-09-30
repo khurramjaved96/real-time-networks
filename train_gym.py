@@ -95,7 +95,7 @@ def main():  # noqa: C901
             args.db,
             "episodic_metrics",
             ["run_id", "episode", "timestep", "MSRE", "running_MSRE", "error"], ["int", "int", "int", "real", "real", "real"],
-            ["run_id", "episode"],
+            ["run_id", "episode", "timestep"],
         )
         neuron_metrics = Metric(
             args.db,
@@ -124,6 +124,13 @@ def main():  # noqa: C901
             ["run_id", "episode", "timestep", "count_active"],
             ["int", "int", "int", "int"],
             ["run_id", "timestep"],
+        )
+        imprinting_metrics = Metric(
+            args.db,
+            "imprinting_metric",
+            ["run_id", "episode", "timestep", "neuron_id", "imprinted_on_id", "outgoing_weight", "age", "neuron_utility"],
+            ["int", "int", "int", "int", "int", "real", "int", "real"],
+            ["run_id", "timestep", "neuron_id", "imprinted_on_id"],
         )
     # fmt: on
 
@@ -231,12 +238,13 @@ def main():  # noqa: C901
         log_to_db=(args.db != ""),
         run_id=args.run_id,
         model=model,
-        commit_frequency=10000,
+        commit_frequency=2500,
         episodic_metrics=episodic_metrics,
         neuron_metrics=neuron_metrics,
         synapse_metrics=synapse_metrics,
         prediction_metrics=prediction_metrics,
         bounded_unit_metrics=bounded_unit_metrics,
+        imprinting_metrics=imprinting_metrics,
     )
 
     if args.task == "control":

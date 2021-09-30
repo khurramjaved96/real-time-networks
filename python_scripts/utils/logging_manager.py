@@ -10,7 +10,7 @@ INVALID_PLACEHOLDER = 1e+100
 
 
 class LoggingManager:
-    def __init__(self, log_to_db, run_id, model, commit_frequency=1000, episodic_metrics=None, neuron_metrics=None, synapse_metrics=None, prediction_metrics=None, bounded_unit_metrics=None):
+    def __init__(self, log_to_db, run_id, model, commit_frequency=1000, episodic_metrics=None, neuron_metrics=None, synapse_metrics=None, prediction_metrics=None, bounded_unit_metrics=None, imprinting_metrics=None):
         self.log_to_db = log_to_db
         self.run_id = run_id
         self.model = model
@@ -20,13 +20,15 @@ class LoggingManager:
         self.neuron_metrics = neuron_metrics
         self.synapse_metrics = synapse_metrics
         self.prediction_metrics = prediction_metrics
-        self.bounded_unit_metrics = bounded_unit_metrics;
+        self.bounded_unit_metrics = bounded_unit_metrics
+        self.imprinting_metrics = imprinting_metrics
 
         self.episodic_log_vec = []
         self.neuron_log_vec = []
         self.synapse_log_vec = []
         self.prediction_log_vec = []
         self.bounded_log_vec = []
+        self.imprinting_log_vec = []
 
     def items_to_str(self, vec):
         ret_vec = []
@@ -46,6 +48,7 @@ class LoggingManager:
             self.synapse_metrics.add_values(self.synapse_log_vec)
             self.prediction_metrics.add_values(self.prediction_log_vec)
             self.bounded_unit_metrics.add_values(self.bounded_log_vec)
+            self.imprinting_metrics.add_values(self.imprinting_log_vec)
         except:
             print("Failed commitinng logs")
 
@@ -62,15 +65,15 @@ class LoggingManager:
             return
         max_vals = 20000
         # its so expensive to do a self.model.all_synapses or all_neurons at every step
-        if timestep % 50000 == 0 and (len(self.model.all_synapses) > max_vals or len(self.model.all_neurons) > max_vals):
+        if timestep % 10000 == 0 and (len(self.model.all_synapses) > max_vals or len(self.model.all_neurons) > max_vals):
             print("Warning (logging_manager.py): Too many values to log! Truncating...")
 
 
-        if timestep % 50000 == 0:
+        if timestep % 10000 == 0:
             for neuron in self.model.all_neurons[:max_vals]:
                 self.neuron_log_vec.append(self.items_to_str([self.run_id, episode, timestep, neuron.id, neuron.value, neuron.average_activation, neuron.neuron_utility]))
 
-        if timestep % 50000 == 0:
+        if timestep % 10000 == 0:
             for synapse in self.model.all_synapses[:max_vals]:
                 self.synapse_log_vec.append(self.items_to_str([self.run_id, episode, timestep, synapse.id, synapse.weight, synapse.meta_step_size, synapse.synapse_utility]))
 
@@ -78,23 +81,22 @@ class LoggingManager:
             self.commit_logs()
 
     def log_eps_metrics(self, episode, timestep, MSRE, running_MSRE, error, predictions, return_target, return_error):
-        if episode % 1 == 0:
+        if timestep% 1000 == 0:
             print(">>",timestep, episode, MSRE, running_MSRE, predictions[-1])
-        if episode % 1 == 0:
+        if episode% 20 == 0:
             print(predictions)
             print(return_target)
         if not self.log_to_db:
             return
-        if episode % 100 == 0:
+        if timestep % 1000 == 0:
             self.episodic_log_vec.append(self.items_to_str([self.run_id, episode, timestep, MSRE, running_MSRE, error]))
 
-        if episode % 500 == 0:
-            print(predictions)
-            print(return_target)
+        if timestep % 2500 == 0:
             for t, v in enumerate(zip(predictions, return_target, return_error)):
                 self.prediction_log_vec.append(self.items_to_str([self.run_id, episode, t, MSRE, v[0], v[1], v[2], "[]"]))
 
     def log_synapse_replacement(self, bound_replacement_metrics):
+        return
         if not self.log_to_db:
             return
         bound_replacement_vec = []
@@ -107,9 +109,18 @@ class LoggingManager:
             print("Syn replacement log failed")
 
     def log_bounded_unit_activity(self, episode, timestep):
+        return
         if not self.log_to_db:
             return
         if episode % 1000 == 0:
             self.bounded_log_vec.append(self.items_to_str([self.run_id, episode, timestep, self.model.count_active_bounded_units()]))
 
+    def log_imprinting_activity(self, episode, timestep):
+        if not self.log_to_db:
+            return
+        for imprinted_unit in self.model.imprinted_features:
+            for s in imprinted_unit.incoming_synapses:
+                if len(imprinted_unit.outgoing_synapses) < 1:
+                    continue
+                self.imprinting_log_vec.append(self.items_to_str([self.run_id, episode, timestep, imprinted_unit.id, s.input_neuron.id, imprinted_unit.outgoing_synapses[0].weight, imprinted_unit.neuron_age, imprinted_unit.neuron_utility]))
 

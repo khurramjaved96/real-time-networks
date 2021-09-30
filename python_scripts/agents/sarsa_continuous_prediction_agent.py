@@ -45,6 +45,7 @@ class SarsaContinuousPredictionAgent(BaseAgent):
             if err - error_trace > args.imprinting_err_thresh:
                 print(f"imprinting now trace: {error_trace} err: {err} t: {t}")
                 model.imprint_LTU_randomly()
+                logger.log_imprinting_activity(eps, t)
 
             obs = next_obs
             rewards_vec.append(reward)

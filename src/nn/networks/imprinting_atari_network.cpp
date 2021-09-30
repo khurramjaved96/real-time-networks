@@ -144,8 +144,8 @@ void ImprintingAtariNetwork::step() {
 
 //  Delete our is_useless weights and neurons
   std::for_each(
-      imprinted_features.begin(),
-      imprinted_features.end(),
+      all_neurons.begin(),
+      all_neurons.end(),
       [&](Neuron *n) {
         n->prune_useless_weights();
       });
@@ -160,12 +160,11 @@ void ImprintingAtariNetwork::step() {
   auto it_n = std::remove_if(this->all_neurons.begin(), this->all_neurons.end(), to_delete_n);
   this->all_neurons.erase(it_n, this->all_neurons.end());
 
-  auto it_n1 = std::remove_if(this->imprinted_features.begin(), this->imprinted_features.end(), to_delete_n);
-  this->imprinted_features.erase(it_n1, this->imprinted_features.end());
+  it_n = std::remove_if(this->imprinted_features.begin(), this->imprinted_features.end(), to_delete_n);
+  this->imprinted_features.erase(it_n, this->imprinted_features.end());
 
   this->time_step++;
 }
-
 
 void ImprintingAtariNetwork::imprint_LTU_randomly() {
   std::uniform_real_distribution<float> prob_sampler(0, 0.5);
@@ -203,7 +202,7 @@ void ImprintingAtariNetwork::imprint_LTU_randomly() {
     s->set_meta_step_size(this->meta_step_size);
     s->turn_on_idbd();
     s->block_gradients(); //TODO will this affect utility prop?
-    std::cout << "Interesting: " << interesting_neurons.size() << " Imprinted features total_ones: " << total_ones << " thresh: " << new_feature->activation_threshold << " weight: " << imprinting_weight << " total current features: " << this->imprinted_features.size() << " total syn: " << this->all_synapses.size() << std::endl;
+    std::cout << "Interesting: " << interesting_neurons.size() << " selected: " << total_ones << " thresh: " << new_feature->activation_threshold << " weight: " << imprinting_weight << " total current features: " << this->imprinted_features.size() << " total syn: " << this->all_synapses.size() << std::endl;
 
   }
   else
