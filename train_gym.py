@@ -11,6 +11,8 @@ import gym
 import numpy as np
 import matplotlib.pyplot as plt
 
+sys.path.insert(0,"rl-baselines3-zoo")
+
 import FlexibleNN
 from FlexibleNN import Metric, Database
 from python_scripts.utils.utils import get_types
@@ -62,7 +64,7 @@ def main():  # noqa: C901
     parser.add_argument( "--tilecoding-n-tilings", help="Number of tilecoding tilings to use (default: 8)", default=8, type=int,)
     parser.add_argument( "--tilecoding-n-tiles", help="Number of tilecoding tiles per dim (default: 8)", default=8, type=int,)
 
-    parser.add_argument( "--net-width", help="initial width of the network (only for net:imprintingWide)", default=100, type=int)
+    parser.add_argument( "--net-width", help="initial width of the network (only for net:imprintingWide)", default=0, type=int)
     parser.add_argument( "--net-prune-prob", help="pruning prob (per step) for the weights after they have matured", default=0.01, type=float)
     parser.add_argument( "--imprinting-max-bound-range", help="max range for the random bounds that are found around the random center", default=0.1, type=float)
     parser.add_argument( "--use-imprinting", help="Use imprinted features instead of random (0: dont use, 1: use)", default=1, type=int,)
@@ -209,7 +211,7 @@ def main():  # noqa: C901
     elif args.net == "imprintingAtari":
         assert args.env in ["PongNoFrameskip-v4"]
         assert args.net_width == 0, f"net width not implemented"
-        model = FlexibleNN.ImprintingWideNetwork(
+        model = FlexibleNN.ImprintingAtariNetwork(
             input_size,
             output_size,
             args.net_width,
