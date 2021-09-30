@@ -131,7 +131,7 @@ void Neuron::update_value(int time_step) {
   this->value_before_firing = 0;
   this->shadow_error_prediction_before_firing = 0;
 
-  this->normalize_neuron();
+  //this->normalize_neuron();
 
 //  Age our neuron like a fine wine and set the next values of our neuron.
   for (auto &it : this->incoming_synapses) {
@@ -437,7 +437,7 @@ void Neuron::mark_useless_weights() {
 //  if this current neuron has no outgoing synapses and is not an output or input neuron,
 //  delete it a
 //  nd its incoming synapses.
-  if(this->incoming_synapses.empty() && !this->is_input_neuron){
+  if(this->incoming_synapses.empty() && !this->is_input_neuron && !this->is_bias_unit){
     this->useless_neuron = true;
     for (auto it : this->outgoing_synapses)
       it->is_useless = true;

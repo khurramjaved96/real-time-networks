@@ -41,14 +41,14 @@ class SarsaContinuousPredictionAgent(BaseAgent):
 
             err = model.introduce_targets([new_target], gamma, lmbda)
             error_trace = 0.99 * error_trace + 0.01 * err
-            if abs(error_trace - err) > args.imprinting_err_thresh:
-                print(f"imprinting now trace: {error_trace} err: {err}")
+            if err - error_trace > args.imprinting_err_thresh:
+                print(f"imprinting now trace: {error_trace} err: {err} t: {t}")
                 model.imprint_LTU_randomly()
 
             obs = next_obs
             rewards_vec.append(reward)
             predictions_vec.append(prediction[0])
-            logger.log_step_metrics(t, t)
+            logger.log_step_metrics(t/10, t)
 
             if t % 1000 == 0:
                 MSRE, return_error, return_target = compute_return_error(list(rewards_vec), list(predictions_vec), gamma)
@@ -56,5 +56,5 @@ class SarsaContinuousPredictionAgent(BaseAgent):
                     running_MSRE = MSRE
                 else:
                     running_MSRE = 0.99 * running_MSRE + 0.01 * MSRE
-                logger.log_eps_metrics(t, t, MSRE, running_MSRE, error_trace, list(predictions_vec), return_target, return_error)
+                logger.log_eps_metrics(t/10, t, MSRE, running_MSRE, error_trace, list(predictions_vec), return_target, return_error)
         env.close()

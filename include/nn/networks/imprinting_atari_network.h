@@ -21,6 +21,7 @@ class ImprintingAtariNetwork: public Network {
   int input_H;
   int input_W;
   int input_bins;
+  std::vector <Neuron*> imprinted_features;
 
   ImprintingAtariNetwork(int no_of_input_features,
                          int no_of_output_neurons,

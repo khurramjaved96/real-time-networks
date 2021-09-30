@@ -61,8 +61,9 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
   this->all_neurons.push_back(bias_unit);
 
   for (auto &output : this->output_neurons) {
-    synapse *s = new synapse(bias_unit, output, 0,0);
-    //s->disable_utility = true;
+    synapse *s = new synapse(bias_unit, output, 0.0,0);
+    s->disable_utility = true;
+    s->block_gradients();
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
     s->set_meta_step_size(0);
@@ -94,8 +95,8 @@ void ImprintingAtariNetwork::step() {
 //  of each neuron.
   std::for_each(
       std::execution::par_unseq,
-      all_neurons.begin(),
-      all_neurons.end(),
+      output_neurons.begin(),
+      output_neurons.end(),
       [&](Neuron *n) {
         n->forward_gradients();
       });
@@ -103,8 +104,8 @@ void ImprintingAtariNetwork::step() {
 //  Now we propagate our error backwards one step
   std::for_each(
       std::execution::par_unseq,
-      all_neurons.begin(),
-      all_neurons.end(),
+      output_neurons.begin(),
+      output_neurons.end(),
       [&](Neuron *n) {
         n->propagate_error();
       });
@@ -112,8 +113,8 @@ void ImprintingAtariNetwork::step() {
 //  Calculate our credit
   std::for_each(
       std::execution::par_unseq,
-      all_synapses.begin(),
-      all_synapses.end(),
+      output_synapses.begin(),
+      output_synapses.end(),
       [&](synapse *s) {
         s->assign_credit();
       });
@@ -121,8 +122,8 @@ void ImprintingAtariNetwork::step() {
 //  Update our weights (based on either normal update or IDBD update
   std::for_each(
       std::execution::par_unseq,
-      all_synapses.begin(),
-      all_synapses.end(),
+      output_synapses.begin(),
+      output_synapses.end(),
       [&](synapse *s) {
         s->update_weight();
       });
@@ -130,16 +131,16 @@ void ImprintingAtariNetwork::step() {
  //Mark all is_useless weights and neurons for deletion
   std::for_each(
       std::execution::par_unseq,
-      all_neurons.begin(),
-      all_neurons.end(),
+      imprinted_features.begin(),
+      imprinted_features.end(),
       [&](Neuron *n) {
         n->mark_useless_weights();
       });
 
 //  Delete our is_useless weights and neurons
   std::for_each(
-      all_neurons.begin(),
-      all_neurons.end(),
+      imprinted_features.begin(),
+      imprinted_features.end(),
       [&](Neuron *n) {
         n->prune_useless_weights();
       });
@@ -153,6 +154,9 @@ void ImprintingAtariNetwork::step() {
 
   auto it_n = std::remove_if(this->all_neurons.begin(), this->all_neurons.end(), to_delete_n);
   this->all_neurons.erase(it_n, this->all_neurons.end());
+
+  auto it_n = std::remove_if(this->imprinted_features.begin(), this->imprinted_features.end(), to_delete_n);
+  this->imprinted_features.erase(it_n, this->imprinted_features.end());
 
   this->time_step++;
 }
@@ -181,10 +185,13 @@ void ImprintingAtariNetwork::imprint_LTU_randomly() {
 
   if (total_ones != 0){
     this->all_neurons.push_back(new_feature);
+    this->imprinted_features.push_back(new_feature);
     std::uniform_real_distribution<float> thres_sampler(0, total_ones);
     new_feature->activation_threshold = thres_sampler(this->mt);
 
-    float imprinting_weight = -1 * this->output_neurons[0]->error_gradient.back().error;
+    //This blows up :/
+    //float imprinting_weight = -1 * this->output_neurons[0]->error_gradient.back().error;
+    float imprinting_weight = 0.01 * prob_sampler(this->mt);
     auto s = new synapse(new_feature, this->output_neurons[0], imprinting_weight, this->step_size);
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
