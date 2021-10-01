@@ -69,6 +69,7 @@ def main():  # noqa: C901
     parser.add_argument( "--imprinting-max-bound-range", help="max range for the random bounds that are found around the random center", default=0.1, type=float)
     parser.add_argument( "--use-imprinting", help="Use imprinted features instead of random (0: dont use, 1: use)", default=1, type=int,)
     parser.add_argument( "--imprinting-err-thresh", help="If error_trace-current_error > thresh, do imprinting", default=0.1, type=float)
+    parser.add_argument( "--imprinting-mode", help="Imprinting mode to use (random, optical_flow: default)", default="optical_flow", type=str,)
 
     parser.add_argument("--step-size", help="step size", default=0.01, type=float)
     parser.add_argument( "--meta-step-size", help="tidbd step size", default=1e-3, type=float)
@@ -240,11 +241,11 @@ def main():  # noqa: C901
         model=model,
         commit_frequency=2500,
         episodic_metrics=episodic_metrics,
-        neuron_metrics=neuron_metrics,
-        synapse_metrics=synapse_metrics,
+        #neuron_metrics=neuron_metrics,
+        #synapse_metrics=synapse_metrics,
         prediction_metrics=prediction_metrics,
-        bounded_unit_metrics=bounded_unit_metrics,
-        imprinting_metrics=imprinting_metrics,
+        #bounded_unit_metrics=bounded_unit_metrics,
+        #imprinting_metrics=imprinting_metrics,
     )
 
     if args.task == "control":

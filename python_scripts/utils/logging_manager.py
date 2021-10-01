@@ -43,12 +43,18 @@ class LoggingManager:
         if not self.log_to_db:
             return
         try:
-            self.episodic_metrics.add_values(self.episodic_log_vec)
-            self.neuron_metrics.add_values(self.neuron_log_vec)
-            self.synapse_metrics.add_values(self.synapse_log_vec)
-            self.prediction_metrics.add_values(self.prediction_log_vec)
-            self.bounded_unit_metrics.add_values(self.bounded_log_vec)
-            self.imprinting_metrics.add_values(self.imprinting_log_vec)
+            if self.episodic_metrics:
+                self.episodic_metrics.add_values(self.episodic_log_vec)
+            if self.neuron_metrics:
+                self.neuron_metrics.add_values(self.neuron_log_vec)
+            if self.synapse_metrics:
+                self.synapse_metrics.add_values(self.synapse_log_vec)
+            if self.prediction_metrics:
+                self.prediction_metrics.add_values(self.prediction_log_vec)
+            if self.bounded_unit_metrics:
+                self.bounded_unit_metrics.add_values(self.bounded_log_vec)
+            if self.imprinting_metrics:
+                self.imprinting_metrics.add_values(self.imprinting_log_vec)
         except:
             print("Failed commitinng logs")
 
@@ -57,6 +63,7 @@ class LoggingManager:
         self.synapse_log_vec = []
         self.prediction_log_vec = []
         self.bounded_log_vec = []
+        self.imprinting_log_vec = []
 
     def log_step_metrics(self, episode, timestep):
         #if timestep % 5000 == 0:
@@ -69,13 +76,15 @@ class LoggingManager:
             print("Warning (logging_manager.py): Too many values to log! Truncating...")
 
 
-        if timestep % 10000 == 0:
-            for neuron in self.model.all_neurons[:max_vals]:
-                self.neuron_log_vec.append(self.items_to_str([self.run_id, episode, timestep, neuron.id, neuron.value, neuron.average_activation, neuron.neuron_utility]))
+        if self.neuron_metrics is not None:
+            if timestep % 10000 == 0:
+                for neuron in self.model.all_neurons[:max_vals]:
+                    self.neuron_log_vec.append(self.items_to_str([self.run_id, episode, timestep, neuron.id, neuron.value, neuron.average_activation, neuron.neuron_utility]))
 
-        if timestep % 10000 == 0:
-            for synapse in self.model.all_synapses[:max_vals]:
-                self.synapse_log_vec.append(self.items_to_str([self.run_id, episode, timestep, synapse.id, synapse.weight, synapse.meta_step_size, synapse.synapse_utility]))
+        if self.synapse_metrics is not None:
+            if timestep % 10000 == 0:
+                for synapse in self.model.all_synapses[:max_vals]:
+                    self.synapse_log_vec.append(self.items_to_str([self.run_id, episode, timestep, synapse.id, synapse.weight, synapse.meta_step_size, synapse.synapse_utility]))
 
         if timestep % self.commit_frequency == 0:
             self.commit_logs()
@@ -88,12 +97,14 @@ class LoggingManager:
             print(return_target)
         if not self.log_to_db:
             return
-        if timestep % 1000 == 0:
-            self.episodic_log_vec.append(self.items_to_str([self.run_id, episode, timestep, MSRE, running_MSRE, error]))
+        if self.episodic_metrics is not None:
+            if timestep % 1000 == 0:
+                self.episodic_log_vec.append(self.items_to_str([self.run_id, episode, timestep, MSRE, running_MSRE, error]))
 
-        if timestep % 2500 == 0:
-            for t, v in enumerate(zip(predictions, return_target, return_error)):
-                self.prediction_log_vec.append(self.items_to_str([self.run_id, episode, t, MSRE, v[0], v[1], v[2], "[]"]))
+        if self.prediction_metrics is not None:
+            if timestep % 2500 == 0:
+                for t, v in enumerate(zip(predictions, return_target, return_error)):
+                    self.prediction_log_vec.append(self.items_to_str([self.run_id, episode, t, MSRE, v[0], v[1], v[2], "[]"]))
 
     def log_synapse_replacement(self, bound_replacement_metrics):
         return
@@ -112,11 +123,14 @@ class LoggingManager:
         return
         if not self.log_to_db:
             return
-        if episode % 1000 == 0:
-            self.bounded_log_vec.append(self.items_to_str([self.run_id, episode, timestep, self.model.count_active_bounded_units()]))
+        if self.bounded_unit_metrics is not None:
+            if episode % 1000 == 0:
+                self.bounded_log_vec.append(self.items_to_str([self.run_id, episode, timestep, self.model.count_active_bounded_units()]))
 
     def log_imprinting_activity(self, episode, timestep):
         if not self.log_to_db:
+            return
+        if self.imprinting_metrics is None:
             return
         for imprinted_unit in self.model.imprinted_features:
             for s in imprinted_unit.incoming_synapses:

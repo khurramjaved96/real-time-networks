@@ -39,6 +39,7 @@ class ImprintingAtariNetwork: public Network {
   void step();
   void set_input_values(std::vector<float> const &input_values);
   void imprint_LTU_randomly();
+  void imprint_LTU_optical_flow();
 };
 
 #endif // INCLUDE_NN_NETWORKS_IMPRINTING_ATARI_H_

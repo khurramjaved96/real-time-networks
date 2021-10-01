@@ -42,9 +42,14 @@ class SarsaContinuousPredictionAgent(BaseAgent):
 
             err = model.introduce_targets([new_target], gamma, lmbda)
             error_trace = 0.99 * error_trace + 0.01 * err
-            if err - error_trace > args.imprinting_err_thresh:
+            if args.use_imprinting and err - error_trace > args.imprinting_err_thresh:
                 print(f"imprinting now trace: {error_trace} err: {err} t: {t}")
-                model.imprint_LTU_randomly()
+                if args.imprinting_mode == "random":
+                    model.imprint_LTU_randomly()
+                elif args.imprinting_mode == "optical_flow":
+                    model.imprint_LTU_optical_flow()
+                else:
+                    raise ValueError
                 logger.log_imprinting_activity(eps, t)
 
             obs = next_obs
