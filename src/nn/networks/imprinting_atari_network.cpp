@@ -167,16 +167,10 @@ void ImprintingAtariNetwork::step() {
 }
 
 
-void ImprintingAtariNetwork::imprint_LTU_optical_flow() {
+void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *> interesting_neurons) {
+  // randomly pick some neurons from the provided "interesting_neurons" to imprint on
   std::uniform_real_distribution<float> prob_sampler(0, 0.5);
   float percentage_to_look_at = prob_sampler(this->mt);
-
-  std::vector <Neuron *> interesting_neurons;
-  for (auto &it : this->all_neurons) {
-    if (it->value != it->old_value && it->is_mature && !it->useless_neuron && !it->is_output_neuron && it->is_input_neuron)
-      interesting_neurons.push_back(it);
-  }
-
   int total_ones = 0;
   auto new_feature = new LTU(false, false, 100000);
   for (auto &it : interesting_neurons){
@@ -202,26 +196,45 @@ void ImprintingAtariNetwork::imprint_LTU_optical_flow() {
     this->output_synapses.push_back(s);
     s->set_meta_step_size(this->meta_step_size);
     s->turn_on_idbd();
-    s->block_gradients(); //TODO will this affect utility prop?
+    s->block_gradients();
     std::cout << "Interesting: " << interesting_neurons.size() << " selected: " << total_ones << " thresh: " << new_feature->activation_threshold << " weight: " << imprinting_weight << " total current features: " << this->imprinted_features.size() << " total syn: " << this->all_synapses.size() << std::endl;
-
   }
   else
     delete new_feature;
 }
 
-void ImprintingAtariNetwork::imprint_LTU_randomly() {
-  std::uniform_real_distribution<float> prob_sampler(0, 0.5);
-  float percentage_to_look_at = prob_sampler(this->mt);
 
-  // To sample some "interesting" features randomly
-  // see imprint_LTU_optical_flow() first
-  // these averages are based on eyeballing pong's optical flow "interesting" units
-  // in single layer case
+void ImprintingAtariNetwork::imprint_using_optical_flow_old() {
+  // potential neurons for imprinting are those where value @ step t != t-1
+  std::vector <Neuron *> interesting_neurons;
+  for (auto &it : this->all_neurons) {
+    if (it->value != it->old_value && it->is_mature && !it->useless_neuron && !it->is_output_neuron && it->is_input_neuron)
+      interesting_neurons.push_back(it);
+  }
+  this->imprint_on_interesting_neurons(interesting_neurons);
+}
+
+
+void ImprintingAtariNetwork::imprint_using_optical_flow() {
+  // potential neurons for imprinting are those where value @ step t-1 = 1 and values @ t and t-2 = 0.
+  std::vector <Neuron *> interesting_neurons;
+  for (auto &it : this->all_neurons) {
+    if (it->old_old_value == 0 && it->old_value == 1 && it->value == 0 && it->is_mature && !it->useless_neuron && !it->is_output_neuron && it->is_input_neuron)
+      interesting_neurons.push_back(it);
+  }
+  this->imprint_on_interesting_neurons(interesting_neurons);
+}
+
+
+void ImprintingAtariNetwork::imprint_randomly() {
+  // potential neurons for imprinting are picked randomly
+  // see imprint_using_optical_flow() first
+  // The numbers are picked to try and make a fair comparison with
+  // the optical flow imprinting
   std::uniform_int_distribution<> interesting_sampler(30, 100);
   auto max_interesting_units = interesting_sampler(this->mt);
 
-  std::uniform_int_distribution<> index_sampler(0, this->all_neurons.size());
+  std::uniform_int_distribution<> index_sampler(0, this->all_neurons.size() -1);
   std::vector <Neuron *> interesting_neurons;
 
   while (interesting_neurons.size() < max_interesting_units){
@@ -229,38 +242,7 @@ void ImprintingAtariNetwork::imprint_LTU_randomly() {
     if (it->is_mature && !it->useless_neuron && !it->is_output_neuron && it->is_input_neuron)
       interesting_neurons.push_back(it);
   }
-
-  int total_ones = 0;
-  auto new_feature = new LTU(false, false, 100000);
-  for (auto &it : interesting_neurons){
-    if(prob_sampler(this->mt) > percentage_to_look_at) {
-      auto s = new synapse(it, new_feature, 1, 0);
-      this->all_synapses.push_back(s);
-      s->set_meta_step_size(0);
-      total_ones++;
-    }
-  }
-
-  if (total_ones != 0){
-    this->all_neurons.push_back(new_feature);
-    this->imprinted_features.push_back(new_feature);
-    std::uniform_real_distribution<float> thres_sampler(0, total_ones);
-    new_feature->activation_threshold = thres_sampler(this->mt);
-
-    //This blows up :/
-    //float imprinting_weight = -1 * this->output_neurons[0]->error_gradient.back().error;
-    float imprinting_weight = 0.01 * prob_sampler(this->mt);
-    auto s = new synapse(new_feature, this->output_neurons[0], imprinting_weight, this->step_size);
-    this->all_synapses.push_back(s);
-    this->output_synapses.push_back(s);
-    s->set_meta_step_size(this->meta_step_size);
-    s->turn_on_idbd();
-    s->block_gradients(); //TODO will this affect utility prop?
-    std::cout << "Interesting: " << interesting_neurons.size() << " selected: " << total_ones << " thresh: " << new_feature->activation_threshold << " weight: " << imprinting_weight << " total current features: " << this->imprinted_features.size() << " total syn: " << this->all_synapses.size() << std::endl;
-
-  }
-  else
-    delete new_feature;
+  this->imprint_on_interesting_neurons(interesting_neurons);
 }
 
 
@@ -291,6 +273,7 @@ void ImprintingAtariNetwork::set_input_values(std::vector<float> const &input_va
       this->input_indices.begin(),
       this->input_indices.end(),
       [&](int i) {
+        this->input_neurons[i]->old_old_value = this->input_neurons[i]->old_value;
         this->input_neurons[i]->old_value = this->input_neurons[i]->value;
         this->input_neurons[i]->old_value_without_activation = this->input_neurons[i]->value;
         this->input_neurons[i]->value = input_values[i];

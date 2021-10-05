@@ -45,9 +45,9 @@ class SarsaContinuousPredictionAgent(BaseAgent):
             if args.use_imprinting and err - error_trace > args.imprinting_err_thresh:
                 print(f"imprinting now trace: {error_trace} err: {err} t: {t}")
                 if args.imprinting_mode == "random":
-                    model.imprint_LTU_randomly()
+                    model.imprint_randomly()
                 elif args.imprinting_mode == "optical_flow":
-                    model.imprint_LTU_optical_flow()
+                    model.imprint_using_optical_flow()
                 else:
                     raise ValueError
                 logger.log_imprinting_activity(eps, t)

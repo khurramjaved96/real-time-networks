@@ -84,8 +84,9 @@ PYBIND11_MODULE(FlexibleNN, m) {
     py::class_<ImprintingAtariNetwork, Network>(m, "ImprintingAtariNetwork")
         .def(py::init<int, int, int, float, float, bool, int, bool, int, int, int>())
         .def_readonly("imprinted_features", &ImprintingAtariNetwork::imprinted_features)
-        .def("imprint_LTU_randomly", &ImprintingAtariNetwork::imprint_LTU_randomly)
-        .def("imprint_LTU_optical_flow", &ImprintingAtariNetwork::imprint_LTU_optical_flow)
+        .def("imprint_randomly", &ImprintingAtariNetwork::imprint_randomly)
+        .def("imprint_using_optical_flow", &ImprintingAtariNetwork::imprint_using_optical_flow)
+        .def("imprint_using_optical_flow_old", &ImprintingAtariNetwork::imprint_using_optical_flow_old)
         .def("set_input_values", &ImprintingAtariNetwork::set_input_values)
         .def("step", &ImprintingAtariNetwork::step);
 

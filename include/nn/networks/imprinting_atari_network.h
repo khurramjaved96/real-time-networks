@@ -38,8 +38,10 @@ class ImprintingAtariNetwork: public Network {
 
   void step();
   void set_input_values(std::vector<float> const &input_values);
-  void imprint_LTU_randomly();
-  void imprint_LTU_optical_flow();
+  void imprint_on_interesting_neurons(std::vector<Neuron *> interesting_neurons);
+  void imprint_randomly();
+  void imprint_using_optical_flow();
+  void imprint_using_optical_flow_old();
 };
 
 #endif // INCLUDE_NN_NETWORKS_IMPRINTING_ATARI_H_

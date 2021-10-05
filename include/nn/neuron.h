@@ -24,6 +24,7 @@ class Neuron : public dynamic_elem {
   float value;
   float value_without_activation;
   float old_value;
+  float old_old_value;
   float old_value_without_activation;
   int drinking_age;
   float shadow_error_prediction_before_firing;
