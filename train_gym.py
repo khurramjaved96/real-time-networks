@@ -11,15 +11,22 @@ import gym
 import numpy as np
 import matplotlib.pyplot as plt
 
+sys.path.insert(0, "rl-baselines3-zoo")
+
 import FlexibleNN
 from FlexibleNN import Metric, Database
 from python_scripts.utils.utils import get_types
 from python_scripts.utils.state_feature.state_feature_util import TileCoder
 from python_scripts.utils.logging_manager import LoggingManager
 from python_scripts.utils.tilecoding_wrapper import TileCodedObservation
+from python_scripts.utils.image_binning_wrapper import BinnedObservation
 from python_scripts.agents.sarsa_control_agent import SarsaControlAgent
 from python_scripts.agents.sarsa_prediction_agent import SarsaPredictionAgent
+from python_scripts.agents.sarsa_continuous_prediction_agent import (
+    SarsaContinuousPredictionAgent,
+)
 from python_scripts.agents.mountaincar_fixed_agent import MountainCarFixed
+from python_scripts.agents.baselines_expert_agent import BaselinesExpert
 
 
 def set_random_seed(seed: int, env: gym.wrappers.time_limit.TimeLimit) -> None:
@@ -37,7 +44,7 @@ def set_random_seed(seed: int, env: gym.wrappers.time_limit.TimeLimit) -> None:
 def main():  # noqa: C901
 
     # make sure run_ids dont overlap when using parallel
-    sleep(random.random()*10)
+    sleep(random.random() * 10)
 
     # fmt: off
     parser = argparse.ArgumentParser()
@@ -52,14 +59,20 @@ def main():  # noqa: C901
     parser.add_argument( "--env", help="environment ID", type=str, default="MountainCar-v0")
     parser.add_argument( "--env-max-step-per-episode", help="Max number of timesteps per episode (default:0, mountaincar:2000)", default=0, type=int,)
 
-    parser.add_argument( "--tilecoding", help="Use tilecoded features (0: dont use, 1: use)", default=1, type=int,)
+    parser.add_argument( "--binning", help="Use binned features (0: dont use, 1: use)", default=0, type=int,)
+    parser.add_argument( "--binning-n-bins", help="Number of binning bins to use (default: 10)", default=10, type=int,)
+
+    parser.add_argument( "--tilecoding", help="Use tilecoded features (0: dont use, 1: use)", default=0, type=int,)
     parser.add_argument( "--tilecoding-n-tilings", help="Number of tilecoding tilings to use (default: 8)", default=8, type=int,)
     parser.add_argument( "--tilecoding-n-tiles", help="Number of tilecoding tiles per dim (default: 8)", default=8, type=int,)
 
-    parser.add_argument( "--net-width", help="initial width of the network (only for net:imprintingWide)", default=100, type=int)
+    parser.add_argument( "--net-width", help="initial width of the network (only for net:imprintingWide)", default=0, type=int)
     parser.add_argument( "--net-prune-prob", help="pruning prob (per step) for the weights after they have matured", default=0.01, type=float)
     parser.add_argument( "--imprinting-max-bound-range", help="max range for the random bounds that are found around the random center", default=0.1, type=float)
     parser.add_argument( "--use-imprinting", help="Use imprinted features instead of random (0: dont use, 1: use)", default=1, type=int,)
+    parser.add_argument( "--imprinting-err-thresh", help="If error_trace-current_error > thresh, do imprinting", default=0.1, type=float)
+    parser.add_argument( "--imprinting-mode", help="Imprinting mode to use (random, optical_flow: default)", default="optical_flow", type=str,)
+    parser.add_argument( "--imprinting-max-prob", help="Max percentage of interesting features to imprint on. Used as U[0,imprinting-max-prob]", default=1, type=float)
 
     parser.add_argument("--step-size", help="step size", default=0.01, type=float)
     parser.add_argument( "--meta-step-size", help="tidbd step size", default=1e-3, type=float)
@@ -76,17 +89,26 @@ def main():  # noqa: C901
         synapse_metrics = None
         prediction_metrics = None
         bounded_unit_metrics = None
+        imprinting_metrics = None
     else:
         args.db = "hshah1_" + args.db
         Database().create_database(args.db)
         run_metric = Metric(args.db, "runs", list(vars(args).keys()), get_types(list(vars(args).values())), ["run_id"])
         run_metric.add_value([str(v) for v in list(vars(args).values())])
 
+        run_state_metric = Metric(
+            args.db,
+            "run_states",
+            ["run_id", "comment", "state", "timestep", "episode", "MSRE", "running_MSRE"],
+            ["int", "VARCHAR(80)", "VARCHAR(40)", "int", "int", "real", "real"],
+            ["run_id"],
+        )
         episodic_metrics = Metric(
             args.db,
             "episodic_metrics",
-            ["run_id", "episode", "timestep", "MSRE", "running_MSRE", "error"], ["int", "int", "int", "real", "real", "real"],
-            ["run_id", "episode"],
+            ["run_id", "episode", "timestep", "MSRE", "running_MSRE", "error"],
+            ["int", "int", "int", "real", "real", "real"],
+            ["run_id", "episode", "timestep"],
         )
         neuron_metrics = Metric(
             args.db,
@@ -116,13 +138,27 @@ def main():  # noqa: C901
             ["int", "int", "int", "int"],
             ["run_id", "timestep"],
         )
+        imprinting_metrics = Metric(
+            args.db,
+            "imprinting_metric",
+            ["run_id", "episode", "timestep", "neuron_id", "imprinted_on_id", "outgoing_weight", "age", "neuron_utility"],
+            ["int", "int", "int", "int", "int", "real", "int", "real"],
+            ["run_id", "timestep", "neuron_id", "imprinted_on_id"],
+        )
     # fmt: on
 
     if args.net == "expandingLFA":
         assert args.tilecoding, f"expandingLFA can only be used with tilecoding"
 
-    env = gym.make(args.env)
-    input_size = env.observation_space.shape[0]
+    if args.env == "PongNoFrameskip-v4":
+        expert_agent = BaselinesExpert(seed=args.seed, env_id=args.env)
+        env = expert_agent.env
+        input_size = env.observation_space.shape[0] * env.observation_space.shape[1]
+        print(f"Using input size of {input_size}")
+    else:
+        env = gym.make(args.env)
+        input_size = env.observation_space.shape[0]
+
     if args.task == "control":
         output_size = env.action_space.n
     else:
@@ -145,6 +181,13 @@ def main():  # noqa: C901
         )
         input_size = env.tc.total_tiles
         args.step_size /= args.tilecoding_n_tilings
+    if args.binning:
+        assert not args.tilecoding, f"not to be used with tc"
+        env = BinnedObservation(env, args.binning_n_bins)
+        input_size = input_size * args.binning_n_bins
+
+    if args.env == "PongNoFrameskip-v4":
+        assert args.binning, f"Should use binning with Pong"
 
     if args.env_max_step_per_episode:  # just wrapper thing
         if args.tilecoding:
@@ -172,19 +215,35 @@ def main():  # noqa: C901
             True,
         )
     elif args.net == "imprintingWide":
-        # TODO not used with tc
         model = FlexibleNN.ImprintingWideNetwork(
             input_size,
             output_size,
             args.net_width,
             input_range,
-            1-args.net_prune_prob,
+            1 - args.net_prune_prob,
             args.imprinting_max_bound_range,
             args.step_size,
             args.meta_step_size,
             True,
             args.seed,
             bool(args.use_imprinting),
+        )
+    elif args.net == "imprintingAtari":
+        assert args.env in ["PongNoFrameskip-v4"]
+        assert args.net_width == 0, f"net width not implemented"
+        model = FlexibleNN.ImprintingAtariNetwork(
+            input_size,
+            output_size,
+            args.net_width,
+            args.step_size,
+            args.meta_step_size,
+            True,
+            args.seed,
+            bool(args.use_imprinting),
+            env.observation_space.shape[0],
+            env.observation_space.shape[1],
+            args.binning_n_bins,
+            args.imprinting_max_prob,
         )
     else:
         raise NotImplementedError
@@ -193,12 +252,13 @@ def main():  # noqa: C901
         log_to_db=(args.db != ""),
         run_id=args.run_id,
         model=model,
-        commit_frequency=10000,
+        commit_frequency=2500,
         episodic_metrics=episodic_metrics,
         neuron_metrics=neuron_metrics,
         synapse_metrics=synapse_metrics,
         prediction_metrics=prediction_metrics,
-        bounded_unit_metrics=bounded_unit_metrics,
+        # bounded_unit_metrics=bounded_unit_metrics,
+        imprinting_metrics=imprinting_metrics,
     )
 
     if args.task == "control":
@@ -206,25 +266,72 @@ def main():  # noqa: C901
     elif args.task == "prediction":
         if args.env == "MountainCar-v0":
             expert_agent = MountainCarFixed()
+            agent = SarsaPredictionAgent(expert_agent)
+        elif args.env == "PongNoFrameskip-v4":
+            agent = SarsaContinuousPredictionAgent(expert_agent)
         else:
             raise NotImplementedError
-        agent = SarsaPredictionAgent(expert_agent)
     else:
         raise NotImplementedError
 
-    agent.train(env, model, args.n_timesteps, args.epsilon, args.gamma, args.lmbda, logger)
+    agent.train(env, model, args.n_timesteps, args.epsilon, args.gamma, args.lmbda, logger, args)
+    try:
+        agent.train(
+            env,
+            model,
+            args.n_timesteps,
+            args.epsilon,
+            args.gamma,
+            args.lmbda,
+            logger,
+            args,
+        )
+    except:
+        if args.db != "":
+            run_state_metric.add_value(
+                [
+                    str(v)
+                    for v in [
+                        args.run_id,
+                        args.comment,
+                        "crashed",
+                        agent.timestep,
+                        agent.episode,
+                        agent.MSRE,
+                        agent.running_MSRE,
+                    ]
+                ]
+            )
+            logger.commit_logs()
+        print("failed... quiting")
+        exit()
+    if args.db != "":
+        run_state_metric.add_value(
+            [
+                str(v)
+                for v in [
+                    args.run_id,
+                    args.comment,
+                    "finished",
+                    agent.timestep,
+                    agent.episode,
+                    agent.MSRE,
+                    agent.running_MSRE,
+                ]
+            ]
+        )
 
+    #    if args.db:
+    #        bound_replacement_metrics = Metric(
+    #            args.db,
+    #            "bound_replacement_metrics",
+    #            ["run_id", "neuron_id", "neuron_age", "neuron_utility", "output_weight", "num_times_replaced" ], ["int", "int", "int", "real", "real", "int"],
+    #            ["run_id", "neuron_id"],
+    #        )
+    #        logger.log_synapse_replacement(bound_replacement_metrics)
 
-#    if args.db:
-#        bound_replacement_metrics = Metric(
-#            args.db,
-#            "bound_replacement_metrics",
-#            ["run_id", "neuron_id", "neuron_age", "neuron_utility", "output_weight", "num_times_replaced" ], ["int", "int", "int", "real", "real", "int"],
-#            ["run_id", "neuron_id"],
-#        )
-#        logger.log_synapse_replacement(bound_replacement_metrics)
-#
     logger.commit_logs()
+
 
 if __name__ == "__main__":
     main()

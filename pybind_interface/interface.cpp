@@ -7,6 +7,7 @@
 #include "../include/nn/networks/recurrent_state_value_network.h"
 #include "../include/nn/networks/expanding_linear_function_approximator.h"
 #include "../include/nn/networks/imprinting_wide_network.h"
+#include "../include/nn/networks/imprinting_atari_network.h"
 #include "../include/nn/synapse.h"
 #include "../include/experiment/Metric.h"
 
@@ -33,6 +34,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def("get_total_synapses", &Network::get_total_synapses)
         .def("get_total_neurons", &Network::get_total_neurons)
         .def("reset_trace", &Network::reset_trace)
+        .def("collect_garbage", &Network::collect_garbage)
         .def("print_graph", &Network::print_graph)
         .def("viz_graph", &Network::viz_graph)
         .def("get_viz_graph", &Network::get_viz_graph);
@@ -79,6 +81,15 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def("replace_lowest_utility_bounded_unit", &ImprintingWideNetwork::replace_lowest_utility_bounded_unit)
         .def("get_feature_bounds", &ImprintingWideNetwork::get_feature_bounds)
         .def("get_feature_utilities", &ImprintingWideNetwork::get_feature_utilities);
+
+    py::class_<ImprintingAtariNetwork, Network>(m, "ImprintingAtariNetwork")
+        .def(py::init<int, int, int, float, float, bool, int, bool, int, int, int, float>())
+        .def_readonly("imprinted_features", &ImprintingAtariNetwork::imprinted_features)
+        .def("imprint_randomly", &ImprintingAtariNetwork::imprint_randomly)
+        .def("imprint_using_optical_flow", &ImprintingAtariNetwork::imprint_using_optical_flow)
+        .def("imprint_using_optical_flow_old", &ImprintingAtariNetwork::imprint_using_optical_flow_old)
+        .def("set_input_values", &ImprintingAtariNetwork::set_input_values)
+        .def("step", &ImprintingAtariNetwork::step);
 
     py::class_<Metric>(m, "Metric")
         .def(py::init<std::string, std::string, std::vector<std::string>, std::vector<std::string>, std::vector<std::string>>())

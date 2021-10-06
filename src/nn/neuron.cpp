@@ -15,6 +15,7 @@
 
 Neuron::Neuron(bool is_input, bool is_output) {
   value = 0;
+  old_value = 0;
   value_before_firing = 0;
   id = neuron_id_generator;
   useless_neuron = false;
@@ -71,9 +72,14 @@ void Neuron::fire(int time_step) {
   this->memory_leak_patch();
 
 //  Forward applies the non-linearity
-  this->old_value = this->value;
-  this->old_value_without_activation = this->value_without_activation;
-  this->value = this->forward(value_before_firing);
+  if (!this->is_input_neuron){
+    // this is already updated in set_input_values
+    this->old_old_value = this->old_value;
+    this->old_value = this->value;
+    this->old_value_without_activation = this->value_without_activation;
+    // value always end up being set to zeros for input_neurons, dont want that
+    this->value = this->forward(value_before_firing);
+  }
   if(this->value > this->average_activation){
     this->average_activation = this->value;
   }
@@ -131,7 +137,7 @@ void Neuron::update_value(int time_step) {
   this->value_before_firing = 0;
   this->shadow_error_prediction_before_firing = 0;
 
-  this->normalize_neuron();
+  //this->normalize_neuron();
 
 //  Age our neuron like a fine wine and set the next values of our neuron.
   for (auto &it : this->incoming_synapses) {
@@ -437,7 +443,7 @@ void Neuron::mark_useless_weights() {
 //  if this current neuron has no outgoing synapses and is not an output or input neuron,
 //  delete it a
 //  nd its incoming synapses.
-  if(this->incoming_synapses.empty() && !this->is_input_neuron){
+  if(this->incoming_synapses.empty() && !this->is_input_neuron && !this->is_bias_unit){
     this->useless_neuron = true;
     for (auto it : this->outgoing_synapses)
       it->is_useless = true;

@@ -68,6 +68,9 @@ class Network {
 
   std::string get_viz_graph();
 
+  void increment_references(Neuron * n, int n_references);
+  void increment_references(synapse * s, int n_references);
+
 //    virtual void add_feature() = 0;
 };
 

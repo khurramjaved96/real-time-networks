@@ -15,7 +15,7 @@ class SarsaPredictionAgent(BaseAgent):
     def __init__(self, expert_agent):
         self.expert_agent = expert_agent
 
-    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger):
+    def train(self, env, model, timesteps, epsilon, gamma, lmbda, logger, args):
         """Train the agent
         Args:
             _
