@@ -34,6 +34,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def("get_total_synapses", &Network::get_total_synapses)
         .def("get_total_neurons", &Network::get_total_neurons)
         .def("reset_trace", &Network::reset_trace)
+        .def("collect_garbage", &Network::collect_garbage)
         .def("print_graph", &Network::print_graph)
         .def("viz_graph", &Network::viz_graph)
         .def("get_viz_graph", &Network::get_viz_graph);
@@ -82,7 +83,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def("get_feature_utilities", &ImprintingWideNetwork::get_feature_utilities);
 
     py::class_<ImprintingAtariNetwork, Network>(m, "ImprintingAtariNetwork")
-        .def(py::init<int, int, int, float, float, bool, int, bool, int, int, int>())
+        .def(py::init<int, int, int, float, float, bool, int, bool, int, int, int, float>())
         .def_readonly("imprinted_features", &ImprintingAtariNetwork::imprinted_features)
         .def("imprint_randomly", &ImprintingAtariNetwork::imprint_randomly)
         .def("imprint_using_optical_flow", &ImprintingAtariNetwork::imprint_using_optical_flow)

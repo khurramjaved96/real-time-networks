@@ -132,6 +132,9 @@ class LoggingManager:
             return
         if self.imprinting_metrics is None:
             return
+        # this gets too big, want to update only once per commit
+        if len(self.imprinting_log_vec) != 0:
+            return
         for imprinted_unit in self.model.imprinted_features:
             for s in imprinted_unit.incoming_synapses:
                 if len(imprinted_unit.outgoing_synapses) < 1:

@@ -13,5 +13,6 @@ void dynamic_elem::increment_reference() {
 }
 
 void dynamic_elem::decrement_reference() {
-  this->references -= 1;
+  if (this->references > 0)
+    this->references -= 1;
 }

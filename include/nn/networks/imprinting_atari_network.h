@@ -21,6 +21,7 @@ class ImprintingAtariNetwork: public Network {
   int input_H;
   int input_W;
   int input_bins;
+  float imprinting_max_prob;
   std::vector <int> input_indices;
   std::vector <Neuron*> imprinted_features;
 
@@ -34,7 +35,8 @@ class ImprintingAtariNetwork: public Network {
                          bool use_imprinting,
                          int input_H,
                          int input_W,
-                         int input_bins);
+                         int input_bins,
+                         float imprinting_max_prob);
 
   void step();
   void set_input_values(std::vector<float> const &input_values);

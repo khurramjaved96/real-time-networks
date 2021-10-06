@@ -43,6 +43,7 @@ pybind11_add_module(FlexibleNN src/utils.cpp include/utils.h include/nn/synapse.
         include/nn/networks/linear_function_approximator.h src/nn/networks/linear_function_approximator.cpp
         include/nn/networks/expanding_linear_function_approximator.h src/nn/networks/expanding_linear_function_approximator.cpp
         include/nn/networks/imprinting_wide_network.h src/nn/networks/imprinting_wide_network.cpp
+        include/nn/networks/imprinting_atari_network.h src/nn/networks/imprinting_atari_network.cpp
         pybind_interface/interface.cpp)
 
 #Cedar

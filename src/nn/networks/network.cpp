@@ -240,6 +240,18 @@ void Network::collect_garbage() {
   this->all_heap_elements.erase(it, this->all_heap_elements.end());
 }
 
+void Network::increment_references(Neuron * n, int n_references){
+  this->all_heap_elements.push_back(static_cast<dynamic_elem *>(n));
+  for (int i = 0; i < n_references; i++)
+    n->increment_reference();
+}
+
+void Network::increment_references(synapse* s, int n_references){
+  this->all_heap_elements.push_back(static_cast<dynamic_elem *>(s));
+  for (int i = 0; i < n_references; i++)
+    s->increment_reference();
+}
+
 std::vector<float> Network::read_output_values() {
   std::vector<float> output_vec;
   output_vec.reserve(this->output_neurons.size());
