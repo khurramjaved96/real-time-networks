@@ -104,7 +104,7 @@ void ImprintingMNIST::forward(std::vector<float> inp) {
 }
 
 void ImprintingMNIST::backward(std::vector<float> target) {
-  this->introduce_targets(target, 0, 0);
+  this->introduce_targets(target);
 
   std::for_each(
       std::execution::par_unseq,

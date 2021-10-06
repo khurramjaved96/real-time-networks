@@ -86,7 +86,7 @@ void ImprintingSupervised::forward(std::vector<float> inp) {
 }
 
 void ImprintingSupervised::backward(std::vector<float> target) {
-  this->introduce_targets(target, 0, 0);
+  this->introduce_targets(target);
 
   std::for_each(
       std::execution::par_unseq,

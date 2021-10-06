@@ -23,9 +23,9 @@ class LayerwiseFeedforward : public SyncedNetwork {
 
   std::vector<SyncedSynapse *> active_synapses;
 
-  std::vector<std::vector<LTUSynced *>> LTU_neuron_layers;
+  std::vector<std::vector<SyncedNeuron *>> LTU_neuron_layers;
 
-  LayerwiseFeedforward(float step_size, int seed, int no_of_input_features, float utility_to_keep);
+  LayerwiseFeedforward(float step_size, int seed, int no_of_input_features, int total_targets, float utility_to_keep);
 
   ~LayerwiseFeedforward();
 
@@ -48,6 +48,8 @@ class LayerwiseFeedforward : public SyncedNetwork {
   void add_feature_binary(float step_size, float utility_to_keep);
 
   void imprint_feature(int index, std::vector<float> feature);
+
+  void imprint_feature_random();
 };
 
 

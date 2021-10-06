@@ -31,7 +31,7 @@
 int SyncedNetwork::get_total_neurons() {
   int tot = 0;
   for (auto it : this->all_neurons) {
-    if (it->is_mature)
+    if (it->neuron_age > it->drinking_age)
       tot++;
   }
   return tot;
@@ -52,7 +52,7 @@ int SyncedNetwork::get_input_size() {
 int SyncedNetwork::get_total_synapses() {
   int tot = 0;
   for (auto it : this->all_synapses) {
-    if (it->output_neuron->is_mature && it->input_neuron->is_mature)
+    if (it->output_neuron->neuron_age > it->output_neuron->drinking_age)
       tot++;
   }
   return tot;
@@ -64,34 +64,34 @@ SyncedNetwork::~SyncedNetwork() {
 }
 
 void SyncedNetwork::set_input_values(std::vector<float> const &input_values) {
-//    assert(input_values.size() == this->input_neurons.size());
+
   for (int i = 0; i < input_values.size(); i++) {
-    if (i < this->input_neurons.size()) {
-      this->input_neurons[i]->old_value = this->input_neurons[i]->value;
-      this->input_neurons[i]->old_value_without_activation = this->input_neurons[i]->value;
-      this->input_neurons[i]->value = input_values[i];
-      this->input_neurons[i]->value_without_activation = input_values[i];
-    } else {
+    if (i < this->input_neurons.size())
+    {
+      this->input_neurons[i]->value_before_firing = input_values[i];
+    }
+    else
+      {
       std::cout << "More input features than input neurons\n";
       exit(1);
     }
   }
 }
 
-
 void SyncedNetwork::print_neuron_status() {
   std::cout << "ID\tUtility\tAvg activation\n";
-  for(auto it : this->all_neurons){
-    if(it->is_mature) {
-      std::cout << it->id << "\t" << it->neuron_utility << "\t\t" << it->average_activation << std::endl;
+  for (auto it : this->all_neurons) {
+    if (it->neuron_age > it->drinking_age) {
+      std::cout << it->id << "\t" << it->neuron_utility << std::endl;
     }
   }
 }
 
 void SyncedNetwork::print_synapse_status() {
   std::cout << "From\tTo\tWeight\tUtil\tUtiltoD\tStep-size\tAge\n";
-  for(auto it : this->all_synapses){
-    if(it->output_neuron->is_mature && it->input_neuron->is_mature) {
+  for (auto it : this->all_synapses) {
+    if (it->output_neuron->neuron_age > it->output_neuron->drinking_age
+        && it->input_neuron->neuron_age > it->input_neuron->drinking_age) {
       std::cout << it->input_neuron->id << "\t" << it->output_neuron->id << "\t" << it->weight << "\t"
                 << it->synapse_utility << "\t" << it->synapse_utility_to_distribute << "\t" << it->step_size << "\t"
                 << it->age << std::endl;
@@ -173,11 +173,7 @@ std::vector<float> SyncedNetwork::forward_pass_without_side_effects(std::vector<
   for (auto n : this->output_neurons) {
     float temp_value = 0;
     for (auto it: n->incoming_synapses) {
-      if (it->in_shadow_mode) {
-//        this->shadow_error_prediction_before_firing += it->weight * it->input_neuron->value;
-      } else {
-        temp_value += it->weight * it->input_neuron->value;
-      }
+      temp_value += it->weight * it->input_neuron->value;
     }
     results.push_back(n->forward(temp_value));
   }
@@ -189,15 +185,14 @@ std::vector<float> SyncedNetwork::forward_pass_without_side_effects(std::vector<
   return results;
 }
 
-float SyncedNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
-//  Put all targets into our neurons.
-  float error = 0;
-  for (int counter = 0; counter < targets.size(); counter++) {
-    error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step, gamma, lambda);
-  }
-  return error * error;
-}
-
+//float SyncedNetwork::introduce_targets(std::vector<float> targets, float gamma, float lambda) {
+////  Put all targets into our neurons.
+//  float error = 0;
+//  for (int counter = 0; counter < targets.size(); counter++) {
+//    error += this->output_neurons[counter]->introduce_targets(targets[counter], this->time_step, gamma, lambda);
+//  }
+//  return error * error;
+//}
 
 void SyncedNetwork::reset_trace() {
   std::for_each(
