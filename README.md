@@ -17,18 +17,14 @@ To compile this project locally, you'll have to link your MariaDB C++ connector 
 in `CMakeLists.txt`. You'll also need to uncomment essentially everything under the 
 comment "For running locally".
 
-## Instructions for python classic control
+## Instructions for running experiments in Python
 * Install packages `pip install -r requirements.txt`
 * Install `pybind11` and adjust the pybind directory in `CMakeListsPy.txt` (recommended to install it as subdir in this project)
 * Use `CMakeListsPy.txt` to compile
-* Use `Python train_gym.py --env-max-step-per-episode 1000 -t control --tilecoding 1` to train
-  a working mountaincar version.
 
-## Instructions for python extension
-Note: Not updated to use the latest cpp code. Assumes that the updates
-are one-step late. Don't use for now.
+### Mountain Car control experiment
+* Train using: `Python train_gym.py --env-max-step-per-episode 1000 -t control --tilecoding 1`
 
-* Install pybind11
-* From the project's root directory, use `git clone --recursive https://github.com/DLR-RM/rl-baselines3-zoo`
-* Use CMakeListsPy.txt to compile after adjusting the `include_directories` inside.
-* Train using `python train_CAN.py --run-id 0 --algo dqn --env PongNoFrameskip-v4 --no-render --deterministic --n-timesteps 20000000`
+### Atari prediction experiments
+* From the project's root directory, use `git clone --recursive https://github.com/DLR-RM/rl-baselines3-zoo` to get the pretrained expert agents
+* Train using: `python train_gym.py --net imprintingAtari --imprinting-mode random --env PongNoFrameskip-v4 --binning 1 --gamma 0.5 --meta-step-size 0.01`
