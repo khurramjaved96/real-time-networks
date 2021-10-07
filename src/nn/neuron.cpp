@@ -139,7 +139,15 @@ void Neuron::update_value(int time_step) {
   this->shadow_error_prediction_before_firing = 0;
 
   //this->normalize_neuron();
-
+  if (this->neuron_age == this->drinking_age * 4 && !this->is_output_neuron) {
+    this->is_mature = true;
+    for (auto it : this->incoming_synapses) {
+      if (!it->get_recurrent_status()) {
+        it->step_size = 0;
+        it->turn_off_idbd();
+      }
+    }
+  }
 //  Age our neuron like a fine wine and set the next values of our neuron.
   for (auto &it : this->incoming_synapses) {
     it->age++;
@@ -161,26 +169,11 @@ void Neuron::update_value(int time_step) {
 
 void Neuron::normalize_neuron() {
 
-  if (this->neuron_age == this->drinking_age * 4 && !this->is_output_neuron) {
-    this->is_mature = true;
-    for (auto it : this->incoming_synapses) {
-      if (!it->get_recurrent_status()) {
-        it->step_size = 0;
-        it->turn_off_idbd();
-      }
-    }
-
-  }
-  if(this->neuron_age % this->drinking_age == 0 && !this->is_input_neuron && !this->is_output_neuron){
-
-    if(this->average_activation < 0){
-      std::cout << "neuron:cpp: Negative max value; shouldn't happen\n";
-      exit(1);
-    }
 //  }
 //
 //  if (this->neuron_age == this->drinking_age && !this->is_input_neuron && !this->is_output_neuron) {
 
+  if(this->neuron_age % this->drinking_age == 0 && !this->is_input_neuron && !this->is_output_neuron){
     float scale = 1 / this->average_activation;
     if(scale > 2 or this->average_activation == 0){
       scale = 2;

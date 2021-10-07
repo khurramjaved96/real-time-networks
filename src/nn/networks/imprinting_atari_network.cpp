@@ -262,7 +262,7 @@ void ImprintingAtariNetwork::imprint_using_optical_flow_old() {
   for (auto &it : this->all_neurons) {
     if (this->use_optical_flow_state && it->is_optical_flow_feature && it->old_value == 1)
       interesting_neurons.push_back(it);
-    else if (it->value != it->old_value && it->is_mature && !it->useless_neuron && !it->is_output_neuron && (this->imprinting_only_single_layer || it->is_input_neuron))
+    else if (it->value != it->old_value && it->is_mature && !it->useless_neuron && !it->is_output_neuron && (!this->imprinting_only_single_layer || it->is_input_neuron))
       interesting_neurons.push_back(it);
   }
   this->imprint_on_interesting_neurons(interesting_neurons);
@@ -275,7 +275,7 @@ void ImprintingAtariNetwork::imprint_using_optical_flow() {
   for (auto &it : this->all_neurons) {
     if (this->use_optical_flow_state && it->is_optical_flow_feature && it->old_value == 1)
       interesting_neurons.push_back(it);
-    else if (it->old_old_value == 0 && it->old_value == 1 && it->value == 0 && it->is_mature && !it->useless_neuron && !it->is_output_neuron && (this->imprinting_only_single_layer || it->is_input_neuron))
+    else if (it->old_old_value == 0 && it->old_value == 1 && it->value == 0 && it->is_mature && !it->useless_neuron && !it->is_output_neuron && (!this->imprinting_only_single_layer || it->is_input_neuron))
       interesting_neurons.push_back(it);
   }
   this->imprint_on_interesting_neurons(interesting_neurons);
@@ -297,7 +297,7 @@ void ImprintingAtariNetwork::imprint_randomly() {
     auto it = this->all_neurons[index_sampler(this->mt)];
     if (this->use_optical_flow_state && it->is_optical_flow_feature && it->old_value == 1)
       interesting_neurons.push_back(it);
-    else if (it->is_mature && !it->useless_neuron && !it->is_output_neuron && (this->imprinting_only_single_layer || it->is_input_neuron))
+    else if (it->is_mature && !it->useless_neuron && !it->is_output_neuron && (!this->imprinting_only_single_layer || it->is_input_neuron))
       interesting_neurons.push_back(it);
   }
   this->imprint_on_interesting_neurons(interesting_neurons);
