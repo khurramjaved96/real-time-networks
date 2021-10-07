@@ -153,7 +153,7 @@ def main():  # noqa: C901
         assert args.tilecoding, f"expandingLFA can only be used with tilecoding"
 
     if args.use_optical_flow_state:
-        assert not args.binning, f"optical flow state only implmnted with binning"
+        assert args.binning, f"optical flow state only implmnted with binning"
 
     if args.env == "PongNoFrameskip-v4":
         expert_agent = BaselinesExpert(seed=args.seed, env_id=args.env)
@@ -188,7 +188,7 @@ def main():  # noqa: C901
         args.step_size /= args.tilecoding_n_tilings
     if args.binning:
         assert not args.tilecoding, f"not to be used with tc"
-        env = BinnedObservation(env, args.binning_n_bins)
+        env = BinnedObservation(env, args.binning_n_bins, args.use_optical_flow_state)
         input_size = input_size * args.binning_n_bins
         if args.use_optical_flow_state:
             input_size += env.observation_space.shape[0] * env.observation_space.shape[1]

@@ -39,5 +39,9 @@ class BinnedObservation(ObservationWrapper):
         self.binned_obs = np.array([ 1*(bin_assignments==i+1) for i in range(self.nbins) ])
         if self.generate_optical_flow:
             diff = observation[0,:,:,-2] != observation[0,:,:,-1]
+            if np.sum(diff) > 500:
+                # happens when entire screen is reset
+                print("Optical flow vector too large, skipping it")
+                diff = diff * 0
             self.binned_obs = np.concatenate((self.binned_obs, np.expand_dims(diff*1, axis=0)), axis=0)
         return self.binned_obs.flatten()

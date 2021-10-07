@@ -322,6 +322,7 @@ void ImprintingAtariNetwork::imprint_randomly() {
 
 void ImprintingAtariNetwork::set_input_values(std::vector<float> const &input_values) {
   if (input_values.size() != this->input_neurons.size()){
+    std::cout << input_values.size() << " : " << this->input_neurons.size() << std::endl;
     std::cout << "err size in set_input_values()" << std::endl;
     exit(1);
   }
