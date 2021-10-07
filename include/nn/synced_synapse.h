@@ -25,13 +25,10 @@ class SyncedSynapse : public dynamic_elem {
 
   bool is_useless;
   int age;
-  bool in_shadow_mode;
-  bool print_status;
   float weight;
   float credit;
   float trace;
   float step_size;
-  float TH;
 
   float utility_to_keep;
   float synapse_utility;
@@ -44,6 +41,7 @@ class SyncedSynapse : public dynamic_elem {
   float log_step_size_tidbd;
   float h_tidbd;
   bool idbd;
+  float trace_decay_rate = 0.9999;
   bool disable_utility; //Also disables pruning
 
   void set_connected_to_recurrence(bool);

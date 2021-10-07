@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
                                std::vector < std::string > {"int", "int", "real", "real"},
                                std::vector < std::string > {"step", "run"});
 
-  LayerwiseFeedforward network = LayerwiseFeedforward(my_experiment.get_float_param("meta_step_size"), my_experiment.get_int_param("seed"), 28*28, 0.001);
+  LayerwiseFeedforward network = LayerwiseFeedforward(my_experiment.get_float_param("meta_step_size"), my_experiment.get_int_param("seed"), 28*28, 10, 0.001);
 
   std::vector<std::vector<std::string>> error_logger;
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
   std::mt19937 mt(my_experiment.get_int_param("seed"));
   int total_data_points = 6000;
   std::uniform_int_distribution<int> index_sampler(0, total_data_points - 1);
-
+//
   mnist::binarize_dataset(dataset);
   std::vector<std::vector<float>> images;
   std::vector<std::vector<float>> targets;
@@ -83,12 +83,12 @@ int main(int argc, char *argv[]){
     for(int i = 0; i<prediction.size(); i++){
       error += (prediction[i]-y[i])*(prediction[i]-y[i]);
     }
-    running_error = running_error * 0.9999 + 0.0001 * sqrt(error);
+    running_error = running_error * 0.999 + 0.001 * sqrt(error);
     if(argmax(prediction) == y_index){
-      accuracy = accuracy*0.995 + 0.005;
+      accuracy = accuracy*0.999 + 0.001;
     }
     else{
-      accuracy*= 0.995;
+      accuracy*= 0.999;
     }
 //    std::cout << "Error = " << error << std::endl;
 //    print_vector(target);
@@ -114,10 +114,17 @@ int main(int argc, char *argv[]){
       std::cout << "Step " << i << std::endl;
 
       std::cout << "Network confing\n";
-      std::cout << "No\tSize\tSynapses\n";
+      std::cout << "No\tSize\tSynapses\tOutput\n";
       for(int layer_no = 0; layer_no < network.LTU_neuron_layers.size(); layer_no++){
-        std::cout <<  layer_no << "\t" << network.LTU_neuron_layers[layer_no].size() << "\t" << network.all_synapses.size() <<  std::endl;
+        std::cout <<  layer_no << "\t" << network.LTU_neuron_layers[layer_no].size() << "\t" << network.all_synapses.size() << "\t\t" << network.output_synapses.size() <<  std::endl;
+
 //        std::cout << "Layer sz\t" << network.LTU_neuron_layers[layer_no].size() << std::endl;
+//      }
+//      for(auto it : network.LTU_neuron_layers){
+//        std::cout << "ID\tVal\n";
+//        for(auto n : it){
+//          std::cout << n->id << "\t" << n->value << std::endl;
+//        }
       }
 
 
@@ -137,11 +144,22 @@ int main(int argc, char *argv[]){
 
       std::cout << "Running error = " << running_error << std::endl;
     }
-    if (argmax(prediction) != y_index) {
-
+//    if (argmax(prediction) != y_index) {
+    if(error > 0.05){
+//      if(network.all_synapses.size() < 10000)
+//      for(int temp = 0; temp<10; temp ++)
+      if(my_experiment.get_int_param("imprint") == 1)
         network.imprint_feature(i, x);
+      else
+        network.imprint_feature_random();
 
     }
+//    std::cout << "ID\tUtil\n";
+//    for(auto n : network.all_neurons){
+//      if(!n->is_input_neuron && !n->is_output_neuron){
+//        std::cout << n->id << "\t" << n->neuron_utility << std::endl;
+//      }
+//    }
 
 
   }

@@ -24,25 +24,15 @@ class SyncedNeuron : public dynamic_elem {
   bool is_bias_unit;
   int layer_number;
   float value;
-  float value_without_activation;
-  float old_value;
-  float old_value_without_activation;
   int drinking_age;
-  float shadow_error_prediction_before_firing;
-  float shadow_error_prediction;
   float value_before_firing;
-  int memory_made;
   float neuron_utility;
   float neuron_utility_to_distribute;
   float sum_of_utility_traces;
   bool is_output_neuron;
   bool useless_neuron;
-  int sucesses;
-  int failures;
   int64_t id;
-  bool is_mature;
   int neuron_age;
-  float average_activation;
   float mark_useless_prob;
 
   void set_layer_number(int layer);
@@ -54,7 +44,6 @@ class SyncedNeuron : public dynamic_elem {
   void update_value(int time_step);
 
   message error_gradient;
-  message_activation past_activations;
   std::vector<SyncedSynapse *> outgoing_synapses;
   std::vector<SyncedSynapse *> incoming_synapses;
 
@@ -66,7 +55,7 @@ class SyncedNeuron : public dynamic_elem {
 
   float introduce_targets(float target, int timestep);
 
-  float introduce_targets(float target, int timestep, float gamma, float lambda);
+//  float introduce_targets(float target, int timestep, float gamma, float lambda);
 
   void propagate_error();
 
@@ -94,6 +83,17 @@ class LTUSynced : public SyncedNeuron {
   float activation_threshold;
 
 };
+
+class SigmoidSyncedNeuron : public SyncedNeuron {
+ public:
+  float backward(float output_grad);
+
+  float forward(float temp_value);
+
+  SigmoidSyncedNeuron(bool is_input, bool is_output);
+};
+
+
 class ReluSyncedNeuron : public SyncedNeuron {
  public:
   float backward(float output_grad);

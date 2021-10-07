@@ -16,20 +16,16 @@ SyncedNeuron::SyncedNeuron(bool is_input, bool is_output) {
   value_before_firing = 0;
   id = neuron_id_generator;
   useless_neuron = false;
-  this->average_activation = 0;
   neuron_id_generator++;
   this->is_output_neuron = is_output;
   is_input_neuron = is_input;
-  memory_made = 0;
   neuron_age = 0;
-  is_mature = false;
   references = 0;
   neuron_utility = 0;
   drinking_age = 5000;
   mark_useless_prob = 0.999;
   is_bias_unit = false;
 }
-
 
 void SyncedNeuron::set_layer_number(int layer) {
   this->layer_number = layer;
@@ -56,60 +52,18 @@ void SyncedNeuron::update_utility() {
 }
 
 void SyncedNeuron::fire(int time_step) {
-
-  this->update_utility();
-
-//  Forward applies the non-linearity
-  this->old_value = this->value;
-  this->old_value_without_activation = this->value_without_activation;
+  this->neuron_age++;
   this->value = this->forward(value_before_firing);
-  this->value_without_activation = value_before_firing;
-  this->shadow_error_prediction = shadow_error_prediction_before_firing;
-
-  value_before_firing = 0;
-  shadow_error_prediction_before_firing = 0;
-
-//  Record this activation for gradient calculation purposes
-//    auto activation_val = std::pair<float, int>(this->gradient_activation, time_step);
-
-
-  message_activation activation_val;
-  activation_val.gradient_activation = this->backward(this->value);
-  activation_val.value_at_activation = this->value;
-  activation_val.time = time_step;
-  activation_val.error_prediction_value = this->shadow_error_prediction;
-//  std::cout << "Outgoing synapses with grad = " << std::endl;
-//  std::cout << this->get_no_of_syanpses_with_gradients() << std::endl;
-//  if(this->get_no_of_syanpses_with_gradients() > 0) {
-
-  this->past_activations = activation_val;
 }
 
-//
 void SyncedNeuron::update_value(int time_step) {
-  this->neuron_age++;
 
-
-//  Reset our gradient_activation holder
   this->value_before_firing = 0;
-  this->shadow_error_prediction_before_firing = 0;
 
 //  Age our neuron like a fine wine and set the next values of our neuron.
   for (auto &it : this->incoming_synapses) {
     it->age++;
-    message_activation activation_val;
-    activation_val.gradient_activation = it->input_neuron->value;
-    activation_val.time = time_step - 1;
-    activation_val.error_prediction_value = it->input_neuron->shadow_error_prediction;
-    it->weight_assignment_past_activations = activation_val;
-//    if(this->id == 9){
-//      std::cout << this->value_before_firing << " " << it->weight << " " <<  it->input_neuron->value <<std::endl;
-//    }
-    if (it->in_shadow_mode) {
-      this->shadow_error_prediction_before_firing += it->weight * it->input_neuron->value;
-    } else {
-      this->value_before_firing += it->weight * it->input_neuron->value;
-    }
+    this->value_before_firing += it->weight * it->input_neuron->value;
   }
 }
 
@@ -135,11 +89,8 @@ void SyncedNeuron::forward_gradients() {
     message grad_temp(message_value, this->error_gradient.time_step);
     grad_temp.lambda = this->error_gradient.lambda;
     grad_temp.gamma = this->error_gradient.gamma;
-    if (it->in_shadow_mode)
-      grad_temp.error = this->error_gradient.error_shadow_prediction;
-    else
-      grad_temp.error = this->error_gradient.error;
-    grad_temp.distance_travelled = this->error_gradient.distance_travelled + 1;
+    grad_temp.error = this->error_gradient.error;
+
     if (it->propagate_gradients)
       it->grad_queue = grad_temp;
     it->grad_queue_weight_assignment = grad_temp;
@@ -164,11 +115,8 @@ void SyncedNeuron::propagate_error() {
   float accumulate_gradient = 0;
   std::vector<int> time_vector;
   std::vector<int> distance_vector;
-  std::vector<int> activation_time_required_list;
-  std::vector<int> queue_len_vector;
   std::vector<float> error_vector;
   std::vector<message> messages_q;
-  int time_check = -99999;
 
 //  No gradient propagation required for prediction nodes
 
@@ -181,21 +129,25 @@ void SyncedNeuron::propagate_error() {
   if (this->get_no_of_syanpses_with_gradients() > 0 && !is_input_neuron) {
 
     for (auto &output_synapses_iterator : this->outgoing_synapses) {
-
+//      std::cout << "Iterating over outoging synapses\n";
+//      std::cout << output_synapses_iterator->id << " " << output_synapses_iterator->weight << std::endl;
       accumulate_gradient += output_synapses_iterator->weight *
           output_synapses_iterator->grad_queue.gradient *
-          this->past_activations.gradient_activation;
-
+          this->backward(this->value);
+      error_vector.push_back(output_synapses_iterator->grad_queue.error);
+      messages_q.push_back(output_synapses_iterator->grad_queue);
+      time_vector.push_back(output_synapses_iterator->grad_queue.time_step);
       output_synapses_iterator->grad_queue.remove = true;
 
     }
 
+//    std::cout <<
     message n_message(accumulate_gradient, time_vector[0]);
     n_message.error = error_vector[0];
     n_message.gamma = messages_q[0].gamma;
     n_message.lambda = messages_q[0].lambda;
-    auto it = std::max_element(distance_vector.begin(), distance_vector.end());
-    n_message.distance_travelled = *it;
+//    auto it = std::max_element(distance_vector.begin(), distance_vector.end());
+//    n_message.distance_travelled = *it;
 
     this->error_gradient = n_message;
   }
@@ -206,15 +158,14 @@ void SyncedNeuron::propagate_error() {
  * SyncedNeurons will only be deleted if there are no outgoing synapses (and it's not an output neuron of course!)
  */
 void SyncedNeuron::mark_useless_weights() {
-//  return;
+//  if (this->is_output_neuron || this->is_input_neuron)
+//    return;
   std::uniform_real_distribution<float> dist(0, 1);
-//  std::mt19937 gen;
-  float rand_val = dist(SyncedNeuron::gen);
-//  std::cout << "Rand value == " << rand_val << std::endl;
-  if (this->neuron_age > this->drinking_age * 4) {
+
+  if (this->neuron_age > this->drinking_age) {
     for (auto &it : this->outgoing_synapses) {
-//      Only delete weights if they're older than 70k steps
-      if (it->output_neuron->neuron_age > it->output_neuron->drinking_age * 4
+
+      if (it->output_neuron->neuron_age > it->output_neuron->drinking_age
           && it->synapse_utility < it->utility_to_keep && !it->disable_utility) {
         if (dist(gen) > this->mark_useless_prob)
           it->is_useless = true;
@@ -225,7 +176,7 @@ void SyncedNeuron::mark_useless_weights() {
 //  if this current neuron has no outgoing synapses and is not an output or input neuron,
 //  delete it a
 //  nd its incoming synapses.
-  if (this->incoming_synapses.empty() && !this->is_input_neuron) {
+  if (this->incoming_synapses.empty() && !this->is_input_neuron && !this->is_output_neuron) {
     this->useless_neuron = true;
     for (auto it : this->outgoing_synapses)
       it->is_useless = true;
@@ -243,7 +194,6 @@ void SyncedNeuron::mark_useless_weights() {
     for (auto it : this->incoming_synapses)
       it->is_useless = true;
   }
-
 }
 
 /**
@@ -300,22 +250,15 @@ void SyncedNeuron::prune_useless_weights() {
  * @return: squared error
  */
 float SyncedNeuron::introduce_targets(float target, int time_step) {
-//
 
+  float error = this->value - target;
 
-//      The activation is the output of our NN.
-    float error = this->past_activations.value_at_activation - target;
-    float error_grad = error;
-
-//      Create our error gradient for this neuron
-    message m(error_grad, time_step);
-    m.error = 1;
-    m.lambda = 0;
-    m.gamma = 0;
-    this->error_gradient = m;
-    return error * error;
-
-  return 0;
+  message m(this->backward(this->value), time_step);
+  m.error = error;
+  m.lambda = 0;
+  m.gamma = 0;
+  this->error_gradient = m;
+  return error * error;
 }
 
 /**
@@ -327,37 +270,28 @@ float SyncedNeuron::introduce_targets(float target, int time_step) {
  * @param lambda: eligibility trace decay parameter
  * @return: squared error
  */
-float SyncedNeuron::introduce_targets(float target, int time_step, float gamma, float lambda) {
-//  Introduce a target to a neuron and calculate its error.
-//  In this case, target should be our TD target.
-
-//      The activation is the output of our NN.
-    float error;
-    float error_prediction_error;
-
-    error = this->past_activations.value_at_activation - target;
-    error_prediction_error = this->past_activations.error_prediction_value - error;
-
-    float error_grad = error;
-
-
-//      Create our error gradient for this neuron
-    message m(1, time_step);
-    m.lambda = lambda;
-    m.gamma = gamma;
-    m.error = error_grad;
-    m.error_shadow_prediction = error_prediction_error;
-
-    this->error_gradient = m;
-    return error;
-
-  return 0;
-}
-
+//float SyncedNeuron::introduce_targets(float target, int time_step, float gamma, float lambda) {
+////  Introduce a target to a neuron and calculate its error.
+////  In this case, target should be our TD target.
+//
+////      The activation is the output of our NN.
+//  float error;
+//
+//  error = this->value - target;
+//  float error_grad = error;
+//
+//
+////      Create our error gradient for this neuron
+//  message m(1, time_step);
+//  m.lambda = lambda;
+//  m.gamma = gamma;
+//  m.error = error_grad;
+//
+//  this->error_gradient = m;
+//  return error;
+//}
 
 float LinearSyncedNeuron::forward(float temp_value) {
-//  if (temp_value != 0)
-//    this->average_activation = this->average_activation * 0.99 + 0.01 * std::abs(temp_value);
   return temp_value;
 }
 
@@ -369,7 +303,7 @@ float ReluSyncedNeuron::forward(float temp_value) {
 
   if (temp_value <= 0)
     return 0;
-//  this->average_activation = this->average_activation * 0.9 + 0.1 * std::abs(temp_value);
+
   return temp_value;
 }
 //
@@ -378,6 +312,16 @@ float ReluSyncedNeuron::backward(float post_activation) {
     return 1;
   else
     return 0;
+}
+
+float SigmoidSyncedNeuron::forward(float temp_value) {
+
+  float post_activation = sigmoid(temp_value);
+  return post_activation;
+}
+
+float SigmoidSyncedNeuron::backward(float post_activation) {
+  return post_activation * (1 - post_activation);
 }
 
 float BiasSyncedNeuron::forward(float temp_value) {
@@ -400,13 +344,14 @@ float LTUSynced::backward(float output_grad) {
 
 ReluSyncedNeuron::ReluSyncedNeuron(bool is_input, bool is_output) : SyncedNeuron(is_input, is_output) {}
 
+SigmoidSyncedNeuron::SigmoidSyncedNeuron(bool is_input, bool is_output) : SyncedNeuron(is_input, is_output) {}
+
 LTUSynced::LTUSynced(bool is_input, bool is_output, float threshold) : SyncedNeuron(is_input, is_output) {
   this->activation_threshold = threshold;
 }
 
 BiasSyncedNeuron::BiasSyncedNeuron() : SyncedNeuron(false, false) {
   this->is_bias_unit = true;
-  this->average_activation = 1;
 }
 
 LinearSyncedNeuron::LinearSyncedNeuron(bool is_input, bool is_output) : SyncedNeuron(is_input, is_output) {}

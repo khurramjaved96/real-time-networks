@@ -20,12 +20,12 @@ class SyncedNetwork {
   std::mt19937 mt;
 
  public:
+  std::vector<SyncedNeuron *> all_neurons;
   std::vector<SyncedNeuron *> output_neurons;
+  std::vector<SyncedNeuron *> input_neurons;
   std::vector<SyncedSynapse *> all_synapses;
   std::vector<SyncedSynapse *> output_synapses;
   std::vector<dynamic_elem *> all_heap_elements;
-  std::vector<SyncedNeuron *> all_neurons;
-  std::vector<SyncedNeuron *> input_neurons;
 
   void collect_garbage();
 
@@ -45,9 +45,9 @@ class SyncedNetwork {
 
   float introduce_targets(std::vector<float> targets);
 
-  float introduce_targets(std::vector<float> targets, float gamma, float lambda);
+//  float introduce_targets(std::vector<float> targets, float gamma, float lambda);
 
-  float introduce_targets(float targets, float gamma, float lambda, std::vector<bool> no_grad);
+//  float introduce_targets(float targets, float gamma, float lambda, std::vector<bool> no_grad);
 
   std::vector<float> forward_pass_without_side_effects(std::vector<float> input_vector);
 
