@@ -43,6 +43,7 @@ class Neuron : public dynamic_elem {
   int neuron_age;
   float average_activation;
   float mark_useless_prob;
+  bool is_optical_flow_feature;
 
 
   std::pair<float, float> value_ranges;

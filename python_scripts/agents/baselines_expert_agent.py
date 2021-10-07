@@ -101,29 +101,39 @@ class BaselinesExpert:
 
 
 if __name__ == "__main__":
-	expert_policy = BaselinesExpert()
-	env = expert_policy.env
-	obs = env.reset()
+    from collections import deque
+    obsq = deque(maxlen=20)
+    expert_policy = BaselinesExpert(seed=22)
+    env = expert_policy.env
+    obs = env.reset()
 
-	import random
-	episode_reward = 0
-	for timestep in range(20000):
-		action = expert_policy.predict(obs)
-		#action = [env.action_space.sample()]
-		if timestep > 30:
-			from IPython import embed; embed()
-		obs, reward, done, infos = env.step(action)
-		if False:
-			env.render("human")
+    import random
+    from time import sleep
+    episode_reward = 0
+    t = 0
+    for timestep in range(20000):
+        t+=1 
+        action = expert_policy.predict(obs)
+        #action = [env.action_space.sample()]
+        obs, reward, done, infos = env.step(action)
+        obsq.append(obs)
+        if False:
+            env.render("human")
+            sleep(0.1)
 
-		episode_reward += reward[0]
+        if reward == 1:
+            from IPython import embed; embed()
+            print(t)
+            t=0
+        episode_reward += reward[0]
 
-		# For atari the return reward is not the atari score
-		# so we have to get it from the infos dict
-		if True and infos is not None:
-			episode_infos = infos[0].get("episode")
-			if episode_infos is not None:
-				print(f"Atari Episode Score: {episode_infos['r']:.2f}")
-				print("Atari Episode Length", episode_infos["l"])
-				expert_policy.state = None
-	env.close()
+        # For atari the return reward is not the atari score
+        # so we have to get it from the infos dict
+        if done and infos is not None:
+            from IPython import embed; embed()
+            episode_infos = infos[0].get("episode")
+            if episode_infos is not None:
+                print(f"Atari Episode Score: {episode_infos['r']:.2f}")
+                print("Atari Episode Length", episode_infos["l"])
+                expert_policy.state = None
+                env.close()

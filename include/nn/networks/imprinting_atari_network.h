@@ -22,6 +22,8 @@ class ImprintingAtariNetwork: public Network {
   int input_W;
   int input_bins;
   float imprinting_max_prob;
+  bool imprinting_only_single_layer;
+  bool use_optical_flow_state;
   std::vector <int> input_indices;
   std::vector <Neuron*> imprinted_features;
 
@@ -36,7 +38,9 @@ class ImprintingAtariNetwork: public Network {
                          int input_H,
                          int input_W,
                          int input_bins,
-                         float imprinting_max_prob);
+                         float imprinting_max_prob,
+                         bool imprinting_only_single_layer,
+                         bool use_optical_flow_state);
 
   void step();
   void set_input_values(std::vector<float> const &input_values);

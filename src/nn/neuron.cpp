@@ -31,6 +31,7 @@ Neuron::Neuron(bool is_input, bool is_output) {
   drinking_age = 5000;
   mark_useless_prob = 0.999;
   is_bias_unit = false;
+  is_optical_flow_feature = false;
 }
 
 /**

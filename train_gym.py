@@ -69,10 +69,12 @@ def main():  # noqa: C901
     parser.add_argument( "--net-width", help="initial width of the network (only for net:imprintingWide)", default=0, type=int)
     parser.add_argument( "--net-prune-prob", help="pruning prob (per step) for the weights after they have matured", default=0.01, type=float)
     parser.add_argument( "--imprinting-max-bound-range", help="max range for the random bounds that are found around the random center", default=0.1, type=float)
+    parser.add_argument( "--use-optical-flow-state", help="Add optical flow information as a state", default=0, type=int,)
     parser.add_argument( "--use-imprinting", help="Use imprinted features instead of random (0: dont use, 1: use)", default=1, type=int,)
     parser.add_argument( "--imprinting-err-thresh", help="If error_trace-current_error > thresh, do imprinting", default=0.1, type=float)
     parser.add_argument( "--imprinting-mode", help="Imprinting mode to use (random, optical_flow: default)", default="optical_flow", type=str,)
     parser.add_argument( "--imprinting-max-prob", help="Max percentage of interesting features to imprint on. Used as U[0,imprinting-max-prob]", default=1, type=float)
+    parser.add_argument( "--imprinting-only-single-layer", help="Restrict the feature generation to let network stay single layered forever", default=0, type=int,)
 
     parser.add_argument("--step-size", help="step size", default=0.01, type=float)
     parser.add_argument( "--meta-step-size", help="tidbd step size", default=1e-3, type=float)
@@ -150,6 +152,9 @@ def main():  # noqa: C901
     if args.net == "expandingLFA":
         assert args.tilecoding, f"expandingLFA can only be used with tilecoding"
 
+    if args.use_optical_flow_state:
+        assert not args.binning, f"optical flow state only implmnted with binning"
+
     if args.env == "PongNoFrameskip-v4":
         expert_agent = BaselinesExpert(seed=args.seed, env_id=args.env)
         env = expert_agent.env
@@ -185,6 +190,8 @@ def main():  # noqa: C901
         assert not args.tilecoding, f"not to be used with tc"
         env = BinnedObservation(env, args.binning_n_bins)
         input_size = input_size * args.binning_n_bins
+        if args.use_optical_flow_state:
+            input_size += env.observation_space.shape[0] * env.observation_space.shape[1]
 
     if args.env == "PongNoFrameskip-v4":
         assert args.binning, f"Should use binning with Pong"
@@ -244,6 +251,8 @@ def main():  # noqa: C901
             env.observation_space.shape[1],
             args.binning_n_bins,
             args.imprinting_max_prob,
+            bool(args.imprinting_only_single_layer),
+            bool(args.use_optical_flow_state),
         )
     else:
         raise NotImplementedError
@@ -274,7 +283,6 @@ def main():  # noqa: C901
     else:
         raise NotImplementedError
 
-    agent.train(env, model, args.n_timesteps, args.epsilon, args.gamma, args.lmbda, logger, args)
     try:
         agent.train(
             env,

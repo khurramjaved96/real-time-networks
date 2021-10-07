@@ -15,11 +15,12 @@ class BinnedObservation(ObservationWrapper):
         nbins (int): number of bins to divide the input values
     """
 
-    def __init__(self, env, nbins):
+    def __init__(self, env, nbins, generate_optical_flow=False):
         env.reward_range = (-1,1)
         super(BinnedObservation, self).__init__(env)
         self.env = env
         self.nbins = nbins
+        self.generate_optical_flow = generate_optical_flow
         self.checked_dims = False
         self.unwrapped_obs = None
         self.binned_obs = None
@@ -36,4 +37,7 @@ class BinnedObservation(ObservationWrapper):
         bin_assignments = np.digitize(latest_obs, np.arange(0,255,255/self.nbins))
         # [nbins,H,W] binary
         self.binned_obs = np.array([ 1*(bin_assignments==i+1) for i in range(self.nbins) ])
+        if self.generate_optical_flow:
+            diff = observation[0,:,:,-2] != observation[0,:,:,-1]
+            self.binned_obs = np.concatenate((self.binned_obs, np.expand_dims(diff*1, axis=0)), axis=0)
         return self.binned_obs.flatten()

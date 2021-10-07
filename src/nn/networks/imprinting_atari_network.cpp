@@ -27,7 +27,9 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
                                                int input_H,
                                                int input_W,
                                                int input_bins,
-                                               float imprinting_max_prob) {
+                                               float imprinting_max_prob,
+                                               bool imprinting_only_single_layer,
+                                               bool use_optical_flow_state) {
 
   // TODO increment references not handled
   this->time_step = 0;
@@ -40,16 +42,20 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
   this->input_W = input_W;
   this->input_bins = input_bins;
   this->imprinting_max_prob = imprinting_max_prob;
+  this->imprinting_only_single_layer = imprinting_only_single_layer;
 
   std::vector<int> inp(no_of_input_features);
   std::iota(inp.begin(), inp.end(), 0);
   this->input_indices = inp;
+  int non_optical_flow_max_idx = input_H * input_W * input_bins;
 
   std::uniform_real_distribution<float> dist(0, 1);
 
   for (int neuron_no = 0; neuron_no < no_of_input_features; neuron_no++) {
     auto n = new LinearNeuron(true, false);
     n->is_mature = true;
+    if (neuron_no >= non_optical_flow_max_idx)
+      n->is_optical_flow_feature = true;
     this->input_neurons.push_back(n);
     this->all_neurons.push_back(n);
     increment_references(n, 2);
@@ -254,7 +260,9 @@ void ImprintingAtariNetwork::imprint_using_optical_flow_old() {
   // potential neurons for imprinting are those where value @ step t != t-1
   std::vector <Neuron *> interesting_neurons;
   for (auto &it : this->all_neurons) {
-    if (it->value != it->old_value && it->is_mature && !it->useless_neuron && !it->is_output_neuron && it->is_input_neuron)
+    if (this->use_optical_flow_state && it->is_optical_flow_feature && it->old_value == 1)
+      interesting_neurons.push_back(it);
+    else if (it->value != it->old_value && it->is_mature && !it->useless_neuron && !it->is_output_neuron && (this->imprinting_only_single_layer || it->is_input_neuron))
       interesting_neurons.push_back(it);
   }
   this->imprint_on_interesting_neurons(interesting_neurons);
@@ -265,7 +273,9 @@ void ImprintingAtariNetwork::imprint_using_optical_flow() {
   // potential neurons for imprinting are those where value @ step t-1 = 1 and values @ t and t-2 = 0.
   std::vector <Neuron *> interesting_neurons;
   for (auto &it : this->all_neurons) {
-    if (it->old_old_value == 0 && it->old_value == 1 && it->value == 0 && it->is_mature && !it->useless_neuron && !it->is_output_neuron && it->is_input_neuron)
+    if (this->use_optical_flow_state && it->is_optical_flow_feature && it->old_value == 1)
+      interesting_neurons.push_back(it);
+    else if (it->old_old_value == 0 && it->old_value == 1 && it->value == 0 && it->is_mature && !it->useless_neuron && !it->is_output_neuron && (this->imprinting_only_single_layer || it->is_input_neuron))
       interesting_neurons.push_back(it);
   }
   this->imprint_on_interesting_neurons(interesting_neurons);
@@ -285,7 +295,9 @@ void ImprintingAtariNetwork::imprint_randomly() {
 
   while (interesting_neurons.size() < max_interesting_units){
     auto it = this->all_neurons[index_sampler(this->mt)];
-    if (it->is_mature && !it->useless_neuron && !it->is_output_neuron && it->is_input_neuron)
+    if (this->use_optical_flow_state && it->is_optical_flow_feature && it->old_value == 1)
+      interesting_neurons.push_back(it);
+    else if (it->is_mature && !it->useless_neuron && !it->is_output_neuron && (this->imprinting_only_single_layer || it->is_input_neuron))
       interesting_neurons.push_back(it);
   }
   this->imprint_on_interesting_neurons(interesting_neurons);
