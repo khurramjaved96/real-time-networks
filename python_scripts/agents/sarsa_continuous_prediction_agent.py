@@ -42,8 +42,8 @@ class SarsaContinuousPredictionAgent(BaseAgent):
 
             err = model.introduce_targets([new_target], gamma, lmbda)
             error_trace = 0.99 * error_trace + 0.01 * err
-            if args.use_imprinting and err - error_trace > args.imprinting_err_thresh:
-                print(f"imprinting now trace: {error_trace} err: {err} t: {t}")
+            if args.use_imprinting and (err - error_trace > args.imprinting_err_thresh or random.random() < args.imprinting_random_prob):
+                #print(f"imprinting now trace: {error_trace} err: {err} t: {t}")
                 if args.imprinting_mode == "random":
                     model.imprint_randomly()
                 elif args.imprinting_mode == "optical_flow":
@@ -66,7 +66,7 @@ class SarsaContinuousPredictionAgent(BaseAgent):
                 if self.running_MSRE == -1:
                     self.running_MSRE = self.MSRE
                 else:
-                    self.running_MSRE = 0.9 * self.running_MSRE + 0.1 * self.MSRE
+                    self.running_MSRE = 0.75 * self.running_MSRE + 0.25 * self.MSRE
                 logger.log_eps_metrics(self.episode, t, self.MSRE, self.running_MSRE, error_trace, list(predictions_vec), return_target, return_error)
                 model.collect_garbage()
         env.close()

@@ -266,6 +266,7 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
     s->set_meta_step_size(this->meta_step_size);
     s->turn_on_idbd();
     s->block_gradients();
+    s->trace = 1;
     std::cout << "Interesting: " << interesting_neurons.size() << " selected: " << total_ones << " thresh: " << new_feature->activation_threshold << " weight: " << imprinting_weight << " total current features: " << this->imprinted_features.size() << " total syn: " << this->all_synapses.size() << std::endl;
   }
   else

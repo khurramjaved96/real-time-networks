@@ -4,8 +4,9 @@ import glob
 import importlib
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import sleep
+from timeit import default_timer as timer
 
 import gym
 import numpy as np
@@ -75,6 +76,7 @@ def main():  # noqa: C901
     parser.add_argument( "--imprinting-err-thresh", help="If error_trace-current_error > thresh, do imprinting", default=0.1, type=float)
     parser.add_argument( "--imprinting-mode", help="Imprinting mode to use (random, optical_flow: default)", default="optical_flow", type=str,)
     parser.add_argument( "--imprinting-max-prob", help="Max percentage of interesting features to imprint on. Used as U[0,imprinting-max-prob]", default=1, type=float)
+    parser.add_argument( "--imprinting-random-prob", help="Prob at each step to generate a feature regardless of the error (default:0)", default=0, type=float)
     parser.add_argument( "--imprinting-only-single-layer", help="Restrict the feature generation to let network stay single layered forever", default=0, type=int,)
 
     parser.add_argument("--step-size", help="step size", default=0.01, type=float)
@@ -102,8 +104,8 @@ def main():  # noqa: C901
         run_state_metric = Metric(
             args.db,
             "run_states",
-            ["run_id", "comment", "state", "timestep", "episode", "MSRE", "running_MSRE", "n_features", "n_synapses"],
-            ["int", "VARCHAR(80)", "VARCHAR(40)", "int", "int", "real", "real", "int", "int"],
+            ["run_id", "comment", "state", "timestep", "episode", "MSRE", "running_MSRE", "n_features", "n_synapses", "run_time"],
+            ["int", "VARCHAR(80)", "VARCHAR(40)", "int", "int", "real", "real", "int", "int", "VARCHAR(60)"],
             ["run_id"],
         )
         episodic_metrics = Metric(
@@ -289,6 +291,7 @@ def main():  # noqa: C901
     else:
         raise NotImplementedError
 
+    start = timer()
     try:
         agent.train(
             env,
@@ -313,8 +316,9 @@ def main():  # noqa: C901
                         agent.episode,
                         agent.MSRE,
                         agent.running_MSRE,
+                        len(model.imprinted_features),
                         len(model.all_synapses),
-                        len(model.all_neurons),
+                        str(timedelta(seconds=timer()-start)),
                     ]
                 ]
             )
@@ -333,8 +337,9 @@ def main():  # noqa: C901
                     agent.episode,
                     agent.MSRE,
                     agent.running_MSRE,
+                    len(model.imprinted_features),
                     len(model.all_synapses),
-                    len(model.all_neurons),
+                    str(timedelta(seconds=timer()-start)),
                 ]
             ]
         )

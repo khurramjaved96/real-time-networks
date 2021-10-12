@@ -46,6 +46,7 @@ synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
   }
   utility_to_keep = 0.0001;
   disable_utility = false;
+  this->synapse_local_utility_trace = 0;
 }
 //
 
@@ -205,6 +206,11 @@ void synapse::update_weight() {
   } else {
     this->weight -= (this->step_size * this->credit);
   }
+  if (this->weight > 5)
+    this->weight = 5;
+  if (this->weight < -5)
+    this->weight = -5;
+
   if (this->is_recurrent_connection) {
     if (this->weight > 0.9) {
       this->weight = 0.9;
