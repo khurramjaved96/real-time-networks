@@ -58,6 +58,7 @@ def main():  # noqa: C901
 
     parser.add_argument( "--env", help="environment ID", type=str, default="MountainCar-v0")
     parser.add_argument( "--env-max-step-per-episode", help="Max number of timesteps per episode (default:0, mountaincar:2000)", default=0, type=int,)
+    parser.add_argument( "--expert-policy-deterministic", help="Whether the expert policy is deterministic (1: greedy, 0: eps_greedy with eps=args.epsilon", default=1, type=int,)
 
     parser.add_argument( "--binning", help="Use binned features (0: dont use, 1: use)", default=0, type=int,)
     parser.add_argument( "--binning-n-bins", help="Number of binning bins to use (default: 10)", default=10, type=int,)
@@ -101,8 +102,8 @@ def main():  # noqa: C901
         run_state_metric = Metric(
             args.db,
             "run_states",
-            ["run_id", "comment", "state", "timestep", "episode", "MSRE", "running_MSRE"],
-            ["int", "VARCHAR(80)", "VARCHAR(40)", "int", "int", "real", "real"],
+            ["run_id", "comment", "state", "timestep", "episode", "MSRE", "running_MSRE", "n_features", "n_synapses"],
+            ["int", "VARCHAR(80)", "VARCHAR(40)", "int", "int", "real", "real", "int", "int"],
             ["run_id"],
         )
         episodic_metrics = Metric(
@@ -156,7 +157,12 @@ def main():  # noqa: C901
         assert args.binning, f"optical flow state only implmnted with binning"
 
     if args.env == "PongNoFrameskip-v4":
-        expert_agent = BaselinesExpert(seed=args.seed, env_id=args.env)
+        expert_agent = BaselinesExpert(
+            seed=args.seed,
+            env_id=args.env,
+            deterministic=bool(args.expert_policy_deterministic),
+            exploration_rate=args.epsilon
+        )
         env = expert_agent.env
         input_size = env.observation_space.shape[0] * env.observation_space.shape[1]
         print(f"Using input size of {input_size}")
@@ -307,6 +313,8 @@ def main():  # noqa: C901
                         agent.episode,
                         agent.MSRE,
                         agent.running_MSRE,
+                        len(model.all_synapses),
+                        len(model.all_neurons),
                     ]
                 ]
             )
@@ -325,6 +333,8 @@ def main():  # noqa: C901
                     agent.episode,
                     agent.MSRE,
                     agent.running_MSRE,
+                    len(model.all_synapses),
+                    len(model.all_neurons),
                 ]
             ]
         )

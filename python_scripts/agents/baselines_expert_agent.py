@@ -27,6 +27,7 @@ class BaselinesExpert:
         folder="rl-baselines3-zoo/rl-trained-agents",
         no_render=True,
         deterministic=True,
+        exploration_rate=0,
     ):
         log_path = os.path.join(folder, algo, f"{env_id}_1")
         assert os.path.isdir(log_path), f"The {log_path} folder was not found"
@@ -94,6 +95,9 @@ class BaselinesExpert:
         self.env = env
         self.deterministic = deterministic
         self.state = None
+
+        if self.deterministic == False:
+            self.model.exploration_rate = exploration_rate
 
     def predict(self, obs):
         action, self.state = self.model.predict(obs, state=self.state, deterministic=self.deterministic)

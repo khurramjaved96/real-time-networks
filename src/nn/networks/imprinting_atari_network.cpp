@@ -212,6 +212,23 @@ void ImprintingAtariNetwork::step() {
   it_n = std::remove_if(this->imprinted_features.begin(), this->imprinted_features.end(), to_delete_n);
   this->imprinted_features.erase(it_n, this->imprinted_features.end());
 
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->memory_leak_patch();
+      });
+
+//  Calculate our credit
+  std::for_each(
+      std::execution::par_unseq,
+      all_synapses.begin(),
+      all_synapses.end(),
+      [&](synapse *s) {
+        s->memory_leak_patch();
+      });
+
   this->time_step++;
 }
 
