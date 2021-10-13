@@ -47,6 +47,7 @@ synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
   utility_to_keep = 0.0001;
   disable_utility = false;
   this->synapse_local_utility_trace = 0;
+  this->synapse_utility_to_distribute = 0;
 }
 //
 
@@ -80,6 +81,8 @@ void synapse::update_utility() {
 //  0.999 is a hyper-parameter.
   if(!this->in_shadow_mode && !this->disable_utility) {
     this->synapse_local_utility_trace = 0.99999 * this->synapse_local_utility_trace + 0.00001 * std::abs(diff);
+    //if (this->id == 2)
+    //  std::cout << ">> " << synapse_local_utility_trace << "*" << this->output_neuron->neuron_utility << "/" << this->output_neuron->sum_of_utility_traces + 1e-10<< std::endl;
     this->synapse_utility =
         (synapse_local_utility_trace * this->output_neuron->neuron_utility)
             / (this->output_neuron->sum_of_utility_traces + 1e-10);

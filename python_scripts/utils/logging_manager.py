@@ -91,10 +91,10 @@ class LoggingManager:
 
     def log_eps_metrics(self, episode, timestep, MSRE, running_MSRE, error, predictions, return_target, return_error):
         if timestep% 1000 == 0:
-            print(">>",timestep, episode, MSRE, running_MSRE, predictions[-1])
-        if episode% 20 == 0:
-            print(predictions)
-            print(return_target)
+            print(">>","T:", timestep, "\t\tEps:", episode, "\t\tMSRE:",  MSRE, "\t\trunning_MSRE:", running_MSRE, "\t\tgenerated features:", len(self.model.imprinted_features), "\t\tSynapses:", len(self.model.all_synapses), "\t\tPred[-1]:", predictions[-1])
+        #if episode% 20 == 0:
+        #    print(predictions)
+        #    print(return_target)
         if not self.log_to_db:
             return
         if self.episodic_metrics is not None:
