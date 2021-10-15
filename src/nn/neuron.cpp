@@ -32,6 +32,7 @@ Neuron::Neuron(bool is_input, bool is_output) {
   mark_useless_prob = 0.999;
   is_bias_unit = false;
   is_optical_flow_feature = false;
+  n_linear_synapses = 0;
 }
 
 /**
@@ -411,6 +412,31 @@ void Neuron::propagate_error() {
 //      Remove the activation we just processed
     this->past_activations.pop();
     this->error_gradient.push(n_message);
+  }
+}
+
+/**
+ * Mark useless linear weights (going directly from input -> output).
+ * The reason that this is separate is because we dont want the other outgoing weights
+ * from these input neurons to be marked. They should be removed all at  once their generated
+ * feature is removed.
+ */
+void Neuron::mark_useless_linear_weights() {
+//  return;
+  std::uniform_real_distribution<float> dist(0, 1);
+//  std::mt19937 gen;
+  float rand_val = dist(Neuron::gen);
+//  std::cout << "Rand value == " << rand_val << std::endl;
+  if(this->neuron_age > this->drinking_age * 4) {
+    for (auto &it : this->outgoing_synapses) {
+//      Only delete weights if they're older than 70k steps
+      if (it->output_neuron->is_output_neuron && it->synapse_utility < it->utility_to_keep && !it->disable_utility) {
+        if (dist(gen) > this->mark_useless_prob){
+          it->is_useless = true;
+          this->n_linear_synapses -= 1;
+        }
+      }
+    }
   }
 }
 

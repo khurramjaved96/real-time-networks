@@ -44,6 +44,7 @@ class Neuron : public dynamic_elem {
   float average_activation;
   float mark_useless_prob;
   bool is_optical_flow_feature;
+  int n_linear_synapses; // direct synapses (input->output)
 
 
   std::pair<float, float> value_ranges;
@@ -87,6 +88,8 @@ class Neuron : public dynamic_elem {
   void normalize_neuron();
 
   void mark_useless_weights();
+
+  void mark_useless_linear_weights();
 
   void prune_useless_weights();
 

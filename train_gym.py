@@ -95,6 +95,7 @@ def main():  # noqa: C901
         prediction_metrics = None
         bounded_unit_metrics = None
         imprinting_metrics = None
+        linear_feature_metrics = None
     else:
         args.db = "hshah1_" + args.db
         Database().create_database(args.db)
@@ -149,6 +150,13 @@ def main():  # noqa: C901
             ["run_id", "episode", "timestep", "neuron_id", "imprinted_on_id", "outgoing_weight", "age", "neuron_utility"],
             ["int", "int", "int", "int", "int", "real", "int", "real"],
             ["run_id", "timestep", "neuron_id", "imprinted_on_id"],
+        )
+        linear_feature_metrics = Metric(
+            args.db,
+            "linear_feature_metric",
+            ["run_id", "episode", "timestep", "neuron_id", "outgoing_weight", "neuron_utility", "synapse_utility", "synapse_utility_to_distribute"],
+            ["int", "int", "int", "int", "real", "real", "real", "real"],
+            ["run_id", "timestep", "neuron_id"],
         )
     # fmt: on
 
@@ -269,13 +277,14 @@ def main():  # noqa: C901
         log_to_db=(args.db != ""),
         run_id=args.run_id,
         model=model,
-        commit_frequency=2500,
+        commit_frequency=5000,
         episodic_metrics=episodic_metrics,
         neuron_metrics=neuron_metrics,
         synapse_metrics=synapse_metrics,
         prediction_metrics=prediction_metrics,
         # bounded_unit_metrics=bounded_unit_metrics,
         imprinting_metrics=imprinting_metrics,
+        linear_feature_metrics=linear_feature_metrics,
     )
 
     if args.task == "control":
@@ -311,7 +320,7 @@ def main():  # noqa: C901
                     for v in [
                         args.run_id,
                         args.comment,
-                        "crashed",
+                        "killed",
                         agent.timestep,
                         agent.episode,
                         agent.MSRE,

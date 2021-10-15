@@ -66,6 +66,12 @@ bool to_delete_n(Neuron *s) {
   return s->useless_neuron;
 }
 
+bool to_delete_linear_n(Neuron *s) {
+  if (s->n_linear_synapses > 0)
+    return false;
+  return true;
+}
+
 bool to_delete_synced_s(SyncedSynapse *s) {
   return s->is_useless;
 }

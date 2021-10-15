@@ -69,6 +69,21 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
     increment_references(n, 2);
   }
 
+  for (auto &inp_it : this->input_neurons){
+    this->linear_features.push_back(inp_it);
+    //increment_references(inp_it, 1);
+    for (auto &out_it : this->output_neurons){
+      synapse *s = new synapse(inp_it,out_it, 0,0);
+      s->turn_on_idbd();
+      s->set_meta_step_size(meta_step_size*0.1);
+      s->block_gradients();
+      this->all_synapses.push_back(s);
+      this->output_synapses.push_back(s);
+      increment_references(s, 2);
+      inp_it->n_linear_synapses += 1;
+    }
+  }
+
   // bias unit that is always 0, just to make the output receive inputs at start
   this->bias_unit = new BiasNeuron();
   this->bias_unit->is_mature = false;
@@ -154,6 +169,14 @@ void ImprintingAtariNetwork::step() {
         n->mark_useless_weights();
       });
 
+  std::for_each(
+      std::execution::par_unseq,
+      linear_features.begin(),
+      linear_features.end(),
+      [&](Neuron *n) {
+        n->mark_useless_linear_weights();
+      });
+
 //  Delete our is_useless weights and neurons
   std::for_each(
       all_neurons.begin(),
@@ -187,6 +210,11 @@ void ImprintingAtariNetwork::step() {
       });
   it = std::remove_if(this->output_synapses.begin(), this->output_synapses.end(), to_delete_s);
   this->output_synapses.erase(it, this->output_synapses.end());
+
+// not deleteing the input neurons, just removing them from this list if
+// they have no linear weights so that we dont need to iterate over them in the future
+  auto it_ln = std::remove_if(this->linear_features.begin(), this->linear_features.end(), to_delete_linear_n);
+  this->linear_features.erase(it_ln, this->linear_features.end());
 
   std::for_each(
       std::execution::par_unseq,
@@ -237,6 +265,7 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
   // randomly pick some neurons from the provided "interesting_neurons" to imprint on
   std::uniform_real_distribution<float> prob_max_selection(0, this->imprinting_max_prob);
   std::uniform_real_distribution<float> prob_selection(0, 1);
+  std::uniform_int_distribution<> drinking_age_sampler(1000, 10000);
   float percentage_to_look_at = prob_max_selection(this->mt);
   int total_ones = 0;
   auto new_feature = new LTU(false, false, 100000);
@@ -259,7 +288,9 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
 
     //float imprinting_weight = -1 * this->output_neurons[0]->error_gradient.back().error;
     float imprinting_weight = 0.0001 * prob_selection(this->mt);
-    auto s = new synapse(new_feature, this->output_neurons[0], imprinting_weight, this->step_size);
+    // we are initializing with trace=1, we then init step_size=0 so that we dont end up
+    // with new features continuously countering others
+    auto s = new synapse(new_feature, this->output_neurons[0], imprinting_weight, 0);
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
     increment_references(s, 2);

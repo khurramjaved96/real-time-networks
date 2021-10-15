@@ -10,7 +10,7 @@ INVALID_PLACEHOLDER = 1e+100
 
 
 class LoggingManager:
-    def __init__(self, log_to_db, run_id, model, commit_frequency=1000, episodic_metrics=None, neuron_metrics=None, synapse_metrics=None, prediction_metrics=None, bounded_unit_metrics=None, imprinting_metrics=None):
+    def __init__(self, log_to_db, run_id, model, commit_frequency=1000, episodic_metrics=None, neuron_metrics=None, synapse_metrics=None, prediction_metrics=None, bounded_unit_metrics=None, imprinting_metrics=None, linear_feature_metrics=None):
         self.log_to_db = log_to_db
         self.run_id = run_id
         self.model = model
@@ -22,6 +22,7 @@ class LoggingManager:
         self.prediction_metrics = prediction_metrics
         self.bounded_unit_metrics = bounded_unit_metrics
         self.imprinting_metrics = imprinting_metrics
+        self.linear_feature_metrics = linear_feature_metrics
 
         self.episodic_log_vec = []
         self.neuron_log_vec = []
@@ -29,6 +30,7 @@ class LoggingManager:
         self.prediction_log_vec = []
         self.bounded_log_vec = []
         self.imprinting_log_vec = []
+        self.linear_feature_log_vec = []
 
     def items_to_str(self, vec):
         ret_vec = []
@@ -55,6 +57,8 @@ class LoggingManager:
                 self.bounded_unit_metrics.add_values(self.bounded_log_vec)
             if self.imprinting_metrics:
                 self.imprinting_metrics.add_values(self.imprinting_log_vec)
+            if self.linear_feature_metrics:
+                self.linear_feature_metrics.add_values(self.linear_feature_log_vec)
         except:
             print("Failed commitinng logs")
 
@@ -64,25 +68,26 @@ class LoggingManager:
         self.prediction_log_vec = []
         self.bounded_log_vec = []
         self.imprinting_log_vec = []
+        self.linear_feature_log_vec = []
 
     def log_step_metrics(self, episode, timestep):
         #if timestep % 5000 == 0:
         #    self.model.viz_graph()
         if not self.log_to_db:
             return
-        max_vals = 20000
+        max_vals = 100000
         # its so expensive to do a self.model.all_synapses or all_neurons at every step
-        if timestep % 10000 == 0 and (len(self.model.all_synapses) > max_vals or len(self.model.all_neurons) > max_vals):
+        if timestep % 100000 == 0 and (len(self.model.all_synapses) > max_vals or len(self.model.all_neurons) > max_vals):
             print("Warning (logging_manager.py): Too many values to log! Truncating...")
 
 
         if self.neuron_metrics is not None:
-            if timestep % 10000 == 0:
+            if timestep % 100000 == 0:
                 for neuron in self.model.all_neurons[:max_vals]:
                     self.neuron_log_vec.append(self.items_to_str([self.run_id, episode, timestep, neuron.id, neuron.value, neuron.average_activation, neuron.neuron_utility]))
 
         if self.synapse_metrics is not None:
-            if timestep % 10000 == 0:
+            if timestep % 100000 == 0:
                 for synapse in self.model.all_synapses[:max_vals]:
                     self.synapse_log_vec.append(self.items_to_str([self.run_id, episode, timestep, synapse.id, synapse.weight, synapse.meta_step_size, synapse.synapse_utility]))
 
@@ -140,4 +145,17 @@ class LoggingManager:
                 if len(imprinted_unit.outgoing_synapses) < 1:
                     continue
                 self.imprinting_log_vec.append(self.items_to_str([self.run_id, episode, timestep, imprinted_unit.id, s.input_neuron.id, imprinted_unit.outgoing_synapses[0].weight, imprinted_unit.neuron_age, imprinted_unit.neuron_utility]))
+
+    def log_linear_feature_activity(self, episode, timestep):
+        if not self.log_to_db:
+            return
+        if self.linear_feature_metrics is None:
+            return
+        # this gets too big, want to update only once per commit
+        if len(self.linear_feature_log_vec) != 0:
+            return
+        for linear_unit in self.model.linear_features:
+            for s in linear_unit.outgoing_synapses:
+                if s.output_neuron.is_output_neuron:
+                    self.linear_feature_log_vec.append(self.items_to_str([self.run_id, episode, timestep, linear_unit.id, s.weight, linear_unit.neuron_utility, s.synapse_utility, s.synapse_utility_to_distribute]))
 

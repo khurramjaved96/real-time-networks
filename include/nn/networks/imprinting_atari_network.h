@@ -25,6 +25,7 @@ class ImprintingAtariNetwork: public Network {
   bool imprinting_only_single_layer;
   bool use_optical_flow_state;
   std::vector <int> input_indices;
+  std::vector <Neuron*> linear_features; // input->output synapses
   std::vector <Neuron*> imprinted_features;
 
   ImprintingAtariNetwork(int no_of_input_features,
