@@ -45,6 +45,10 @@ class synapse : public dynamic_elem {
   bool idbd;
   bool disable_utility; //Also disables pruning
 
+  // count number of times this synapse was active (LTU:1) when the
+  // connected feature was active
+  int n_feature_activity_contributions;
+
   void set_connected_to_recurrence(bool);
 
   bool get_recurrent_status();

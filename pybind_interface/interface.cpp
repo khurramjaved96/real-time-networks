@@ -108,6 +108,7 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def_readonly("weight", &synapse::weight)
         .def_readonly("credit", &synapse::credit)
         .def_readonly("trace", &synapse::trace)
+        .def_readonly("step_size", &synapse::step_size)
         .def_readonly("meta_step_size", &synapse::meta_step_size)
         .def_readonly("utility_to_keep", &synapse::utility_to_keep)
         .def_readonly("synapse_utility", &synapse::synapse_utility)

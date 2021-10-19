@@ -89,7 +89,7 @@ class LoggingManager:
         if self.synapse_metrics is not None:
             if timestep % 100000 == 0:
                 for synapse in self.model.all_synapses[:max_vals]:
-                    self.synapse_log_vec.append(self.items_to_str([self.run_id, episode, timestep, synapse.id, synapse.weight, synapse.meta_step_size, synapse.synapse_utility]))
+                    self.synapse_log_vec.append(self.items_to_str([self.run_id, episode, timestep, synapse.id, synapse.weight, synapse.step_size, synapse.synapse_utility]))
 
         if timestep % self.commit_frequency == 0:
             self.commit_logs()
@@ -144,7 +144,7 @@ class LoggingManager:
             for s in imprinted_unit.incoming_synapses:
                 if len(imprinted_unit.outgoing_synapses) < 1:
                     continue
-                self.imprinting_log_vec.append(self.items_to_str([self.run_id, episode, timestep, imprinted_unit.id, s.input_neuron.id, imprinted_unit.outgoing_synapses[0].weight, imprinted_unit.neuron_age, imprinted_unit.neuron_utility]))
+                self.imprinting_log_vec.append(self.items_to_str([self.run_id, episode, timestep, imprinted_unit.id, s.input_neuron.id, imprinted_unit.outgoing_synapses[0].weight, imprinted_unit.outgoing_synapses[0].step_size, imprinted_unit.neuron_age, imprinted_unit.neuron_utility]))
 
     def log_linear_feature_activity(self, episode, timestep):
         if not self.log_to_db:
@@ -157,5 +157,5 @@ class LoggingManager:
         for linear_unit in self.model.linear_features:
             for s in linear_unit.outgoing_synapses:
                 if s.output_neuron.is_output_neuron:
-                    self.linear_feature_log_vec.append(self.items_to_str([self.run_id, episode, timestep, linear_unit.id, s.weight, linear_unit.neuron_utility, s.synapse_utility, s.synapse_utility_to_distribute]))
+                    self.linear_feature_log_vec.append(self.items_to_str([self.run_id, episode, timestep, linear_unit.id, s.weight, s.step_size, linear_unit.neuron_utility, s.synapse_utility, s.synapse_utility_to_distribute]))
 

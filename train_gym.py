@@ -147,15 +147,15 @@ def main():  # noqa: C901
         imprinting_metrics = Metric(
             args.db,
             "imprinting_metric",
-            ["run_id", "episode", "timestep", "neuron_id", "imprinted_on_id", "outgoing_weight", "age", "neuron_utility"],
-            ["int", "int", "int", "int", "int", "real", "int", "real"],
+            ["run_id", "episode", "timestep", "neuron_id", "imprinted_on_id", "outgoing_weight", "step_size", "age", "neuron_utility"],
+            ["int", "int", "int", "int", "int", "real", "real", "int", "real"],
             ["run_id", "timestep", "neuron_id", "imprinted_on_id"],
         )
         linear_feature_metrics = Metric(
             args.db,
             "linear_feature_metric",
-            ["run_id", "episode", "timestep", "neuron_id", "outgoing_weight", "neuron_utility", "synapse_utility", "synapse_utility_to_distribute"],
-            ["int", "int", "int", "int", "real", "real", "real", "real"],
+            ["run_id", "episode", "timestep", "neuron_id", "outgoing_weight", "step_size", "neuron_utility", "synapse_utility", "synapse_utility_to_distribute"],
+            ["int", "int", "int", "int", "real", "real", "real", "real", "real"],
             ["run_id", "timestep", "neuron_id"],
         )
     # fmt: on

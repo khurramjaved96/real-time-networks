@@ -9,6 +9,7 @@
 #include <random>
 #include <algorithm>
 #include <vector>
+#include <execution>
 #include "../../include/utils.h"
 
 
@@ -33,7 +34,64 @@ Neuron::Neuron(bool is_input, bool is_output) {
   is_bias_unit = false;
   is_optical_flow_feature = false;
   n_linear_synapses = 0;
+
+  n_successes = 0;
+  n_failures = 0;
+  activity_based_successes = 0;
+  activity_based_failures = 0;
+  imprinting_potential = 0.5;
 }
+
+
+void Neuron::update_synapse_contributions() {
+  std::for_each(
+      std::execution::par_unseq,
+      this->incoming_synapses.begin(),
+      this->incoming_synapses.end(),
+      [&](synapse *s) {
+        if (s->input_neuron->value == 1)
+          s->n_feature_activity_contributions += 1;
+      });
+}
+
+void Neuron::update_imprinting_potential() {
+  if (this->neuron_age == this->drinking_age * 4){
+
+    for (auto &it : this->outgoing_synapses) {
+      if (it->output_neuron->is_output_neuron) {
+        float total_synapse_activity = 0;
+        for (auto &it : this->incoming_synapses)
+          total_synapse_activity += it->n_feature_activity_contributions;
+        if (it->synapse_utility < it->utility_to_keep){
+          std::for_each(
+              std::execution::par_unseq,
+              this->incoming_synapses.begin(),
+              this->incoming_synapses.end(),
+              [&](synapse *s) {
+                s->input_neuron->n_failures += 1;
+                s->input_neuron->activity_based_failures += s->n_feature_activity_contributions / total_synapse_activity;
+                s->input_neuron->imprinting_potential = 0.9 * s->input_neuron->imprinting_potential
+                    - 0.1 * (s->n_feature_activity_contributions / total_synapse_activity);
+              });
+        }
+        else{
+          std::for_each(
+              std::execution::par_unseq,
+              this->incoming_synapses.begin(),
+              this->incoming_synapses.end(),
+              [&](synapse *s) {
+                s->input_neuron->n_successes += 1;
+                s->input_neuron->activity_based_successes += s->n_feature_activity_contributions / total_synapse_activity;
+                s->input_neuron->imprinting_potential = 0.9 * s->input_neuron->imprinting_potential
+                    + 0.1 * (s->n_feature_activity_contributions / total_synapse_activity);
+              });
+        }
+      }
+    }
+
+  }
+}
+
 
 /**
  * Fire a neuron. Use the update_value calculated gradient_activation to set this->gradient_activation to

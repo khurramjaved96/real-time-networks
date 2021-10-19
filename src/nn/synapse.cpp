@@ -48,6 +48,7 @@ synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
   disable_utility = false;
   this->synapse_local_utility_trace = 0;
   this->synapse_utility_to_distribute = 0;
+  this->n_feature_activity_contributions = 0;
 }
 //
 
