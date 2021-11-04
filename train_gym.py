@@ -26,8 +26,12 @@ from python_scripts.agents.sarsa_prediction_agent import SarsaPredictionAgent
 from python_scripts.agents.sarsa_continuous_prediction_agent import (
     SarsaContinuousPredictionAgent,
 )
+from python_scripts.agents.torch_sarsa_continuous_prediction_agent import (
+    TorchSarsaContinuousPredictionAgent,
+)
 from python_scripts.agents.mountaincar_fixed_agent import MountainCarFixed
 from python_scripts.agents.baselines_expert_agent import BaselinesExpert
+from python_scripts.models.linear_model import LinearModel
 
 
 def set_random_seed(seed: int, env: gym.wrappers.time_limit.TimeLimit) -> None:
@@ -270,6 +274,11 @@ def main():  # noqa: C901
             bool(args.imprinting_only_single_layer),
             bool(args.use_optical_flow_state),
         )
+    elif args.net == "torchLinear":
+        model = LinearModel(input_size,
+                            output_size,
+                            args.step_size,
+                            False)
     else:
         raise NotImplementedError
 
@@ -293,8 +302,10 @@ def main():  # noqa: C901
         if args.env == "MountainCar-v0":
             expert_agent = MountainCarFixed()
             agent = SarsaPredictionAgent(expert_agent)
-        elif args.env == "PongNoFrameskip-v4":
+        elif args.env == "PongNoFrameskip-v4" and args.net not in ['torchLinear']:
             agent = SarsaContinuousPredictionAgent(expert_agent)
+        elif args.env == "PongNoFrameskip-v4" and args.net in ['torchLinear']:
+            agent = TorchSarsaContinuousPredictionAgent(expert_agent)
         else:
             raise NotImplementedError
     else:

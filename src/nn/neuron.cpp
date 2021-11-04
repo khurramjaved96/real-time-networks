@@ -57,9 +57,11 @@ void Neuron::update_synapse_contributions() {
 void Neuron::update_imprinting_potential() {
   if (this->neuron_age == this->drinking_age * 4){
 
+    // TODO what in case of multiple output nodes? what if some are output?
     for (auto &it : this->outgoing_synapses) {
       if (it->output_neuron->is_output_neuron) {
         float total_synapse_activity = 0;
+        // TODO reused it...
         for (auto &it : this->incoming_synapses)
           total_synapse_activity += it->n_feature_activity_contributions;
         if (it->synapse_utility < it->utility_to_keep){

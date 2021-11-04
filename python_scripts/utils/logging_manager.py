@@ -77,8 +77,9 @@ class LoggingManager:
             return
         max_vals = 100000
         # its so expensive to do a self.model.all_synapses or all_neurons at every step
-        if timestep % 100000 == 0 and (len(self.model.all_synapses) > max_vals or len(self.model.all_neurons) > max_vals):
-            print("Warning (logging_manager.py): Too many values to log! Truncating...")
+        if self.neuron_metrics or self.synapse_metrics:
+            if timestep % 100000 == 0 and (len(self.model.all_synapses) > max_vals or len(self.model.all_neurons) > max_vals):
+                print("Warning (logging_manager.py): Too many values to log! Truncating...")
 
 
         if self.neuron_metrics is not None:
