@@ -42,7 +42,7 @@ class SarsaContinuousPredictionAgent(BaseAgent):
 
             err = model.introduce_targets([new_target], gamma, lmbda)
             error_trace = 0.99 * error_trace + 0.01 * err
-            if args.use_imprinting and (abs(err) - abs(error_trace) > args.imprinting_err_thresh or random.random() < args.imprinting_random_prob):
+            if args.use_imprinting and (err - error_trace > args.imprinting_err_thresh or random.random() < args.imprinting_random_prob):
                 #print(f"imprinting now trace: {error_trace} err: {err} t: {t}")
                 if args.imprinting_mode == "random":
                     model.imprint_randomly()

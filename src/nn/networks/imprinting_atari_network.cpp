@@ -73,7 +73,7 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
     this->linear_features.push_back(inp_it);
     //increment_references(inp_it, 1);
     for (auto &out_it : this->output_neurons){
-      synapse *s = new synapse(inp_it,out_it, 0, this->step_size);
+      synapse *s = new synapse(inp_it,out_it, 0, this->step_size * 0.001);
       s->turn_on_idbd();
       s->set_meta_step_size(meta_step_size);
       s->block_gradients();
@@ -92,13 +92,13 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
   increment_references(this->bias_unit, 2);
 
   for (auto &output : this->output_neurons) {
-    synapse *s = new synapse(bias_unit, output, 0.0,0);
+    synapse *s = new synapse(bias_unit, output, 0.0,0.0);
     s->disable_utility = true;
     s->block_gradients();
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
     increment_references(s, 2);
-    s->set_meta_step_size(meta_step_size);
+    s->set_meta_step_size(0);
   }
 
 }
@@ -290,9 +290,6 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
     //float imprinting_weight = -1 * this->output_neurons[0]->error_gradient.back().error;
     //float imprinting_weight = 0.0001 * prob_selection(this->mt);
     float imprinting_weight = 0;
-    // we are initializing with trace=1, we then init step_size=0 so that we dont end up
-    // with new features continuously countering others
-    //auto s = new synapse(new_feature, this->output_neurons[0], imprinting_weight, 0);
     auto s = new synapse(new_feature, this->output_neurons[0], imprinting_weight, this->step_size);
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
