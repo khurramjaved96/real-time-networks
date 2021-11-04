@@ -16,14 +16,13 @@ class TorchSarsaContinuousPredictionAgent(BaseAgent):
     """Implements the sarsa prediction agent"""
 
     def __init__(self, expert_agent):
-        super(SarsaContinuousPredictionAgent, self).__init__()
+        super(TorchSarsaContinuousPredictionAgent, self).__init__()
         self.expert_agent = expert_agent
         self.loss = nn.MSELoss()
-        self.opt = optim.RMSprop(model.parameters(), lr=model.step_size)
 
         if torch.cuda.is_available():
             self.device = torch.device('cuda:' + '0')
-            print("Using gpu : %s", 'cuda:' + str(gpu_to_use))
+            print("Using gpu : %s", 'cuda:' + '0')
         else:
            self.device = torch.device('cpu')
 
@@ -34,6 +33,9 @@ class TorchSarsaContinuousPredictionAgent(BaseAgent):
         Return:
             -
         """
+        self.model = model.to(self.device)
+        self.opt = optim.RMSprop(model.parameters(), lr=model.step_size)
+
         rewards_vec = deque(maxlen=1000)
         predictions_vec = deque(maxlen=1000)
         error_trace = 0;
@@ -48,7 +50,7 @@ class TorchSarsaContinuousPredictionAgent(BaseAgent):
 
             next_obs, reward, done, info = env.step(action)
             with torch.no_grad():
-                new_target = reward + gamma * model(torch.FloatTensor(next_obs).to(self.device))
+                new_target = reward[0] + gamma * model(torch.FloatTensor(next_obs).to(self.device))
 
             err = self.loss(prediction.float(), new_target.float())
             error_trace = 0.99 * error_trace + 0.01 * err

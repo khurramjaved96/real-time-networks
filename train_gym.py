@@ -21,6 +21,9 @@ from python_scripts.utils.state_feature.state_feature_util import TileCoder
 from python_scripts.utils.logging_manager import LoggingManager
 from python_scripts.utils.tilecoding_wrapper import TileCodedObservation
 from python_scripts.utils.image_binning_wrapper import BinnedObservation
+from python_scripts.models.linear_model import LinearModel
+from python_scripts.agents.baselines_expert_agent import BaselinesExpert
+from python_scripts.agents.mountaincar_fixed_agent import MountainCarFixed
 from python_scripts.agents.sarsa_control_agent import SarsaControlAgent
 from python_scripts.agents.sarsa_prediction_agent import SarsaPredictionAgent
 from python_scripts.agents.sarsa_continuous_prediction_agent import (
@@ -29,9 +32,6 @@ from python_scripts.agents.sarsa_continuous_prediction_agent import (
 from python_scripts.agents.torch_sarsa_continuous_prediction_agent import (
     TorchSarsaContinuousPredictionAgent,
 )
-from python_scripts.agents.mountaincar_fixed_agent import MountainCarFixed
-from python_scripts.agents.baselines_expert_agent import BaselinesExpert
-from python_scripts.models.linear_model import LinearModel
 
 
 def set_random_seed(seed: int, env: gym.wrappers.time_limit.TimeLimit) -> None:
@@ -363,15 +363,6 @@ def main():  # noqa: C901
                 ]
             ]
         )
-
-    #    if args.db:
-    #        bound_replacement_metrics = Metric(
-    #            args.db,
-    #            "bound_replacement_metrics",
-    #            ["run_id", "neuron_id", "neuron_age", "neuron_utility", "output_weight", "num_times_replaced" ], ["int", "int", "int", "real", "real", "int"],
-    #            ["run_id", "neuron_id"],
-    #        )
-    #        logger.log_synapse_replacement(bound_replacement_metrics)
 
     logger.commit_logs()
 
