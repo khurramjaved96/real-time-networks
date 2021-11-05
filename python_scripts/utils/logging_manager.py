@@ -159,4 +159,3 @@ class LoggingManager:
             for s in linear_unit.outgoing_synapses:
                 if s.output_neuron.is_output_neuron:
                     self.linear_feature_log_vec.append(self.items_to_str([self.run_id, episode, timestep, linear_unit.id, s.weight, s.step_size, linear_unit.neuron_utility, s.synapse_utility, s.synapse_utility_to_distribute]))
-

@@ -52,8 +52,8 @@ class SarsaContinuousPredictionAgent(BaseAgent):
                     model.imprint_using_optical_flow_old()
                 else:
                     raise ValueError
-                logger.log_imprinting_activity(self.episode, t)
-                logger.log_linear_feature_activity(self.episode, t)
+            logger.log_imprinting_activity(self.episode, t)
+            logger.log_linear_feature_activity(self.episode, t)
 
             obs = next_obs
             rewards_vec.append(reward)
