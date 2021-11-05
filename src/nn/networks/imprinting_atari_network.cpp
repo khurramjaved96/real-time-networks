@@ -169,13 +169,14 @@ void ImprintingAtariNetwork::step() {
         n->mark_useless_weights();
       });
 
-  std::for_each(
-      std::execution::par_unseq,
-      linear_features.begin(),
-      linear_features.end(),
-      [&](Neuron *n) {
-        n->mark_useless_linear_weights();
-      });
+  //TODO turn this back on later
+//  std::for_each(
+//      std::execution::par_unseq,
+//      linear_features.begin(),
+//      linear_features.end(),
+//      [&](Neuron *n) {
+//        n->mark_useless_linear_weights();
+//      });
 
 //  Delete our is_useless weights and neurons
   std::for_each(

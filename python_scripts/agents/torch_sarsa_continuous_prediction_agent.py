@@ -53,7 +53,7 @@ class TorchSarsaContinuousPredictionAgent(BaseAgent):
                 new_target = reward[0] + gamma * model(torch.FloatTensor(next_obs).to(self.device))
 
             err = self.loss(prediction.float(), new_target.float())
-            error_trace = 0.99 * error_trace + 0.01 * err
+            error_trace = 0.99 * error_trace + 0.01 * float(err.detach().cpu().data)
             self.opt.zero_grad()
             err.backward()
             self.opt.step()
