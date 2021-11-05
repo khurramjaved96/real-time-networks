@@ -106,8 +106,9 @@ class BaselinesExpert:
 
 if __name__ == "__main__":
     from collections import deque
-    obsq = deque(maxlen=20)
-    expert_policy = BaselinesExpert(seed=22)
+    import pickle
+    obsq = []
+    expert_policy = BaselinesExpert(seed=0, deterministic=False, exploration_rate=0.25)
     env = expert_policy.env
     obs = env.reset()
 
@@ -115,18 +116,17 @@ if __name__ == "__main__":
     from time import sleep
     episode_reward = 0
     t = 0
-    for timestep in range(20000):
+    for timestep in range(200000):
         t+=1 
         action = expert_policy.predict(obs)
         #action = [env.action_space.sample()]
         obs, reward, done, infos = env.step(action)
-        obsq.append(obs)
         if False:
             env.render("human")
             sleep(0.1)
 
-        if reward == 1:
-            from IPython import embed; embed()
+        if reward == 1 or reward == -1:
+            obsq.append(obs)
             print(t)
             t=0
         episode_reward += reward[0]
@@ -134,10 +134,11 @@ if __name__ == "__main__":
         # For atari the return reward is not the atari score
         # so we have to get it from the infos dict
         if done and infos is not None:
-            from IPython import embed; embed()
             episode_infos = infos[0].get("episode")
             if episode_infos is not None:
                 print(f"Atari Episode Score: {episode_infos['r']:.2f}")
                 print("Atari Episode Length", episode_infos["l"])
                 expert_policy.state = None
-                env.close()
+    env.close()
+    with open('pong_obs_s.pkl', 'wb') as pkl_f:
+        pickle.dump(obsq, pkl_f, protocol=pickle.HIGHEST_PROTOCOL)
