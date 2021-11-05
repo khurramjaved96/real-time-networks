@@ -91,15 +91,15 @@ def main():  # noqa: C901
 
     args = parser.parse_args()
 
+    episodic_metrics = None
+    neuron_metrics = None
+    synapse_metrics = None
+    prediction_metrics = None
+    bounded_unit_metrics = None
+    imprinting_metrics = None
+    linear_feature_metrics = None
     if args.db == "":
         print("db name not provided. Not logging results")
-        episodic_metrics = None
-        neuron_metrics = None
-        synapse_metrics = None
-        prediction_metrics = None
-        bounded_unit_metrics = None
-        imprinting_metrics = None
-        linear_feature_metrics = None
     else:
         args.db = "hshah1_" + args.db
         Database().create_database(args.db)
@@ -120,20 +120,6 @@ def main():  # noqa: C901
             ["int", "int", "int", "real", "real", "real"],
             ["run_id", "episode", "timestep"],
         )
-        neuron_metrics = Metric(
-            args.db,
-            "neuron_metrics",
-            ["run_id", "episode", "timestep", "neuron_id", "value", "avg_value", "neuron_utility"],
-            ["int", "int", "int", "int", "real", "real", "real"],
-            ["run_id", "timestep", "neuron_id"],
-        )
-        synapse_metrics = Metric(
-            args.db,
-            "synapse_metrics",
-            ["run_id", "episode", "timestep", "synapse_id", "weight", "step_size", "synapse_utility"],
-            ["int", "int", "int", "int", "real", "real", "real"],
-            ["run_id", "timestep", "synapse_id"],
-        )
         prediction_metrics = Metric(
             args.db,
             "prediction_metrics",
@@ -141,27 +127,42 @@ def main():  # noqa: C901
             ["int", "int", "int", "real", "real", "real", "real", "JSON"],
             ["run_id", "episode", "timestep"],
         )
-        bounded_unit_metrics= Metric(
-            args.db,
-            "bounded_unit_metrics",
-            ["run_id", "episode", "timestep", "count_active"],
-            ["int", "int", "int", "int"],
-            ["run_id", "timestep"],
-        )
-        imprinting_metrics = Metric(
-            args.db,
-            "imprinting_metric",
-            ["run_id", "episode", "timestep", "neuron_id", "imprinted_on_id", "outgoing_weight", "step_size", "age", "neuron_utility"],
-            ["int", "int", "int", "int", "int", "real", "real", "int", "real"],
-            ["run_id", "timestep", "neuron_id", "imprinted_on_id"],
-        )
-        linear_feature_metrics = Metric(
-            args.db,
-            "linear_feature_metric",
-            ["run_id", "episode", "timestep", "neuron_id", "outgoing_weight", "step_size", "neuron_utility", "synapse_utility", "synapse_utility_to_distribute"],
-            ["int", "int", "int", "int", "real", "real", "real", "real", "real"],
-            ["run_id", "timestep", "neuron_id"],
-        )
+        if not args.net in ['torchLinear']:
+            neuron_metrics = Metric(
+                args.db,
+                "neuron_metrics",
+                ["run_id", "episode", "timestep", "neuron_id", "value", "avg_value", "neuron_utility"],
+                ["int", "int", "int", "int", "real", "real", "real"],
+                ["run_id", "timestep", "neuron_id"],
+            )
+            synapse_metrics = Metric(
+                args.db,
+                "synapse_metrics",
+                ["run_id", "episode", "timestep", "synapse_id", "weight", "step_size", "synapse_utility"],
+                ["int", "int", "int", "int", "real", "real", "real"],
+                ["run_id", "timestep", "synapse_id"],
+            )
+            bounded_unit_metrics= Metric(
+                args.db,
+                "bounded_unit_metrics",
+                ["run_id", "episode", "timestep", "count_active"],
+                ["int", "int", "int", "int"],
+                ["run_id", "timestep"],
+            )
+            imprinting_metrics = Metric(
+                args.db,
+                "imprinting_metric",
+                ["run_id", "episode", "timestep", "neuron_id", "imprinted_on_id", "outgoing_weight", "step_size", "age", "neuron_utility"],
+                ["int", "int", "int", "int", "int", "real", "real", "int", "real"],
+                ["run_id", "timestep", "neuron_id", "imprinted_on_id"],
+            )
+            linear_feature_metrics = Metric(
+                args.db,
+                "linear_feature_metric",
+                ["run_id", "episode", "timestep", "neuron_id", "outgoing_weight", "step_size", "neuron_utility", "synapse_utility", "synapse_utility_to_distribute"],
+                ["int", "int", "int", "int", "real", "real", "real", "real", "real"],
+                ["run_id", "timestep", "neuron_id"],
+            )
     # fmt: on
 
     if args.net == "expandingLFA":
