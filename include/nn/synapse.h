@@ -36,6 +36,7 @@ class synapse : public dynamic_elem {
   float synapse_utility;
   float synapse_utility_to_distribute;
   float synapse_local_utility_trace = 0;
+  float synapse_local_utility_trace_decay;
   float tidbd_old_activation;
   float tidbd_old_error;
   bool propagate_gradients;

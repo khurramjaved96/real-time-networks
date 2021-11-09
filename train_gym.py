@@ -83,6 +83,10 @@ def main():  # noqa: C901
     parser.add_argument( "--imprinting-random-prob", help="Prob at each step to generate a feature regardless of the error (default:0)", default=0, type=float)
     parser.add_argument( "--imprinting-only-single-layer", help="Restrict the feature generation to let network stay single layered forever", default=0, type=int,)
 
+    parser.add_argument( "--utility-to-keep", help="Utility to keep (used to set the number of max synapses)", default=0.0001, type=float,)
+    parser.add_argument( "--linear-drinking-age", help="maturity age: drinking_age*4. This is only for input features.", default=5000, type=int,)
+    parser.add_argument( "--linear-synapse-local-utility-trace-decay", help="Rate at which it decays (see code), only for linear/input synapses.", default=0.9999, type=float,)
+
     parser.add_argument("--step-size", help="step size", default=0.01, type=float)
     parser.add_argument( "--meta-step-size", help="tidbd step size", default=1e-3, type=float)
     parser.add_argument("--gamma", help="gamma", default=0.99, type=float)
@@ -274,6 +278,9 @@ def main():  # noqa: C901
             args.imprinting_max_prob,
             bool(args.imprinting_only_single_layer),
             bool(args.use_optical_flow_state),
+            args.linear_drinking_age,
+            args.linear_synapse_local_utility_trace_decay,
+            args.utility_to_keep,
         )
     elif args.net == "torchLinear":
         model = LinearModel(input_size,

@@ -29,7 +29,10 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
                                                int input_bins,
                                                float imprinting_max_prob,
                                                bool imprinting_only_single_layer,
-                                               bool use_optical_flow_state) {
+                                               bool use_optical_flow_state,
+                                               int linear_drinking_age,
+                                               float linear_synapse_local_utility_trace_decay,
+                                               float utility_to_keep) {
 
   // TODO increment references not handled
   this->time_step = 0;
@@ -38,6 +41,7 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
   this->use_imprinting = use_imprinting;
   this->step_size = step_size;
   this->meta_step_size = meta_step_size;
+  this->utility_to_keep = utility_to_keep;
   this->input_H = input_H;
   this->input_W = input_W;
   this->input_bins = input_bins;
@@ -54,6 +58,7 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
   for (int neuron_no = 0; neuron_no < no_of_input_features; neuron_no++) {
     auto n = new LinearNeuron(true, false);
     n->is_mature = true;
+    n->drinking_age = linear_drinking_age;
     if (neuron_no >= non_optical_flow_max_idx)
       n->is_optical_flow_feature = true;
     this->input_neurons.push_back(n);
@@ -74,6 +79,8 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
     //increment_references(inp_it, 1);
     for (auto &out_it : this->output_neurons){
       synapse *s = new synapse(inp_it,out_it, 0, this->step_size * 0.001);
+      s->synapse_local_utility_trace_decay = linear_synapse_local_utility_trace_decay;
+      s->set_utility_to_keep(utility_to_keep);
       s->turn_on_idbd();
       s->set_meta_step_size(meta_step_size);
       s->block_gradients();
@@ -93,6 +100,7 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
 
   for (auto &output : this->output_neurons) {
     synapse *s = new synapse(bias_unit, output, 0.0,0.0);
+    s->set_utility_to_keep(utility_to_keep);
     s->disable_utility = true;
     s->block_gradients();
     this->all_synapses.push_back(s);
@@ -169,14 +177,13 @@ void ImprintingAtariNetwork::step() {
         n->mark_useless_weights();
       });
 
-  //TODO turn this back on later
-//  std::for_each(
-//      std::execution::par_unseq,
-//      linear_features.begin(),
-//      linear_features.end(),
-//      [&](Neuron *n) {
-//        n->mark_useless_linear_weights();
-//      });
+  std::for_each(
+      std::execution::par_unseq,
+      linear_features.begin(),
+      linear_features.end(),
+      [&](Neuron *n) {
+        n->mark_useless_linear_weights();
+      });
 
 //  Delete our is_useless weights and neurons
   std::for_each(
@@ -274,6 +281,7 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
   for (auto &it : interesting_neurons){
     if(prob_selection(this->mt) < percentage_to_look_at) {
       auto s = new synapse(it, new_feature, 1, 0);
+      s->set_utility_to_keep(utility_to_keep);
       this->all_synapses.push_back(s);
       increment_references(s, 1);
       s->set_meta_step_size(0);
@@ -292,6 +300,7 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
     //float imprinting_weight = 0.0001 * prob_selection(this->mt);
     float imprinting_weight = 0;
     auto s = new synapse(new_feature, this->output_neurons[0], imprinting_weight, this->step_size);
+    s->set_utility_to_keep(utility_to_keep);
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
     increment_references(s, 2);
