@@ -80,6 +80,8 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
     for (auto &out_it : this->output_neurons){
       synapse *s = new synapse(inp_it,out_it, 0, this->step_size * 0.001);
       s->synapse_local_utility_trace_decay = linear_synapse_local_utility_trace_decay;
+      //TODO initializing optimistically here
+      s->synapse_local_utility_trace = utility_to_keep;
       s->set_utility_to_keep(utility_to_keep);
       s->turn_on_idbd();
       s->set_meta_step_size(meta_step_size);
@@ -273,7 +275,7 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
   // randomly pick some neurons from the provided "interesting_neurons" to imprint on
   std::uniform_real_distribution<float> prob_max_selection(0, this->imprinting_max_prob);
   std::uniform_real_distribution<float> prob_selection(0, 1);
-  std::uniform_int_distribution<> drinking_age_sampler(1000, 10000);
+  std::uniform_int_distribution<> drinking_age_sampler(2500, 5000);
   float percentage_to_look_at = prob_max_selection(this->mt);
   int total_ones = 0;
   auto new_feature = new LTU(false, false, 100000);
@@ -281,7 +283,8 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
   for (auto &it : interesting_neurons){
     if(prob_selection(this->mt) < percentage_to_look_at) {
       auto s = new synapse(it, new_feature, 1, 0);
-      s->set_utility_to_keep(utility_to_keep);
+      //s->set_utility_to_keep(utility_to_keep);
+      s->synapse_local_utility_trace = utility_to_keep;
       this->all_synapses.push_back(s);
       increment_references(s, 1);
       s->set_meta_step_size(0);
@@ -300,7 +303,8 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
     //float imprinting_weight = 0.0001 * prob_selection(this->mt);
     float imprinting_weight = 0;
     auto s = new synapse(new_feature, this->output_neurons[0], imprinting_weight, this->step_size);
-    s->set_utility_to_keep(utility_to_keep);
+    //s->set_utility_to_keep(utility_to_keep);
+    s->synapse_local_utility_trace = utility_to_keep;
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
     increment_references(s, 2);
