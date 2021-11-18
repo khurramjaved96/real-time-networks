@@ -16,20 +16,21 @@ sys.path.insert(0, "rl-baselines3-zoo")
 
 import FlexibleNN
 from FlexibleNN import Metric, Database
-from python_scripts.utils.utils import get_types
-from python_scripts.utils.state_feature.state_feature_util import TileCoder
-from python_scripts.utils.logging_manager import LoggingManager
-from python_scripts.utils.tilecoding_wrapper import TileCodedObservation
-from python_scripts.utils.image_binning_wrapper import BinnedObservation
-from python_scripts.models.linear_model import LinearModel
-from python_scripts.agents.baselines_expert_agent import BaselinesExpert
-from python_scripts.agents.mountaincar_fixed_agent import MountainCarFixed
-from python_scripts.agents.sarsa_control_agent import SarsaControlAgent
-from python_scripts.agents.sarsa_prediction_agent import SarsaPredictionAgent
-from python_scripts.agents.sarsa_continuous_prediction_agent import (
+from src_python.utils.utils import get_types
+from src_python.utils.state_feature.state_feature_util import TileCoder
+from src_python.utils.logging_manager import LoggingManager
+from src_python.utils.tilecoding_wrapper import TileCodedObservation
+from src_python.utils.image_binning_wrapper import BinnedObservation
+from src_python.models.linear_model import LinearModel
+from src_python.envs.classical_conditioning_benchmarks import TraceConditioning, TracePatterning
+from src_python.agents.baselines_expert_agent import BaselinesExpert
+from src_python.agents.mountaincar_fixed_agent import MountainCarFixed
+from src_python.agents.sarsa_control_agent import SarsaControlAgent
+from src_python.agents.sarsa_prediction_agent import SarsaPredictionAgent
+from src_python.agents.sarsa_continuous_prediction_agent import (
     SarsaContinuousPredictionAgent,
 )
-from python_scripts.agents.torch_sarsa_continuous_prediction_agent import (
+from src_python.agents.torch_sarsa_continuous_prediction_agent import (
     TorchSarsaContinuousPredictionAgent,
 )
 
@@ -92,6 +93,20 @@ def main():  # noqa: C901
     parser.add_argument("--gamma", help="gamma", default=0.99, type=float)
     parser.add_argument("--lmbda", help="lambda", default=0.99, type=float)
     parser.add_argument( "--epsilon", help="exploration epsilon", default=0.10, type=float)
+
+    # params for animal state experiments
+    parser.add_argument("--num-CS", type=int, default=1)
+    parser.add_argument("--num-US", type=int, default=1)
+    parser.add_argument("--num-dist", type=int, default=10)
+    parser.add_argument("--num-activation-patterns", type=int, default=10)
+    parser.add_argument("--prob-activation-patterns", type=float, default=0.3)
+    parser.add_argument("--ISI-interval", type=str, default="7,13")
+    parser.add_argument("--ITI-interval", type=str, default="80,120")
+    parser.add_argument("--len-CS", type=int, default=4)
+    parser.add_argument("--len-US", type=int, default=2)
+    parser.add_argument("--len-dist", type=int, default=4)
+    parser.add_argument("--CS-noise", type=float, default=0)
+
 
     args = parser.parse_args()
 
@@ -169,13 +184,43 @@ def main():  # noqa: C901
             )
     # fmt: on
 
+    animal_state_envs = ["TraceConditioning", "NoisyPatterning", "TracePatterning"]
+    if args.env in animal_state_envs:
+        args.ISI_interval = [int(x) for x in args.ISI_interval.split(",")]
+        args.ITI_interval = [int(x) for x in args.ITI_interval.split(",")]
+        args.gamma =  1-1/np.mean(args.ISI_interval)
+        print(f"Using gamma: {args.gamma}")
+
     if args.net == "expandingLFA":
         assert args.tilecoding, f"expandingLFA can only be used with tilecoding"
 
     if args.use_optical_flow_state:
         assert args.binning, f"optical flow state only implmnted with binning"
 
-    if args.env == "PongNoFrameskip-v4":
+    if args.env == "TraceConditioning":
+        expert_agent = None
+        env = TraceConditioning(seed=args.seed,
+                                ISI_interval=args.ISI_interval,
+                                ITI_interval=args.ITI_interval,
+                                gamma=args.gamma,
+                                num_distractors=args.num_dist,
+                                activation_lengths={'CS': args.len_CS, 'US': args.len_US, 'distractor': args.len_dist]})
+        input_size = args.num_CS + args.num_US + args.num_dist
+    elif args.env == "TracePatterning":
+        expert_agent = None
+        env = TracePatterning(seed=args.seed,
+                              ISI_interval=args.ISI_interval,
+                              ITI_interval=args.ITI_interval,
+                              gamma=args.gamma,
+                              num_CS=args.num_CS,
+                              num_activation_patterns=args.num_activation_patterns,
+                              prob_activation_patterns=args.prob_activation_patterns,
+                              num_distractors=args.num_dist,
+                              activation_lengths={'CS': args.len_CS, 'US': args.len_US, 'distractor': args.len_dist]},
+                              noise=args.CS_noise)
+        input_size = args.num_CS + args.num_US + args.num_dist
+
+    elif args.env == "PongNoFrameskip-v4":
         expert_agent = BaselinesExpert(
             seed=args.seed,
             env_id=args.env,
@@ -200,6 +245,7 @@ def main():  # noqa: C901
         input_range = np.array(tuple(zip(env.observation_space.low, env.observation_space.high)))
 
     if args.tilecoding:
+        assert not args.env in animal_state_envs, f"tc not to be used with animal envs"
         env = TileCodedObservation(
             env,
             env.observation_space.shape[0],
@@ -212,7 +258,8 @@ def main():  # noqa: C901
         input_size = env.tc.total_tiles
         args.step_size /= args.tilecoding_n_tilings
     if args.binning:
-        assert not args.tilecoding, f"not to be used with tc"
+        assert not args.tilecoding, f"binning not to be used with tc"
+        assert not args.env in animal_state_envs, f"binning not to be used with animal envs"
         env = BinnedObservation(env, args.binning_n_bins, args.use_optical_flow_state)
         input_size = input_size * args.binning_n_bins
         if args.use_optical_flow_state:
@@ -314,6 +361,8 @@ def main():  # noqa: C901
             agent = SarsaContinuousPredictionAgent(expert_agent)
         elif args.env == "PongNoFrameskip-v4" and args.net in ['torchLinear']:
             agent = TorchSarsaContinuousPredictionAgent(expert_agent)
+        elif args.env in animal_state_envs:
+            agent = SarsaContinuousPredictionAgent(None)
         else:
             raise NotImplementedError
     else:

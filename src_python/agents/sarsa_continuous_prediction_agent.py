@@ -28,14 +28,16 @@ class SarsaContinuousPredictionAgent(BaseAgent):
         predictions_vec = deque(maxlen=1000)
         error_trace = 0;
         obs = env.reset()
+        action = None
         for t in range(timesteps):
             self.timestep = t
             model.set_input_values(obs)
             model.step()
             prediction = model.read_output_values()
 
-            # expert_agent does not take the binned input
-            action = self.expert_agent.predict(env.unwrapped_obs)
+            if self.expert_agent:
+                # expert_agent does not take the binned input
+                action = self.expert_agent.predict(env.unwrapped_obs)
 
             next_obs, reward, done, info = env.step(action)
             new_target = reward + gamma * model.forward_pass_without_side_effects(next_obs)[0]
