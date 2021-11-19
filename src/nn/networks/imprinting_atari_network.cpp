@@ -273,6 +273,7 @@ void ImprintingAtariNetwork::step() {
 
 void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *> interesting_neurons) {
   // randomly pick some neurons from the provided "interesting_neurons" to imprint on
+  int max_number_of_incoming_connections = 50;
   std::uniform_real_distribution<float> prob_max_selection(0, this->imprinting_max_prob);
   std::uniform_real_distribution<float> prob_selection(0, 1);
   std::uniform_int_distribution<> drinking_age_sampler(2500, 5000);
@@ -281,10 +282,11 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
   auto new_feature = new LTU(false, false, 100000);
   new_feature->drinking_age = drinking_age_sampler(this->mt);
   for (auto &it : interesting_neurons){
-    if(prob_selection(this->mt) < percentage_to_look_at) {
+    if(prob_selection(this->mt) < percentage_to_look_at && total_ones <= max_number_of_incoming_connections) {
       auto s = new synapse(it, new_feature, 1, 0);
       //s->set_utility_to_keep(utility_to_keep);
-      s->synapse_local_utility_trace = utility_to_keep;
+      //s->synapse_local_utility_trace = utility_to_keep;
+      s->synapse_local_utility_trace = s->get_utility_to_keep();
       this->all_synapses.push_back(s);
       increment_references(s, 1);
       s->set_meta_step_size(0);
@@ -304,7 +306,8 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
     float imprinting_weight = 0;
     auto s = new synapse(new_feature, this->output_neurons[0], imprinting_weight, this->step_size);
     //s->set_utility_to_keep(utility_to_keep);
-    s->synapse_local_utility_trace = utility_to_keep;
+    //s->synapse_local_utility_trace = utility_to_keep;
+    s->synapse_local_utility_trace = s->get_utility_to_keep();
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
     increment_references(s, 2);
@@ -356,6 +359,7 @@ void ImprintingAtariNetwork::imprint_randomly() {
   std::uniform_int_distribution<> index_sampler(0, this->all_neurons.size() -1);
   std::vector <Neuron *> interesting_neurons;
 
+  //TODO bugged... handle exit condition when not enough interesting
   while (interesting_neurons.size() < max_interesting_units){
     auto it = this->all_neurons[index_sampler(this->mt)];
     if (this->use_optical_flow_state && it->is_optical_flow_feature && it->old_value == 1)

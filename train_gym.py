@@ -22,7 +22,10 @@ from src_python.utils.logging_manager import LoggingManager
 from src_python.utils.tilecoding_wrapper import TileCodedObservation
 from src_python.utils.image_binning_wrapper import BinnedObservation
 from src_python.models.linear_model import LinearModel
-from src_python.envs.classical_conditioning_benchmarks import TraceConditioning, TracePatterning
+from src_python.envs.classical_conditioning_benchmarks import (
+    TraceConditioning,
+    TracePatterning,
+)
 from src_python.agents.baselines_expert_agent import BaselinesExpert
 from src_python.agents.mountaincar_fixed_agent import MountainCarFixed
 from src_python.agents.sarsa_control_agent import SarsaControlAgent
@@ -184,40 +187,52 @@ def main():  # noqa: C901
             )
     # fmt: on
 
+    atari_envs = ["PongNoFrameskip-v4"]
     animal_state_envs = ["TraceConditioning", "NoisyPatterning", "TracePatterning"]
     if args.env in animal_state_envs:
         args.ISI_interval = [int(x) for x in args.ISI_interval.split(",")]
         args.ITI_interval = [int(x) for x in args.ITI_interval.split(",")]
-        args.gamma =  1-1/np.mean(args.ISI_interval)
-        print(f"Using gamma: {args.gamma}")
+        args.gamma = 1 - 1 / np.mean(args.ISI_interval)
+        print(f"Provided gamma not being used. Using gamma: {args.gamma}")
 
     if args.net == "expandingLFA":
         assert args.tilecoding, f"expandingLFA can only be used with tilecoding"
 
     if args.use_optical_flow_state:
         assert args.binning, f"optical flow state only implmnted with binning"
+        assert args.env in atari_envs, f"optical flow state only tested with atari"
 
     if args.env == "TraceConditioning":
-        expert_agent = None
-        env = TraceConditioning(seed=args.seed,
-                                ISI_interval=args.ISI_interval,
-                                ITI_interval=args.ITI_interval,
-                                gamma=args.gamma,
-                                num_distractors=args.num_dist,
-                                activation_lengths={'CS': args.len_CS, 'US': args.len_US, 'distractor': args.len_dist]})
+        env = TraceConditioning(
+            seed=args.seed,
+            ISI_interval=args.ISI_interval,
+            ITI_interval=args.ITI_interval,
+            gamma=args.gamma,
+            num_distractors=args.num_dist,
+            activation_lengths={
+                "CS": args.len_CS,
+                "US": args.len_US,
+                "distractor": args.len_dist,
+            },
+        )
         input_size = args.num_CS + args.num_US + args.num_dist
     elif args.env == "TracePatterning":
-        expert_agent = None
-        env = TracePatterning(seed=args.seed,
-                              ISI_interval=args.ISI_interval,
-                              ITI_interval=args.ITI_interval,
-                              gamma=args.gamma,
-                              num_CS=args.num_CS,
-                              num_activation_patterns=args.num_activation_patterns,
-                              prob_activation_patterns=args.prob_activation_patterns,
-                              num_distractors=args.num_dist,
-                              activation_lengths={'CS': args.len_CS, 'US': args.len_US, 'distractor': args.len_dist]},
-                              noise=args.CS_noise)
+        env = TracePatterning(
+            seed=args.seed,
+            ISI_interval=args.ISI_interval,
+            ITI_interval=args.ITI_interval,
+            gamma=args.gamma,
+            num_CS=args.num_CS,
+            num_activation_patterns=args.num_activation_patterns,
+            prob_activation_patterns=args.prob_activation_patterns,
+            num_distractors=args.num_dist,
+            activation_lengths={
+                "CS": args.len_CS,
+                "US": args.len_US,
+                "distractor": args.len_dist,
+            },
+            noise=args.CS_noise,
+        )
         input_size = args.num_CS + args.num_US + args.num_dist
 
     elif args.env == "PongNoFrameskip-v4":
@@ -225,7 +240,7 @@ def main():  # noqa: C901
             seed=args.seed,
             env_id=args.env,
             deterministic=bool(args.expert_policy_deterministic),
-            exploration_rate=args.epsilon
+            exploration_rate=args.epsilon,
         )
         env = expert_agent.env
         input_size = env.observation_space.shape[0] * env.observation_space.shape[1]
@@ -259,7 +274,9 @@ def main():  # noqa: C901
         args.step_size /= args.tilecoding_n_tilings
     if args.binning:
         assert not args.tilecoding, f"binning not to be used with tc"
-        assert not args.env in animal_state_envs, f"binning not to be used with animal envs"
+        assert (
+            not args.env in animal_state_envs
+        ), f"binning not to be used with animal envs"
         env = BinnedObservation(env, args.binning_n_bins, args.use_optical_flow_state)
         input_size = input_size * args.binning_n_bins
         if args.use_optical_flow_state:
@@ -330,10 +347,7 @@ def main():  # noqa: C901
             args.utility_to_keep,
         )
     elif args.net == "torchLinear":
-        model = LinearModel(input_size,
-                            output_size,
-                            args.step_size,
-                            False)
+        model = LinearModel(input_size, output_size, args.step_size, False)
     else:
         raise NotImplementedError
 
@@ -346,7 +360,6 @@ def main():  # noqa: C901
         neuron_metrics=neuron_metrics,
         synapse_metrics=synapse_metrics,
         prediction_metrics=prediction_metrics,
-        # bounded_unit_metrics=bounded_unit_metrics,
         imprinting_metrics=imprinting_metrics,
         linear_feature_metrics=linear_feature_metrics,
     )
@@ -357,9 +370,9 @@ def main():  # noqa: C901
         if args.env == "MountainCar-v0":
             expert_agent = MountainCarFixed()
             agent = SarsaPredictionAgent(expert_agent)
-        elif args.env == "PongNoFrameskip-v4" and args.net not in ['torchLinear']:
+        elif args.env == "PongNoFrameskip-v4" and args.net not in ["torchLinear"]:
             agent = SarsaContinuousPredictionAgent(expert_agent)
-        elif args.env == "PongNoFrameskip-v4" and args.net in ['torchLinear']:
+        elif args.env == "PongNoFrameskip-v4" and args.net in ["torchLinear"]:
             agent = TorchSarsaContinuousPredictionAgent(expert_agent)
         elif args.env in animal_state_envs:
             agent = SarsaContinuousPredictionAgent(None)
@@ -369,6 +382,7 @@ def main():  # noqa: C901
         raise NotImplementedError
 
     start = timer()
+    state_comment = "finished"
     try:
         agent.train(
             env,
@@ -381,6 +395,9 @@ def main():  # noqa: C901
             args,
         )
     except:
+        state_comment = "killed"
+        print("failed... quiting")
+    finally:
         if args.db != "":
             run_state_metric.add_value(
                 [
@@ -388,40 +405,18 @@ def main():  # noqa: C901
                     for v in [
                         args.run_id,
                         args.comment,
-                        "killed",
+                        state_comment,
                         agent.timestep,
                         agent.episode,
                         agent.MSRE,
                         agent.running_MSRE,
                         len(model.imprinted_features),
                         len(model.all_synapses),
-                        str(timedelta(seconds=timer()-start)),
+                        str(timedelta(seconds=timer() - start)),
                     ]
                 ]
             )
-            logger.commit_logs()
-        print("failed... quiting")
-        exit()
-    if args.db != "":
-        run_state_metric.add_value(
-            [
-                str(v)
-                for v in [
-                    args.run_id,
-                    args.comment,
-                    "finished",
-                    agent.timestep,
-                    agent.episode,
-                    agent.MSRE,
-                    agent.running_MSRE,
-                    len(model.imprinted_features),
-                    len(model.all_synapses),
-                    str(timedelta(seconds=timer()-start)),
-                ]
-            ]
-        )
-
-    logger.commit_logs()
+        logger.commit_logs()
 
 
 if __name__ == "__main__":

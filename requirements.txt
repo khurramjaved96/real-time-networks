@@ -16,6 +16,7 @@ PyYAML==5.4.1
 sb3_contrib==1.2.0
 stable_baselines3==1.2.0
 pygame==1.9.6
+dm-env==1.4
 git+https://github.com/kenjyoung/MinAtar.git@master
 git+https://github.com/haseebs/gym-games.git@master
 git+https://github.com/ntasfi/PyGame-Learning-Environment.git@master
