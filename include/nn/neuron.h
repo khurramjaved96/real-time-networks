@@ -106,6 +106,21 @@ class Neuron : public dynamic_elem {
   ~Neuron() = default;
 };
 
+class Microstimuli : public Neuron {
+ public:
+  float backward(float output_grad);
+  float forward(float temp_value);
+  Microstimuli(bool is_input, bool is_output, float rate_of_change, float delay);
+
+  float activation_threshold;
+  float rate_of_change;
+  float delay;
+  float current_value;
+  int current_timer;
+  bool is_currently_active;
+  bool is_currently_decreasing;
+}
+
 class LTU : public Neuron {
  public:
   float backward(float output_grad);

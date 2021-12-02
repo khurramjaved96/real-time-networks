@@ -777,6 +777,47 @@ float BiasNeuron::backward(float output_grad) {
   return 0;
 }
 
+Microstimuli::Microstimuli(bool is_input, bool is_output, float rate_of_change, float delay) : Neuron(is_input, is_output){
+  activation_threshold = 1;
+  rate_of_change = rate_of_change;
+  delay = delay;
+  current_value = 0;
+  current_timer = 0;
+  is_currently_active = true;
+  is_currently_decreasing = false;
+}
+
+float Microstimuli::forward(float temp_value) {
+  // dont start a new output sequence if one is currently in progress
+  if (is_currently_active){
+    current_timer += 1;
+    if (current_timer >= delay && !is_currently_decreasing){
+      current_value += rate_of_change;
+      if (current_value >= 1){
+        current_value = 1;
+        is_currently_decreasing = true;
+      }
+    }
+    else if (currenty_timer >= delay && is_currently_decreasing){
+      current_value -= rate_of_change;
+      if (current_value <= 0){
+        current_value = 0;
+        is_currently_decreasing = false;
+        is_currently_active = false;
+        current_timer = 0;
+      }
+    }
+  }
+  else if(fabs(temp_value) >= activation_threshold){
+    is_currently_active = true;
+  }
+  return current_value;
+}
+
+float Microstimuli::backward(float output_grad) {
+  return 0;
+}
+
 float LTU::forward(float temp_value) {
   if(temp_value > this->activation_threshold)
     return 1;
