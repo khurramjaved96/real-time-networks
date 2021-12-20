@@ -39,8 +39,9 @@ SyncedSynapse::SyncedSynapse(SyncedNeuron *input, SyncedNeuron *output, float w,
   if (input->is_input_neuron) {
     propagate_gradients = false;
   }
-  utility_to_keep = 0.00001;
+  utility_to_keep = 0.000001;
   disable_utility = false;
+  this->trace_decay_rate = 0.999;
 }
 //
 
