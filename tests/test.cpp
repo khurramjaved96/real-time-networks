@@ -62,11 +62,19 @@ TEST_CASE("Mountain car energy pumping on-policy prediction learning test", "[Le
   REQUIRE(mountain_car_test());
 }
 
-TEST_CASE("Sarsa(lambda) with linear function approximation test", "[SarsaControl]") {
-  REQUIRE(sarsa_lfa_mc_test());
-}
+//TEST_CASE("Sarsa(lambda) with linear function approximation test", "[SarsaControl]") {
+//  REQUIRE(sarsa_lfa_mc_test());
+//}
 
 TEST_CASE("LFA test for utility propagation", "[Utility_propagation]") {
   REQUIRE(utility_test());
+}
+
+TEST_CASE("Layerwise gradient estimation", "[Layerwise]") {
+  REQUIRE(layerwise_seqeuntial_gradient_testcase());
+}
+
+  TEST_CASE("Sarsa Lambda test", "[SarsaLambda]") {
+    REQUIRE(sarsa_lambda_test());
 }
 //}

@@ -15,6 +15,7 @@
 #include "../../include/nn/synapse.h"
 #include "../../include/nn/utils.h"
 
+
 LambdaReturnNetwork::LambdaReturnNetwork() {
 
   this->time_step = 0;

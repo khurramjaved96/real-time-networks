@@ -10,6 +10,10 @@
 #include "../../include/nn/synapse.h"
 #include "../../include/nn/neuron.h"
 #include "../../include/nn/networks/network.h"
+#include "../../include/nn/networks/layerwise_feedworward.h"
+
+
+
 
 class TestCase : public Network {
 

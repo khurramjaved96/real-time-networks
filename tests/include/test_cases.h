@@ -36,4 +36,9 @@ bool mountain_car_test();
 bool sarsa_lfa_mc_test();
 
 bool utility_test();
+
+bool layerwise_seqeuntial_gradient_testcase();
+
+bool sarsa_lambda_test();
+
 #endif  // TESTS_INCLUDE_FEEDFORWARD_TESTCASE_H

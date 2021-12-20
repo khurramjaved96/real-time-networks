@@ -13,9 +13,83 @@
 #include "../../include/nn/networks/network.h"
 #include "../../include/nn/neuron.h"
 #include "../../include/nn/synapse.h"
+#include "../../include/nn/synced_neuron.h"
+#include "../../include/nn/synced_synapse.h"
 #include "../include/random_data_generator.h"
 #include "../../include/utils.h"
 #include "../../include/environments/animal_learning/tracecondioning.h"
+
+bool layerwise_seqeuntial_gradient_testcase() {
+
+  auto network = LayerwiseFeedforward(1e-4, 0, 3, 1, 0.001);
+  auto four = new ReluSyncedNeuron(false, false);
+  four->set_layer_number(1);
+  auto five = new ReluSyncedNeuron(false, false);
+  five->set_layer_number(1);
+  auto six = new ReluSyncedNeuron(false, false);
+  six->set_layer_number(2);
+  auto seven = new ReluSyncedNeuron(false, false);
+  seven->set_layer_number(3);
+  auto one = network.input_neurons[0];
+  auto two = network.input_neurons[1];
+  auto three = network.input_neurons[2];
+  auto eight = network.output_neurons[0];
+
+  network.all_neurons.push_back(four);
+  network.all_neurons.push_back(five);
+  network.all_neurons.push_back(six);
+  network.all_neurons.push_back(seven);
+  network.LTU_neuron_layers[1].push_back(four);
+  network.LTU_neuron_layers[1].push_back(five);
+  network.LTU_neuron_layers[2].push_back(six);
+  network.LTU_neuron_layers[3].push_back(seven);
+
+  network.all_synapses.push_back(new SyncedSynapse(one, four, 0.02, 0));
+  network.all_synapses.push_back(new SyncedSynapse(two, six, -0.1, 0));
+  network.all_synapses.push_back(new SyncedSynapse(four, six, 0.06, 0));
+  network.all_synapses.push_back(new SyncedSynapse(two, five, 0.4, 0));
+  network.all_synapses.push_back(new SyncedSynapse(three, five, 0.2, 0));
+  network.all_synapses.push_back(new SyncedSynapse(five, seven, 0.1, 0));
+  network.all_synapses.push_back(new SyncedSynapse(six, seven, 0.2, 0));
+
+  auto s = new SyncedSynapse(six, eight, .09, 0);
+  network.all_synapses.push_back(s);
+  network.output_synapses.push_back(s);
+
+  s = new SyncedSynapse(seven, eight, 0.2, 0);
+  network.all_synapses.push_back(s);
+  network.output_synapses.push_back(s);
+
+
+  for(int steps = 0; steps < 1000; steps++) {
+    std::vector<float> inp;
+    inp.push_back(0.6);
+    inp.push_back(1.2);
+    inp.push_back(2.5);
+
+    std::vector<float> target;
+    target.push_back(0.2);
+//  target.push_back(0.8);
+
+//    std::cout << "Forward pass\n";
+    network.forward(inp);
+//    std::cout << "Backward pass\n";
+    network.backward(target);
+//    std::cout << "Backward pass done\n";
+  }
+
+  std::cout << "ID\tVal\tVal Before Fire\tUtil\n";
+  for(auto n : network.all_neurons){
+    std::cout << n->id <<"\t" << n->value << "\t" << n->value_before_firing << "\t\t" << n->neuron_utility << std::endl;
+  }
+  std::cout << "\n\nID\tW\tG\tUtil\n";
+  for(auto n : network.all_synapses){
+    std::cout << n->id << "\t" << n->weight << "\t" << n->credit << "\t" << n->synapse_utility << std::endl;
+  }
+
+
+  return true;
+}
 
 bool feedforward_relu_with_targets_test() {
   TestCase my_network = TestCase(0.0, 5, 5);

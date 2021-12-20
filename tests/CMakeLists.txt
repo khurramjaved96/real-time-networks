@@ -19,7 +19,10 @@ add_executable(tests test.cpp ../src/utils.cpp ../include/utils.h ../include/nn/
         src/mountain_car_test.cpp ../include/environments/mountain_car.h ../src/environments/mountain_car.cpp
         ../include/nn/networks/linear_function_approximator.h ../src/nn/networks/linear_function_approximator.cpp
         ../include/agents/sarsa.h ../src/agents/sarsa.cpp src/utility_propagation.cpp
-        src/sarsa_test.cpp)
+        src/sarsa_test.cpp
+        ../include/nn/synced_neuron.h ../include/nn/synced_synapse.h ../src/nn/synced_neuron.cpp ../src/nn/synced_synapse.cpp
+        ../include/nn/networks/synced_network.h ../src/nn/networks/synced_network.cpp ../include/nn/networks/layerwise_feedworward.h
+        ../src/nn/networks/layerwise_feedforward.cpp ../src/nn/networks/sarsa_lambda.cpp ../include/nn/networks/sarsa_lambda.h)
 # For code coverage
 if(CMAKE_COMPILER_IS_GNUCXX)
     LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_modules")
