@@ -12,6 +12,7 @@
 #include <chrono>
 #include <map>
 #include <string>
+#include <random>
 
 #include "include/utils.h"
 #include "include/environments/animal_learning/tracecondioning.h"
@@ -103,7 +104,9 @@ int main(int argc, char *argv[]) {
 
   // Initialize our network
   ContinuallyAdaptingNetwork my_network = ContinuallyAdaptingNetwork(my_experiment.get_float_param("step_size"),
-                                                                     my_experiment.get_int_param("seed"), state_size, my_experiment.get_float_param("util"));
+                                                                     my_experiment.get_int_param("seed"),
+                                                                     state_size,
+                                                                     my_experiment.get_float_param("util"));
 
   std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
 //    my_network.viz_graph();
@@ -136,9 +139,50 @@ int main(int argc, char *argv[]) {
     for (auto &it : state_current) {
       new_vec.push_back(it);
     }
-
+//
 //      Set our input into our NN
+
+//    if(counter % 1000000 == 1000000-1){
+//      std::cout << "Changing ISI from " << interval << " to ";
+//      interval = ISI_dist(mt);
+//      std::cout << interval << std::endl;
+//      gamma = 1.0 - 2.0 / (static_cast<double>(interval + interval));
+//      tc = TracePatterning(std::pair<int, int>(interval, interval),
+//                           std::pair<int, int>(interval, interval),
+//                           std::pair<int, int>(80, 120), 0, my_experiment.get_int_param("seed"));
+//    }
+
     my_network.set_input_values(state_current);
+
+    if (counter % 2000 == 999 || true) {
+//            if (counter  == 999) {
+//          First remove all references to is_useless nodes and neurons
+//      my_network.collect_garbage();
+
+//          Add 100 new features
+
+//      std::cout << "From\tTo\tWeight\tStwp-size\n";
+//      for (auto it:  my_network.all_synapses)
+//        std::cout << it->input_neuron->id << "\t" << it->output_neuron->id << "\t" << it->weight << "\t"
+//                  << it->log_step_size_tidbd << "\n";
+
+      for (int a = 0; a < 1; a++) {
+
+//        std::cout << "Adding feature\n";
+        my_network.add_feature_binary(my_experiment.get_float_param("step_size"), my_experiment.get_float_param("util"));
+      }
+//            exit(1);
+    }
+
+//    if(counter > 30000){
+//
+//      for(auto it : my_network.all_neurons){
+//        if(it->value > 0 && it->id == 9)
+//          std::cout << it->id << "\t" << it->neuron_age << "\t" << it->value << "\n";
+//      }
+//    }
+
+
     my_network.step();
 
     real_target = tc.get_target(gamma);
@@ -181,6 +225,7 @@ int main(int argc, char *argv[]) {
       network_size.push_back(std::to_string(my_network.get_total_neurons()));
       network_size_logger.push_back(network_size);
     }
+
     if (counter % 50000 < 130) {
       std::vector<float> print_vec;
       std::vector<std::string> state_string;
@@ -236,37 +281,21 @@ int main(int argc, char *argv[]) {
         synapses_state_logger.push_back(output_synapse_state);
       }
     }
-//
+
 //      Generating new features every 80000 steps
-    if (counter % 5000 == 4999) {
-//            if (counter  == 79999) {
-//          First remove all references to is_useless nodes and neurons
-      my_network.collect_garbage();
 
-//          Add 100 new features
 
-//      std::cout << "From\tTo\tWeight\tStwp-size\n";
-//      for (auto it:  my_network.all_synapses)
-//        std::cout << it->input_neuron->id << "\t" << it->output_neuron->id << "\t" << it->weight << "\t"
-//                  << it->log_step_size_tidbd << "\n";
-
-      for (int a = 0; a < 1; a++) {
-
-        std::cout << "Adding feature\n";
-        my_network.add_feature(my_experiment.get_float_param("step_size"));
-      }
-//            exit(1);
-    }
 //
 //      visualizations
-//        if (counter % 1000000 == 999999) {
-//            std::string g = my_network.get_viz_graph();
-//            std::vector<std::string> graph_data;
-//            graph_data.push_back(std::to_string(counter));
-//            graph_data.push_back(std::to_string(my_experiment.get_int_param("run")));
-//            graph_data.push_back(g);
-//            graph_data_logger.push_back(graph_data);
-//        }
+    if (counter % 100000 == 99999) {
+      std::string g = my_network.get_viz_graph();
+      std::vector<std::string> graph_data;
+//            std::cout << g << std::endl;
+      graph_data.push_back(std::to_string(counter));
+      graph_data.push_back(std::to_string(my_experiment.get_int_param("run")));
+      graph_data.push_back(g);
+      graph_data_logger.push_back(graph_data);
+    }
 
     if (counter % 10000 == 9998) {
 //            print_vector(my_network.get_memory_weights());
@@ -282,23 +311,24 @@ int main(int argc, char *argv[]) {
       network_size_metric.add_values(network_size_logger);
       network_size_logger.clear();
 
-//            state_metric.add_values(state_logger);
+//      state_metric.add_values(state_logger);
       state_logger.clear();
 
-//            graph_state_metric.add_values(graph_data_logger);
-//            graph_data_logger.clear();
+      graph_state_metric.add_values(graph_data_logger);
+      graph_data_logger.clear();
 
-      synapses_state_metric.add_values(synapses_state_logger);
+//      synapses_state_metric.add_values(synapses_state_logger);
       synapses_state_logger.clear();
 
       neuron_activations_metric.add_values(neuron_activations_logger);
       neuron_activations_logger.clear();
     }
-    if (counter % 30000 == 0 ) {
+    if (counter % 300000 == 0) {
 
       my_network.print_synapse_status();
       my_network.print_neuron_status();
-
+    }
+    if(counter %30000 == 0){
       std::cout << "### STEP = " << counter << std::endl;
       std::cout << "Total synapses in the network " << my_network.get_total_synapses() << std::endl;
       std::cout << "Running error = ";

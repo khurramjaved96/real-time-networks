@@ -44,7 +44,7 @@ class ImprintingSupervised : public SyncedNetwork {
 
   void add_feature_binary(float step_size, float utility_to_keep);
 
-  void imprint_feature(int index, std::vector<float> feature);
+  void imprint_feature(int index, std::vector<float> feature, float target, float step_size_new_feature, float threshol, float probability, float step_size);
 };
 
 

@@ -36,6 +36,18 @@ class Network {
 
   void set_input_values(std::vector<float> const &input_values);
 
+  std::vector<float> forward(std::vector<float> x);
+
+  void backward(std::vector<float> targets, float gamma, float lambda);
+
+  void update_weights();
+
+  void prune_weights();
+
+  void update_utility();
+
+  void tick();
+
   void step();
 
   std::vector<float> read_output_values();

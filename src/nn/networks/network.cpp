@@ -107,6 +107,173 @@ void Network::print_synapse_status() {
  * Finally, it updates its weights and prunes is_useless neurons and synapses.
  */
 
+std::vector<float> Network::forward(std::vector<float> x) {
+  this->set_input_values(x);
+
+  //  Calculate and temporarily hold our next neuron values.
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->update_value(this->time_step);
+      });
+
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->fire(this->time_step);
+      });
+
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->memory_leak_patch();
+      });
+
+  this->tick();
+  return this->read_output_values();
+}
+
+void Network::backward(std::vector<float> targets, float gamma, float lambda) {
+  this->introduce_targets(targets, gamma, lambda);
+
+  //  Contrary to the name, this function passes gradients BACK to the incoming synapses
+//  of each neuron.
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->forward_gradients();
+      });
+
+//  Now we propagate our error backwards one step
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->propagate_error();
+      });
+
+  //  Calculate our credit
+  std::for_each(
+      std::execution::par_unseq,
+      all_synapses.begin(),
+      all_synapses.end(),
+      [&](synapse *s) {
+        s->assign_credit();
+      });
+
+  std::for_each(
+      std::execution::par_unseq,
+      all_synapses.begin(),
+      all_synapses.end(),
+      [&](synapse *s) {
+        s->memory_leak_patch();
+      });
+
+
+
+}
+
+void Network::tick() {
+  this->time_step++;
+}
+
+void Network::update_weights() {
+  //  Update our weights (based on either normal update or IDBD update
+  std::for_each(
+      std::execution::par_unseq,
+      all_synapses.begin(),
+      all_synapses.end(),
+      [&](synapse *s) {
+        s->update_weight();
+      });
+}
+
+void Network::update_utility() {
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->update_utility();
+      });
+
+  std::for_each(
+      std::execution::par_unseq,
+      all_synapses.begin(),
+      all_synapses.end(),
+      [&](synapse *s) {
+        s->update_utility();
+      });
+
+}
+void Network::prune_weights() {
+  //  Mark all is_useless weights and neurons for deletion
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->mark_useless_weights();
+      });
+
+//  Delete our is_useless weights and neurons
+  std::for_each(
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->prune_useless_weights();
+      });
+
+//  For all synapses, if the synapse is is_useless set it has 0 references. We remove it.
+
+  std::for_each(
+      std::execution::par_unseq,
+      this->all_synapses.begin(),
+      this->all_synapses.end(),
+      [&](synapse *s) {
+        if (s->is_useless) {
+          s->decrement_reference();
+        }
+      });
+  auto it = std::remove_if(this->all_synapses.begin(), this->all_synapses.end(), to_delete_s);
+  this->all_synapses.erase(it, this->all_synapses.end());
+
+//  Similarly for all outgoing synapses and neurons.
+  std::for_each(
+      std::execution::par_unseq,
+      this->output_synapses.begin(),
+      this->output_synapses.end(),
+      [&](synapse *s) {
+        if (s->is_useless) {
+          s->decrement_reference();
+        }
+      });
+  it = std::remove_if(this->output_synapses.begin(), this->output_synapses.end(), to_delete_s);
+  this->output_synapses.erase(it, this->output_synapses.end());
+
+  std::for_each(
+      std::execution::par_unseq,
+      this->all_neurons.begin(),
+      this->all_neurons.end(),
+      [&](Neuron *s) {
+        if (s->useless_neuron) {
+          s->decrement_reference();
+        }
+      });
+
+  auto it_n = std::remove_if(this->all_neurons.begin(), this->all_neurons.end(), to_delete_n);
+  this->all_neurons.erase(it_n, this->all_neurons.end());
+
+}
 void Network::step() {
 
 
@@ -155,14 +322,25 @@ void Network::step() {
         s->assign_credit();
       });
 
-//  Update our weights (based on either normal update or IDBD update
+  std::for_each(
+      std::execution::par_unseq,
+      all_neurons.begin(),
+      all_neurons.end(),
+      [&](Neuron *n) {
+        n->memory_leak_patch();
+      });
+
+//  Calculate our credit
   std::for_each(
       std::execution::par_unseq,
       all_synapses.begin(),
       all_synapses.end(),
       [&](synapse *s) {
-        s->update_weight();
+        s->memory_leak_patch();
       });
+
+  this->update_weights();
+  this->update_utility();
 
 //  Mark all is_useless weights and neurons for deletion
   std::for_each(

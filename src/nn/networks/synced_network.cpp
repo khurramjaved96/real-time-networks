@@ -68,6 +68,7 @@ void SyncedNetwork::set_input_values(std::vector<float> const &input_values) {
   for (int i = 0; i < input_values.size(); i++) {
     if (i < this->input_neurons.size())
     {
+//      std::cout << "Setting input value = " << input_values[i] << std::endl;
       this->input_neurons[i]->value_before_firing = input_values[i];
     }
     else

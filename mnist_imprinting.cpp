@@ -34,21 +34,33 @@ int main(int argc, char *argv[]){
                                std::vector < std::string > {"step", "run", "error", "accuracy"},
                                std::vector < std::string > {"int", "int", "real", "real"},
                                std::vector < std::string > {"step", "run"});
+  Metric error_metric_test = Metric(my_experiment.database_name, "test_set",
+                               std::vector < std::string > {"step", "run", "accuracy", "mode"},
+                               std::vector < std::string > {"int", "int", "real", "int"},
+                               std::vector < std::string > {"step", "run", "mode"});
 
-  LayerwiseFeedforward network = LayerwiseFeedforward(my_experiment.get_float_param("meta_step_size"), my_experiment.get_int_param("seed"), 28*28, 10, 0.001);
+  LayerwiseFeedforward network = LayerwiseFeedforward(my_experiment.get_float_param("step_size"), my_experiment.get_float_param("meta_step_size"), my_experiment.get_int_param("seed"), 28*28, 10, 0.001);
 
   std::vector<std::vector<std::string>> error_logger;
+  std::vector<std::vector<std::string>> error_logger_test;
 
 
   mnist::MNIST_dataset<std::vector, std::vector<uint8_t>, uint8_t> dataset =
                                                               mnist::read_dataset<std::vector, std::vector, uint8_t, uint8_t>("data/");
+
   std::mt19937 mt(my_experiment.get_int_param("seed"));
-  int total_data_points = 6000;
+  int total_data_points = my_experiment.get_int_param("training_points");
+  int total_test_points = 10000;
   std::uniform_int_distribution<int> index_sampler(0, total_data_points - 1);
 //
   mnist::binarize_dataset(dataset);
+  bool training_phase = true;
   std::vector<std::vector<float>> images;
   std::vector<std::vector<float>> targets;
+//
+  std::vector<std::vector<float>> images_test;
+  std::vector<std::vector<float>> targets_test;
+
   for(int counter = 0; counter < total_data_points; counter++){
     std::vector<float> x_temp;
     for(auto inner: dataset.training_images[counter]){
@@ -60,23 +72,25 @@ int main(int argc, char *argv[]){
     targets.push_back(y_temp);
   }
 
+  for(int counter = 0; counter < 10000; counter++){
+    std::vector<float> x_temp;
+    for(auto inner: dataset.test_images[counter]){
+      x_temp.push_back(float(unsigned(inner)));
+    }
+    std::vector<float> y_temp;
+    y_temp.push_back(float(unsigned(dataset.test_labels[counter])));
+    images_test.push_back(x_temp);
+    targets_test.push_back(y_temp);
+  }
+  int total_steps = 0;
   for (int i = 0; i < my_experiment.get_int_param("steps"); i++) {
-
+    total_steps++;
     int index = index_sampler(mt);
     auto x = images[index];
     float y_index = targets[index][0];
     std::vector<float> y(10);
     y[y_index] = 1;
-//    print_vector(y_gt);
-//    exit(1);
-//    for(int i = 0; i< 28*28; i++){
-//      std::cout << x[i];
-//      if(i%28==27)
-//        std::cout << std::endl;
-//    }
-//    std::cout << "\nTarget\t" << y[0] << std::endl;
-//    std::cout << x.size() << " " << y.size() << std::endl;
-//    continue;
+
     network.forward(x);
     auto prediction = network.read_output_values();
     float error = 0;
@@ -90,11 +104,14 @@ int main(int argc, char *argv[]){
     else{
       accuracy*= 0.999;
     }
+
+
+
 //    std::cout << "Error = " << error << std::endl;
 //    print_vector(target);
 //    print_vector(y);
 //    exit(1);
-    network.backward(y);
+    network.backward(y, training_phase);
     if (i % 100 == 0) {
       std::vector<std::string> error;
       error.push_back(std::to_string(i));
@@ -118,13 +135,6 @@ int main(int argc, char *argv[]){
       for(int layer_no = 0; layer_no < network.LTU_neuron_layers.size(); layer_no++){
         std::cout <<  layer_no << "\t" << network.LTU_neuron_layers[layer_no].size() << "\t" << network.all_synapses.size() << "\t\t" << network.output_synapses.size() <<  std::endl;
 
-//        std::cout << "Layer sz\t" << network.LTU_neuron_layers[layer_no].size() << std::endl;
-//      }
-//      for(auto it : network.LTU_neuron_layers){
-//        std::cout << "ID\tVal\n";
-//        for(auto n : it){
-//          std::cout << n->id << "\t" << n->value << std::endl;
-//        }
       }
 
 
@@ -135,34 +145,105 @@ int main(int argc, char *argv[]){
 
       std::cout << " Prediction\n";
       print_vector(prediction);
-//      std::cout << "Current index " << env.get_index() << std::endl;
-//      print_vector(x);
-//      std::cout << "Target\t";
-//      print_vector(y);
-//      std::cout << "Output val\t";
-//      print_vector(network.read_output_values());
-
       std::cout << "Running error = " << running_error << std::endl;
     }
-//    if (argmax(prediction) != y_index) {
-    if(error > 0.05){
+//
+    if (argmax(prediction) != y_index && training_phase
+//    && (((i%100000) > 50000))
+    ) {
+//    if(error > 0.01 && i < 1000){
 //      if(network.all_synapses.size() < 10000)
 //      for(int temp = 0; temp<10; temp ++)
+
       if(my_experiment.get_int_param("imprint") == 1)
-        network.imprint_feature(i, x);
+//        for(int temp = 0; temp<10; temp ++)
+          network.imprint_feature(i, x, my_experiment.get_float_param("step_size"), my_experiment.get_float_param("meta_step_size"), y_index);
       else
-        network.imprint_feature_random();
+        network.imprint_feature_random(my_experiment.get_float_param("step_size"), my_experiment.get_float_param("meta_step_size"));
 
     }
-//    std::cout << "ID\tUtil\n";
-//    for(auto n : network.all_neurons){
-//      if(!n->is_input_neuron && !n->is_output_neuron){
-//        std::cout << n->id << "\t" << n->neuron_utility << std::endl;
-//      }
-//    }
+
+
+    if(i%1000 == 999){
+      int correct = 0;
+      for(int index = 0; index<total_data_points; index++){
+        auto x = images[index];
+        float y_index = targets[index][0];
+        std::vector<float> y(10);
+        y[y_index] = 1;
+        network.forward(x);
+        auto prediction = network.read_output_values();
+        if(argmax(prediction) == y_index){
+          correct++;
+        }
+      }
+      std::vector<std::string> error;
+      error.push_back(std::to_string(i));
+      error.push_back(std::to_string(my_experiment.get_int_param("run")));
+      error.push_back(std::to_string(float(correct)/total_data_points));
+      error.push_back(std::to_string(0));
+      error_logger_test.push_back(error);
+
+      error_metric_test.add_values(error_logger_test);
+      error_logger_test.clear();
+      std::cout << "Step: " << i <<"\tTrain Accuracy: " << float(correct)/total_data_points << std::endl;
+    }
+
+
+    if(i%10000 == 9999){
+      int correct = 0;
+      for(int index = 0; index<total_test_points; index++){
+        auto x = images_test[index];
+        float y_index = targets_test[index][0];
+        std::vector<float> y(10);
+        y[y_index] = 1;
+        network.forward(x);
+        auto prediction = network.read_output_values();
+        if(argmax(prediction) == y_index){
+          correct++;
+        }
+      }
+      std::vector<std::string> error;
+      error.push_back(std::to_string(i));
+      error.push_back(std::to_string(my_experiment.get_int_param("run")));
+      error.push_back(std::to_string(float(correct)/10000));
+      error.push_back(std::to_string(1));
+      error_logger_test.push_back(error);
+
+      error_metric_test.add_values(error_logger_test);
+      error_logger_test.clear();
+      std::cout << "Step: " << i <<"\tTest Accuracy: " << float(correct)/10000 << std::endl;
+    }
+
 
 
   }
+
+  total_steps++;
+  int correct = 0;
+  for(int index = 0; index<total_data_points; index++){
+    auto x = images[index];
+    float y_index = targets[index][0];
+    std::vector<float> y(10);
+    y[y_index] = 1;
+    network.forward(x);
+    auto prediction = network.read_output_values();
+    if(argmax(prediction) == y_index){
+      correct++;
+    }
+  }
+  std::vector<std::string> error;
+  error.push_back(std::to_string(total_steps));
+  error.push_back(std::to_string(my_experiment.get_int_param("run")));
+  error.push_back(std::to_string(float(correct)/total_data_points));
+  error.push_back(std::to_string(0));
+  error_logger_test.push_back(error);
+
+  error_metric_test.add_values(error_logger_test);
+  error_logger_test.clear();
+  std::cout << "Step: " << total_steps <<"\tTrain Accuracy: " << float(correct)/total_data_points << std::endl;
+
+
   error_metric.add_values(error_logger);
   error_logger.clear();
 }
