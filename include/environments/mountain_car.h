@@ -8,6 +8,7 @@
 #include "./tmaze.h"
 
 class MountainCar {
+ protected:
   Observation current_obs;
   std::mt19937 mt;
   std::uniform_int_distribution<int> action_sampler;
@@ -27,6 +28,19 @@ class MountainCar {
   bool at_goal();
   Observation get_current_obs();
   Observation reset();
+  Observation step(int action);
+};
+
+
+class SparseMountainCar : public MountainCar {
+ public:
+  explicit SparseMountainCar(int seed, int discretization = 0);
+  Observation step(int action);
+};
+
+class NonEpisodicMountainCar : public SparseMountainCar{
+ public:
+  explicit NonEpisodicMountainCar (int seed, int discretization = 0);
   Observation step(int action);
 };
 

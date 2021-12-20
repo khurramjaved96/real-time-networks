@@ -94,10 +94,12 @@ Observation MountainCar::reset() {
   std::vector<float> state{this->state_sampler(mt), 0.0};
   obs.state = state;
   this->current_obs = obs;
+  this->current_obs.gamma = 0.99;
   return get_current_obs();
 }
 
 Observation MountainCar::step(int action) {
+
   Observation obs;
   obs.state = this->current_obs.state;
   obs.state[1] += (action - 1) * 0.001 + cos(3 * obs.state[0]) * (-0.0025);
@@ -113,5 +115,39 @@ Observation MountainCar::step(int action) {
   this->current_obs = obs;
   this->current_obs.is_terminal = this->at_goal();
   this->current_obs.reward =  -1;
+  return this->get_current_obs();
+}
+
+
+Observation NonEpisodicMountainCar::step(int action) {
+  if(this->current_obs.is_terminal){
+    this->reset();
+    this->current_obs.gamma = 0;
+    return this->current_obs;
+  }
+  else{
+    SparseMountainCar::step(action);
+    if(this->current_obs.is_terminal)
+      this->current_obs.gamma = 0.99;
+    else
+      this->current_obs.gamma = 0.99;
+
+    return this->current_obs;
+  }
+}
+
+SparseMountainCar::SparseMountainCar(int seed, int discretization) : MountainCar(seed, discretization) {}
+
+
+NonEpisodicMountainCar::NonEpisodicMountainCar(int seed, int discretization) : SparseMountainCar(seed, discretization) {}
+
+
+Observation SparseMountainCar::step(int action) {
+  Observation o = MountainCar::step(action);
+  if(o.is_terminal)
+    o.reward = 1;
+  else
+    o.reward = 0;
+  this->current_obs = o;
   return this->get_current_obs();
 }
