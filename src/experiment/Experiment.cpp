@@ -107,3 +107,12 @@ float Experiment::get_float_param(const std::string &param) {
   }
   return std::stof(this->args_for_run[param]);
 }
+
+std::string Experiment::get_string_param(const std::string &param) {
+//    std::cout << "Param count " << param << this->args_for_run.count(param) << " " << std::endl;
+  if (this->args_for_run.count(param) == 0) {
+    std::cout << "Param does not exist\n";
+    throw std::invalid_argument("Param " + param + " does not exist");
+  }
+  return this->args_for_run[param];
+}

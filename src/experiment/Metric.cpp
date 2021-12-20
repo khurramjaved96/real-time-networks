@@ -18,6 +18,17 @@ Metric::Metric(std::string db_name, std::string table_name, std::vector<std::str
   this->d.make_table(this->database_name, this->table_name, this->db_columns, this->db_types, this->index_columns);
 }
 
+void Metric::record_value(std::vector<std::string> values) {
+  this->data_vector.push_back(values);
+}
+
+void Metric::commit_values() {
+  if(this->data_vector.size() > 0) {
+    this->add_values(this->data_vector);
+    this->data_vector.clear();
+  }
+}
+
 int Metric::add_value(std::vector<std::string> values) {
   return this->d.add_row_to_table(this->database_name, this->table_name, this->db_columns, values);
 
@@ -27,3 +38,4 @@ int Metric::add_values(const std::vector<std::vector<std::string>> &vector_of_va
   this->d.add_rows_to_table(this->database_name, this->table_name, this->db_columns, vector_of_values);
   return 0;
 }
+
