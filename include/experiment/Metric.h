@@ -14,6 +14,7 @@ class Metric {
   std::vector<std::string> db_columns;
   std::vector<std::string> db_types;
   std::vector<std::string> index_columns;
+  std::vector<std::vector<std::string>> data_vector;
   std::string table_name;
   std::string database_name;
   Database d = Database();
@@ -24,6 +25,10 @@ class Metric {
   int add_values(const std::vector<std::vector<std::string>> &vector_of_values);
 
   int add_value(std::vector<std::string> values);
+
+  void record_value(std::vector<std::string> values);
+
+  void commit_values();
 };
 
 #endif  // INCLUDE_EXPERIMENT_METRIC_H_

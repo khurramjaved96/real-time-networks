@@ -31,6 +31,8 @@ class Experiment {
   int get_int_param(const std::string &);
 
   float get_float_param(const std::string &);
+
+  std::string get_string_param(const std::string &);
 };
 
 #endif  // INCLUDE_EXPERIMENT_EXPERIMENT_H_
