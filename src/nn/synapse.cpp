@@ -44,6 +44,7 @@ synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
   if (input->is_input_neuron) {
     propagate_gradients = false;
   }
+  this->synapse_local_utility_trace = 0;
   utility_to_keep = 0.0001;
   disable_utility = false;
 }
@@ -112,10 +113,9 @@ void synapse::memory_leak_patch(){
  * Calculate and set credit based on gradients in the current synapse.
  */
 void synapse::assign_credit() {
+
 //  Another temp hack
 
-  this->update_utility();
-  this->memory_leak_patch();
 
 //  We go through each gradient that we've put into our synapse
 //  and see if this gradient's activation time corresponds to the correct past activation
@@ -142,16 +142,17 @@ void synapse::assign_credit() {
   if (!this->grad_queue_weight_assignment.empty()) {
 //      We have a match! Here we calculate our update rule. We first update our eligibility trace]
 
-    this->trace = this->trace * this->grad_queue_weight_assignment.front().gamma *
-        this->grad_queue_weight_assignment.front().lambda +
-        this->weight_assignment_past_activations.front().gradient_activation *
+    this->trace += this->weight_assignment_past_activations.front().gradient_activation *
             this->grad_queue_weight_assignment.front().gradient;
-
+//    std::cout << "Gamma\t" << this->grad_queue_weight_assignment.front().gamma << " Lambda \t" << this->grad_queue_weight_assignment.front().lambda << std::endl;
     this->tidbd_old_activation = this->weight_assignment_past_activations.front().gradient_activation;
     this->tidbd_old_error = this->grad_queue_weight_assignment.front().error;
 
 //      As per the trace update rule, our actual credit being assigned is our trace x our TD error.
     this->credit = this->trace * this->grad_queue_weight_assignment.front().error;
+
+    this->trace = this->trace * this->grad_queue_weight_assignment.front().gamma *
+        this->grad_queue_weight_assignment.front().lambda;
 
 //      Remove both grad and past activations used
     this->grad_queue_weight_assignment.pop();

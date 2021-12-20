@@ -28,17 +28,27 @@ float relu(float a) {
 }
 
 
+// Get index of the maximum element; in-case of ties, return a random index
 int argmax(std::vector<float> values) {
   auto it = std::max_element(values.begin(), values.end());
+  std::vector<int> list_of_indices;
   int counter = 0;
   for(auto elem : values){
     if(*it == elem){
-      return counter;
+      list_of_indices.push_back(counter);
     }
     counter++;
   }
-  std::cout << "Shouldn't get here\n";
-  exit(1);
+
+  if(list_of_indices.size() == 1){
+    return list_of_indices[0];
+  }
+  else {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, list_of_indices.size() - 1);
+    return list_of_indices[dis(gen)];
+  }
 }
 
 

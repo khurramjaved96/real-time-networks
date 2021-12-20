@@ -68,8 +68,7 @@ void Neuron::memory_leak_patch() {
 
 void Neuron::fire(int time_step) {
 
-  this->update_utility();
-  this->memory_leak_patch();
+
 
 //  Forward applies the non-linearity
   if (!this->is_input_neuron){
@@ -136,8 +135,6 @@ void Neuron::update_value(int time_step) {
 //  Reset our gradient_activation holder
   this->value_before_firing = 0;
   this->shadow_error_prediction_before_firing = 0;
-
-  //this->normalize_neuron();
 
 //  Age our neuron like a fine wine and set the next values of our neuron.
   for (auto &it : this->incoming_synapses) {
@@ -533,6 +530,22 @@ float Neuron::introduce_targets(float target, int time_step) {
     this->error_gradient.push(m);
     this->past_activations.pop();
     return error * error;
+  }
+  return 0;
+}
+
+
+float Neuron::introduce_target(float td_error, float output_gradient, int timestep, float gamma, float lambda) {
+
+  if (!this->past_activations.empty()) {
+    message m(output_gradient, timestep);
+    m.lambda = lambda;
+    m.gamma = gamma;
+    m.error = td_error;
+    m.error_shadow_prediction = -5;
+    this->error_gradient.push(m);
+    this->past_activations.pop();
+    return td_error;
   }
   return 0;
 }

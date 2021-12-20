@@ -16,6 +16,10 @@ class dynamic_elem {
   void decrement_reference();
 
   void increment_reference();
+
+  void increment_reference(int);
+
+  void decrement_reference(int);
 };
 
 #endif  // INCLUDE_NN_DYNAMIC_ELEM_H_

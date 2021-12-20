@@ -66,6 +66,8 @@ class Neuron : public dynamic_elem {
 
   float introduce_targets(float target, int timestep, float gamma, float lambda);
 
+  float introduce_target(float td_error, float output_gradient, int timestep,  float gamma, float lambda);
+
   float introduce_targets(float target, int timestep, float gamma, float lambda, bool no_grad);
 
   void propagate_error();
