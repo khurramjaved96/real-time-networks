@@ -23,7 +23,7 @@ SyncedNeuron::SyncedNeuron(bool is_input, bool is_output) {
   references = 0;
   neuron_utility = 0;
   drinking_age = 5000;
-  mark_useless_prob = 0.999;
+  mark_useless_prob = 0.99;
   is_bias_unit = false;
 }
 
@@ -90,6 +90,7 @@ void SyncedNeuron::forward_gradients() {
     grad_temp.lambda = this->error_gradient.lambda;
     grad_temp.gamma = this->error_gradient.gamma;
     grad_temp.error = this->error_gradient.error;
+    grad_temp.target = this->error_gradient.target;
 
     if (it->propagate_gradients)
       it->grad_queue = grad_temp;
@@ -103,6 +104,9 @@ void SyncedNeuron::forward_gradients() {
  */
 
 
+void LTUSynced::set_threshold(float threshold) {
+  this->activation_threshold = threshold;
+}
 int SyncedNeuron::get_no_of_syanpses_with_gradients() {
   int synapse_with_gradient = 0;
   for (auto it: this->outgoing_synapses) {
@@ -146,6 +150,7 @@ void SyncedNeuron::propagate_error() {
     n_message.error = error_vector[0];
     n_message.gamma = messages_q[0].gamma;
     n_message.lambda = messages_q[0].lambda;
+    n_message.target = messages_q[0].target;
 //    auto it = std::max_element(distance_vector.begin(), distance_vector.end());
 //    n_message.distance_travelled = *it;
 
@@ -204,7 +209,7 @@ void SyncedNeuron::prune_useless_weights() {
 //            std::execution::seq,
       this->outgoing_synapses.begin(),
       this->outgoing_synapses.end(),
-      [&](SyncedSynapse*s) {
+      [&](SyncedSynapse *s) {
         if (s->is_useless) {
           s->decrement_reference();
           if (s->input_neuron != nullptr) {
@@ -225,7 +230,7 @@ void SyncedNeuron::prune_useless_weights() {
 //            std::execution::seq,
       this->incoming_synapses.begin(),
       this->incoming_synapses.end(),
-      [&](SyncedSynapse*s) {
+      [&](SyncedSynapse *s) {
         if (s->is_useless) {
           s->decrement_reference();
           if (s->input_neuron != nullptr) {
@@ -257,6 +262,7 @@ float SyncedNeuron::introduce_targets(float target, int time_step) {
   m.error = error;
   m.lambda = 0;
   m.gamma = 0;
+  m.target = target;
   this->error_gradient = m;
   return error * error;
 }
@@ -316,8 +322,7 @@ float ReluSyncedNeuron::backward(float post_activation) {
 
 float SigmoidSyncedNeuron::forward(float temp_value) {
 
-  float post_activation = sigmoid(temp_value);
-  return post_activation;
+  return sigmoid(temp_value);
 }
 
 float SigmoidSyncedNeuron::backward(float post_activation) {
@@ -333,7 +338,7 @@ float BiasSyncedNeuron::backward(float output_grad) {
 }
 
 float LTUSynced::forward(float temp_value) {
-  if (temp_value > this->activation_threshold)
+  if (temp_value >= this->activation_threshold)
     return 1;
   return 0;
 }
