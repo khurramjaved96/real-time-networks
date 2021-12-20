@@ -43,6 +43,14 @@ class Neuron : public dynamic_elem {
   int neuron_age;
   float average_activation;
   float mark_useless_prob;
+  bool is_optical_flow_feature;
+  int n_linear_synapses; // direct synapses (input->output)
+
+  int n_successes;
+  int n_failures;
+  float activity_based_successes;
+  float activity_based_failures;
+  float imprinting_potential;
 
 
   std::pair<float, float> value_ranges;
@@ -89,10 +97,31 @@ class Neuron : public dynamic_elem {
 
   void mark_useless_weights();
 
+  void mark_useless_linear_weights();
+
   void prune_useless_weights();
+
+  void update_imprinting_potential();
+
+  void update_synapse_contributions();
 
   ~Neuron() = default;
 };
+
+class Microstimuli : public Neuron {
+ public:
+  float backward(float output_grad);
+  float forward(float temp_value);
+  Microstimuli(bool is_input, bool is_output, float rate_of_change, float delay);
+
+  float activation_threshold;
+  float rate_of_change;
+  float delay;
+  float current_value;
+  int current_timer;
+  bool is_currently_active;
+  bool is_currently_decreasing;
+}
 
 class LTU : public Neuron {
  public:

@@ -9,6 +9,7 @@
 #include <random>
 #include <algorithm>
 #include <vector>
+#include <execution>
 #include "../../include/utils.h"
 
 
@@ -31,7 +32,68 @@ Neuron::Neuron(bool is_input, bool is_output) {
   drinking_age = 5000;
   mark_useless_prob = 0.999;
   is_bias_unit = false;
+  is_optical_flow_feature = false;
+  n_linear_synapses = 0;
+
+  n_successes = 0;
+  n_failures = 0;
+  activity_based_successes = 0;
+  activity_based_failures = 0;
+  imprinting_potential = 0.5;
 }
+
+
+void Neuron::update_synapse_contributions() {
+  std::for_each(
+      std::execution::par_unseq,
+      this->incoming_synapses.begin(),
+      this->incoming_synapses.end(),
+      [&](synapse *s) {
+        if (s->input_neuron->value == 1)
+          s->n_feature_activity_contributions += 1;
+      });
+}
+
+void Neuron::update_imprinting_potential() {
+  if (this->neuron_age == this->drinking_age * 4){
+
+    // TODO what in case of multiple output nodes? what if some are output?
+    for (auto &it : this->outgoing_synapses) {
+      if (it->output_neuron->is_output_neuron) {
+        float total_synapse_activity = 0;
+        // TODO reused it...
+        for (auto &it : this->incoming_synapses)
+          total_synapse_activity += it->n_feature_activity_contributions;
+        if (it->synapse_utility < it->utility_to_keep){
+          std::for_each(
+              std::execution::par_unseq,
+              this->incoming_synapses.begin(),
+              this->incoming_synapses.end(),
+              [&](synapse *s) {
+                s->input_neuron->n_failures += 1;
+                s->input_neuron->activity_based_failures += s->n_feature_activity_contributions / total_synapse_activity;
+                s->input_neuron->imprinting_potential = 0.9 * s->input_neuron->imprinting_potential
+                    - 0.1 * (s->n_feature_activity_contributions / total_synapse_activity);
+              });
+        }
+        else{
+          std::for_each(
+              std::execution::par_unseq,
+              this->incoming_synapses.begin(),
+              this->incoming_synapses.end(),
+              [&](synapse *s) {
+                s->input_neuron->n_successes += 1;
+                s->input_neuron->activity_based_successes += s->n_feature_activity_contributions / total_synapse_activity;
+                s->input_neuron->imprinting_potential = 0.9 * s->input_neuron->imprinting_potential
+                    + 0.1 * (s->n_feature_activity_contributions / total_synapse_activity);
+              });
+        }
+      }
+    }
+
+  }
+}
+
 
 /**
  * Fire a neuron. Use the update_value calculated gradient_activation to set this->gradient_activation to
@@ -157,26 +219,12 @@ void Neuron::update_value(int time_step) {
 
 void Neuron::normalize_neuron() {
 
-  if (this->neuron_age == this->drinking_age * 4 && !this->is_output_neuron) {
-    this->is_mature = true;
-    for (auto it : this->incoming_synapses) {
-      if (!it->get_recurrent_status()) {
         it->step_size = 0;
-        it->turn_off_idbd();
-      }
-    }
-
-  }
-  if(this->neuron_age % this->drinking_age == 0 && !this->is_input_neuron && !this->is_output_neuron){
-
-    if(this->average_activation < 0){
-      std::cout << "neuron:cpp: Negative max value; shouldn't happen\n";
-      exit(1);
-    }
 //  }
 //
 //  if (this->neuron_age == this->drinking_age && !this->is_input_neuron && !this->is_output_neuron) {
 
+  if(this->neuron_age % this->drinking_age == 0 && !this->is_input_neuron && !this->is_output_neuron){
     float scale = 1 / this->average_activation;
     if(scale > 2 or this->average_activation == 0){
       scale = 2;
@@ -414,6 +462,31 @@ void Neuron::propagate_error() {
 //      Remove the activation we just processed
     this->past_activations.pop();
     this->error_gradient.push(n_message);
+  }
+}
+
+/**
+ * Mark useless linear weights (going directly from input -> output).
+ * The reason that this is separate is because we dont want the other outgoing weights
+ * from these input neurons to be marked. They should be removed all at  once their generated
+ * feature is removed.
+ */
+void Neuron::mark_useless_linear_weights() {
+//  return;
+  std::uniform_real_distribution<float> dist(0, 1);
+//  std::mt19937 gen;
+  float rand_val = dist(Neuron::gen);
+//  std::cout << "Rand value == " << rand_val << std::endl;
+  if(this->neuron_age > this->drinking_age * 4) {
+    for (auto &it : this->outgoing_synapses) {
+//      Only delete weights if they're older than 70k steps
+      if (it->output_neuron->is_output_neuron && it->synapse_utility < it->utility_to_keep && !it->disable_utility) {
+        if (dist(gen) > this->mark_useless_prob){
+          it->is_useless = true;
+          this->n_linear_synapses -= 1;
+        }
+      }
+    }
   }
 }
 
@@ -707,6 +780,47 @@ float BiasNeuron::forward(float temp_value) {
 
 
 float BiasNeuron::backward(float output_grad) {
+  return 0;
+}
+
+Microstimuli::Microstimuli(bool is_input, bool is_output, float rate_of_change, float delay) : Neuron(is_input, is_output){
+  activation_threshold = 1;
+  rate_of_change = rate_of_change;
+  delay = delay;
+  current_value = 0;
+  current_timer = 0;
+  is_currently_active = true;
+  is_currently_decreasing = false;
+}
+
+float Microstimuli::forward(float temp_value) {
+  // dont start a new output sequence if one is currently in progress
+  if (is_currently_active){
+    current_timer += 1;
+    if (current_timer >= delay && !is_currently_decreasing){
+      current_value += rate_of_change;
+      if (current_value >= 1){
+        current_value = 1;
+        is_currently_decreasing = true;
+      }
+    }
+    else if (currenty_timer >= delay && is_currently_decreasing){
+      current_value -= rate_of_change;
+      if (current_value <= 0){
+        current_value = 0;
+        is_currently_decreasing = false;
+        is_currently_active = false;
+        current_timer = 0;
+      }
+    }
+  }
+  else if(fabs(temp_value) >= activation_threshold){
+    is_currently_active = true;
+  }
+  return current_value;
+}
+
+float Microstimuli::backward(float output_grad) {
   return 0;
 }
 

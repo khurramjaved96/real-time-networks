@@ -36,6 +36,7 @@ class synapse : public dynamic_elem {
   float synapse_utility;
   float synapse_utility_to_distribute;
   float synapse_local_utility_trace = 0;
+  float synapse_local_utility_trace_decay;
   float tidbd_old_activation;
   float tidbd_old_error;
   bool propagate_gradients;
@@ -44,6 +45,10 @@ class synapse : public dynamic_elem {
   float h_tidbd;
   bool idbd;
   bool disable_utility; //Also disables pruning
+
+  // count number of times this synapse was active (LTU:1) when the
+  // connected feature was active
+  int n_feature_activity_contributions;
 
   void set_connected_to_recurrence(bool);
 

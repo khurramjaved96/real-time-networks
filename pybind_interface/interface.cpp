@@ -83,8 +83,9 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def("get_feature_utilities", &ImprintingWideNetwork::get_feature_utilities);
 
     py::class_<ImprintingAtariNetwork, Network>(m, "ImprintingAtariNetwork")
-        .def(py::init<int, int, int, float, float, bool, int, bool, int, int, int, float>())
+        .def(py::init<int, int, int, float, float, bool, int, bool, int, int, int, float, bool, bool, int, float, float>())
         .def_readonly("imprinted_features", &ImprintingAtariNetwork::imprinted_features)
+        .def_readonly("linear_features", &ImprintingAtariNetwork::linear_features)
         .def("imprint_randomly", &ImprintingAtariNetwork::imprint_randomly)
         .def("imprint_using_optical_flow", &ImprintingAtariNetwork::imprint_using_optical_flow)
         .def("imprint_using_optical_flow_old", &ImprintingAtariNetwork::imprint_using_optical_flow_old)
@@ -107,9 +108,11 @@ PYBIND11_MODULE(FlexibleNN, m) {
         .def_readonly("weight", &synapse::weight)
         .def_readonly("credit", &synapse::credit)
         .def_readonly("trace", &synapse::trace)
+        .def_readonly("step_size", &synapse::step_size)
         .def_readonly("meta_step_size", &synapse::meta_step_size)
         .def_readonly("utility_to_keep", &synapse::utility_to_keep)
         .def_readonly("synapse_utility", &synapse::synapse_utility)
+        .def_readonly("synapse_utility_to_distribute", &synapse::synapse_utility_to_distribute)
         .def_readonly("input_neuron", &synapse::input_neuron)
         .def_readonly("output_neuron", &synapse::output_neuron);
 

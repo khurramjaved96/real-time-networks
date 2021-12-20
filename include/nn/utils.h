@@ -69,6 +69,8 @@ bool to_delete_s(synapse *s);
 
 bool to_delete_synced_s(SyncedSynapse *s);
 
+bool to_delete_linear_n(Neuron *s);
+
 bool to_delete_synced_n(SyncedNeuron *s);
 
 bool to_delete_n(Neuron *s);

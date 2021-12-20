@@ -47,6 +47,10 @@ synapse::synapse(Neuron *input, Neuron *output, float w, float step_size) {
   this->synapse_local_utility_trace = 0;
   utility_to_keep = 0.0001;
   disable_utility = false;
+  synapse_local_utility_trace_decay = 0.99999;
+  this->synapse_local_utility_trace = 0;
+  this->synapse_utility_to_distribute = 0;
+  this->n_feature_activity_contributions = 0;
 }
 //
 
@@ -79,7 +83,11 @@ void synapse::update_utility() {
       this->output_neuron->value_without_activation - this->input_neuron->old_value * this->weight);
 //  0.999 is a hyper-parameter.
   if(!this->in_shadow_mode && !this->disable_utility) {
-    this->synapse_local_utility_trace = 0.99999 * this->synapse_local_utility_trace + 0.00001 * std::abs(diff);
+    this->synapse_local_utility_trace =
+      this->synapse_local_utility_trace_decay * this->synapse_local_utility_trace
+      + (1 - this->synapse_local_utility_trace_decay) * std::abs(diff);
+    //if (this->id == 2)
+    //  std::cout << ">> " << synapse_local_utility_trace << "*" << this->output_neuron->neuron_utility << "/" << this->output_neuron->sum_of_utility_traces + 1e-10<< std::endl;
     this->synapse_utility =
         (synapse_local_utility_trace * this->output_neuron->neuron_utility)
             / (this->output_neuron->sum_of_utility_traces + 1e-10);
@@ -206,6 +214,11 @@ void synapse::update_weight() {
   } else {
     this->weight -= (this->step_size * this->credit);
   }
+  if (this->weight > 5)
+    this->weight = 5;
+  if (this->weight < -5)
+    this->weight = -5;
+
   if (this->is_recurrent_connection) {
     if (this->weight > 0.9) {
       this->weight = 0.9;

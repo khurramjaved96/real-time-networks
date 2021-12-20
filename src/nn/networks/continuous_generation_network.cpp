@@ -1,4 +1,4 @@
-#include "../../../include/nn/networks/imprinting_atari_network.h"
+#include "../../../include/nn/networks/continuous_generation_network.h"
 #include <numeric>
 #include <iostream>
 #include <assert.h>
@@ -16,42 +16,38 @@
 #include "../../../include/nn/utils.h"
 
 
-ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
-                                               int no_of_output_neurons,
-                                               int width_of_network,
-                                               float step_size,
-                                               float meta_step_size,
-                                               bool tidbd,
-                                               int seed,
-                                               bool use_imprinting,
-                                               int input_H,
-                                               int input_W,
-                                               int input_bins,
-                                               float imprinting_max_prob,
-                                               bool imprinting_only_single_layer,
-                                               bool use_optical_flow_state,
-                                               int linear_drinking_age,
-                                               float linear_synapse_local_utility_trace_decay,
-                                               float utility_to_keep) {
+ContinuousGenerationNetwork::ContinuousGenerationNetwork(int no_of_input_features,
+                                                         int no_of_output_neurons,
+                                                         bool make_linear_connections,
+                                                         float step_size,
+                                                         float meta_step_size,
+                                                         bool tidbd,
+                                                         int seed,
+                                                         bool use_imprinting,
+                                                         int imprinting_max_incoming_connections,
+                                                         int imprinting_max_num_microstimuli,
+                                                         int imprinting_max_new_features_per_step,
+                                                         bool imprinting_only_single_layer,
+                                                         int linear_drinking_age,
+                                                         float linear_synapse_local_utility_trace_decay,
+                                                         float linear_utility_to_keep
+                                                         std::pair<int, int> short_term_feature_recycling_age) {
 
-  // TODO increment references not handled
+  Neuron::gen = std::mt19937(seed);
   this->time_step = 0;
   this->mt.seed(seed);
-  Neuron::gen = std::mt19937(seed);
   this->use_imprinting = use_imprinting;
   this->step_size = step_size;
   this->meta_step_size = meta_step_size;
-  this->utility_to_keep = utility_to_keep;
-  this->input_H = input_H;
-  this->input_W = input_W;
-  this->input_bins = input_bins;
-  this->imprinting_max_prob = imprinting_max_prob;
+  this->imprinting_max_incoming_connections = imprinting_max_incoming_connections;
+  this->imprinting_max_num_microstimuli = imprinting_max_num_microstimuli;
+  this->imprinting_max_new_features_per_step = imprinting_max_new_features_per_step;
   this->imprinting_only_single_layer = imprinting_only_single_layer;
+  this->short_term_feature_recycling_age = short_term_feature_recycling_age;
 
   std::vector<int> inp(no_of_input_features);
   std::iota(inp.begin(), inp.end(), 0);
   this->input_indices = inp;
-  int non_optical_flow_max_idx = input_H * input_W * input_bins;
 
   std::uniform_real_distribution<float> dist(0, 1);
 
@@ -59,8 +55,6 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
     auto n = new LinearNeuron(true, false);
     n->is_mature = true;
     n->drinking_age = linear_drinking_age;
-    if (neuron_no >= non_optical_flow_max_idx)
-      n->is_optical_flow_feature = true;
     this->input_neurons.push_back(n);
     this->all_neurons.push_back(n);
     increment_references(n, 2);
@@ -74,22 +68,24 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
     increment_references(n, 2);
   }
 
-  for (auto &inp_it : this->input_neurons){
-    this->linear_features.push_back(inp_it);
-    //increment_references(inp_it, 1);
-    for (auto &out_it : this->output_neurons){
-      synapse *s = new synapse(inp_it,out_it, 0, this->step_size * 0.001);
-      s->synapse_local_utility_trace_decay = linear_synapse_local_utility_trace_decay;
-      //TODO initializing optimistically here
-      s->synapse_local_utility_trace = utility_to_keep;
-      s->set_utility_to_keep(utility_to_keep);
-      s->turn_on_idbd();
-      s->set_meta_step_size(meta_step_size);
-      s->block_gradients();
-      this->all_synapses.push_back(s);
-      this->output_synapses.push_back(s);
-      increment_references(s, 2);
-      inp_it->n_linear_synapses += 1;
+  if (make_linear_connections){
+    for (auto &inp_it : this->input_neurons){
+      this->linear_features.push_back(inp_it);
+      //increment_references(inp_it, 1);
+      for (auto &out_it : this->output_neurons){
+        synapse *s = new synapse(inp_it,out_it, 0, this->step_size * 0.001);
+        s->synapse_local_utility_trace_decay = linear_synapse_local_utility_trace_decay;
+        //TODO initializing optimistically here
+        s->synapse_local_utility_trace = linear_utility_to_keep;
+        s->set_utility_to_keep(linear_utility_to_keep);
+        s->turn_on_idbd();
+        s->set_meta_step_size(meta_step_size);
+        s->block_gradients();
+        this->all_synapses.push_back(s);
+        this->output_synapses.push_back(s);
+        increment_references(s, 2);
+        inp_it->n_linear_synapses += 1;
+      }
     }
   }
 
@@ -101,9 +97,9 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
   increment_references(this->bias_unit, 2);
 
   for (auto &output : this->output_neurons) {
-    synapse *s = new synapse(bias_unit, output, 0.0,0.0);
-    s->set_utility_to_keep(utility_to_keep);
-    s->disable_utility = true;
+    synapse *s = new synapse(bias_unit, output, 0.0, 0);
+    s->set_utility_to_keep(linear_utility_to_keep);
+    //s->disable_utility = true;
     s->block_gradients();
     this->all_synapses.push_back(s);
     this->output_synapses.push_back(s);
@@ -115,7 +111,7 @@ ImprintingAtariNetwork::ImprintingAtariNetwork(int no_of_input_features,
 
 
 
-void ImprintingAtariNetwork::step() {
+void ContinuousGenerationNetwork::step() {
   //  Calculate and temporarily hold our next neuron values.
   std::for_each(
       std::execution::par_unseq,
@@ -208,6 +204,7 @@ void ImprintingAtariNetwork::step() {
   auto it = std::remove_if(this->all_synapses.begin(), this->all_synapses.end(), to_delete_s);
   this->all_synapses.erase(it, this->all_synapses.end());
 
+// TODO why is this here???
 //  Similarly for all outgoing synapses and neurons.
   std::for_each(
       std::execution::par_unseq,
@@ -271,7 +268,7 @@ void ImprintingAtariNetwork::step() {
 }
 
 
-void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *> interesting_neurons) {
+void ContinuousGenerationNetwork::imprint_on_interesting_neurons(std::vector<Neuron *> interesting_neurons) {
   // randomly pick some neurons from the provided "interesting_neurons" to imprint on
   int max_number_of_incoming_connections = 50;
   std::uniform_real_distribution<float> prob_max_selection(0, this->imprinting_max_prob);
@@ -322,72 +319,64 @@ void ImprintingAtariNetwork::imprint_on_interesting_neurons(std::vector<Neuron *
 }
 
 
-void ImprintingAtariNetwork::imprint_using_optical_flow_old() {
-  // potential neurons for imprinting are those where value @ step t != t-1
-  std::vector <Neuron *> interesting_neurons;
-  for (auto &it : this->all_neurons) {
-    if (this->use_optical_flow_state && it->is_optical_flow_feature && it->old_value == 1)
-      interesting_neurons.push_back(it);
-    else if (it->value != it->old_value && it->is_mature && !it->useless_neuron && !it->is_output_neuron && (!this->imprinting_only_single_layer || it->is_input_neuron))
-      interesting_neurons.push_back(it);
+void ContinuousGenerationNetwork::imprint_with_microstimuli() {
+  // TODO handle multiple feature generation in cpp so that we can handle creation of microstimuli at
+  // at random generated features.
+  std::uniform_int_distribution<> num_incoming_conn_sampler(1, this->imprinting_max_incoming_connections);
+  std::uniform_int_distribution<> num_microstimuli_sampler(0, this->imprinting_max_num_microstimuli);
+  std::uniform_int_distribution<> num_new_features_sampler(1, this->imprinting_max_new_features_per_step);
+
+  int num_incoming_connections = num_incoming_conn_sampler(this->mt);
+  int num_microstimuli = num_microstimuli_sampler(this->mt);
+  int num_new_features = num_new_features_sampler(this->mt);
+
+  // make num_new_features number of new LTU features from randomly picked mature units.
+  std::vector <Neuron *> generated_features;
+  for (int i = 0; i < num_new_features; i++) {
+    std::vector <Neuron *> incoming_features;
+    std::uniform_int_distribution<> index_sampler(0, this->all_neurons.size() -1);
+
+    int counter = 0; // so that we dont sample endlessly if conditions not met
+    int total_ones = 0;
+    // TODO optimize this
+    // TODO may not work well if active features are rare. Have a condition to check for active features then.
+    while (incoming_features.size() < num_incoming_connections && counter < this->all_neurons.size()){
+      counter += 1;
+      auto n = this->all_neurons[index_sampler(this->mt)];
+      if (n->is_mature && !n->useless_neuron && !n->is_output_neuron && (!this->imprinting_only_single_layer || n->is_input_neuron)){
+        incoming_features.push_back(n);
+        if (n->old_value == 1)
+          total_ones += 1;
+      }
+    }
+
+    if (total_ones < 1){
+      std::cout << "no active features selected. not generating." << std::endl;
+      continue;
+    }
+
+    auto generated_feature = this->make_LTU_feature(incoming_features);
+    if (generated_feature != nullptr){
+      generated_features.push_back(generated_feature);
+      this->short_term_memory_features.push_back(generated_feature);
+    }
   }
-  this->imprint_on_interesting_neurons(interesting_neurons);
+
+  // pick num_microstimuli number of newly generated features randomly and make a new
+  // microstimuli feature out of them
+  if (generated_features.size() && num_microstimuli){
+    std::uniform_int_distribution<> generated_feature_index_sampler(0, this->generated_features.size() -1);
+    for (int i = 0; i < num_microstimuli; i++) {
+      auto n = generated_features[generated_feature_index_sampler(this->mt)];
+      auto generated_microstimuli = this->make_microstimuli_feature(n);
+      if (generated_microstimuli != nullptr)
+        this->short_term_memory_features.push_back(generated_microstimuli);
+    }
+  }
 }
 
 
-void ImprintingAtariNetwork::imprint_using_optical_flow() {
-  // potential neurons for imprinting are those where value @ step t-1 = 1 and values @ t and t-2 = 0.
-  std::vector <Neuron *> interesting_neurons;
-  for (auto &it : this->all_neurons) {
-    if (this->use_optical_flow_state && it->is_optical_flow_feature && it->old_value == 1)
-      interesting_neurons.push_back(it);
-    else if (it->old_old_value == 0 && it->old_value == 1 && it->value == 0 && it->is_mature && !it->useless_neuron && !it->is_output_neuron && (!this->imprinting_only_single_layer || it->is_input_neuron))
-      interesting_neurons.push_back(it);
-  }
-  this->imprint_on_interesting_neurons(interesting_neurons);
-}
-
-
-void ImprintingAtariNetwork::imprint_randomly() {
-  // potential neurons for imprinting are picked randomly
-  // see imprint_using_optical_flow() first
-  // The numbers are picked to try and make a fair comparison with
-  // the optical flow imprinting
-  std::uniform_int_distribution<> interesting_sampler(30, 100);
-  auto max_interesting_units = interesting_sampler(this->mt);
-
-  std::uniform_int_distribution<> index_sampler(0, this->all_neurons.size() -1);
-  std::vector <Neuron *> interesting_neurons;
-
-  //TODO bugged... handle exit condition when not enough interesting
-  while (interesting_neurons.size() < max_interesting_units){
-    auto it = this->all_neurons[index_sampler(this->mt)];
-    if (this->use_optical_flow_state && it->is_optical_flow_feature && it->old_value == 1)
-      interesting_neurons.push_back(it);
-    else if (it->is_mature && !it->useless_neuron && !it->is_output_neuron && (!this->imprinting_only_single_layer || it->is_input_neuron))
-      interesting_neurons.push_back(it);
-  }
-  this->imprint_on_interesting_neurons(interesting_neurons);
-}
-
-
-
-//void ImprintingAtariNetwork::set_input_values(std::vector<float> const &input_values) {
-////    assert(input_values.size() == this->input_neurons.size());
-//  for (int i = 0; i < input_values.size(); i++) {
-//    if (i < this->input_neurons.size()) {
-//      this->input_neurons[i]->old_value = this->input_neurons[i]->value;
-//      this->input_neurons[i]->old_value_without_activation = this->input_neurons[i]->value;
-//      this->input_neurons[i]->value = input_values[i];
-//      this->input_neurons[i]->value_without_activation = input_values[i];
-//    } else {
-//      std::cout << "More input features than input neurons\n";
-//      exit(1);
-//    }
-//  }
-//}
-
-void ImprintingAtariNetwork::set_input_values(std::vector<float> const &input_values) {
+void ContinuousGenerationNetwork::set_input_values(std::vector<float> const &input_values) {
   if (input_values.size() != this->input_neurons.size()){
     std::cout << input_values.size() << " : " << this->input_neurons.size() << std::endl;
     std::cout << "err size in set_input_values()" << std::endl;
@@ -405,13 +394,4 @@ void ImprintingAtariNetwork::set_input_values(std::vector<float> const &input_va
         this->input_neurons[i]->value = input_values[i];
         this->input_neurons[i]->value_without_activation = input_values[i];
       });
-
-//  for (int i = 0; i < input_values.size(); i++) {
-//    if (i < this->input_neurons.size()) {
-//      if (this->input_neurons[i]->value != input_values[i] or this->input_neurons[i]->value_without_activation != input_values[i]){
-//        std::cout << "bugged!~" << std::endl;
-//        exit(1);
-//      }
-//    }
-//  }
 }

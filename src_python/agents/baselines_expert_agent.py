@@ -27,6 +27,7 @@ class BaselinesExpert:
         folder="rl-baselines3-zoo/rl-trained-agents",
         no_render=True,
         deterministic=True,
+        exploration_rate=0,
     ):
         log_path = os.path.join(folder, algo, f"{env_id}_1")
         assert os.path.isdir(log_path), f"The {log_path} folder was not found"
@@ -95,35 +96,49 @@ class BaselinesExpert:
         self.deterministic = deterministic
         self.state = None
 
+        if self.deterministic == False:
+            self.model.exploration_rate = exploration_rate
+
     def predict(self, obs):
         action, self.state = self.model.predict(obs, state=self.state, deterministic=self.deterministic)
         return action
 
 
 if __name__ == "__main__":
-	expert_policy = BaselinesExpert()
-	env = expert_policy.env
-	obs = env.reset()
+    from collections import deque
+    import pickle
+    obsq = []
+    expert_policy = BaselinesExpert(seed=0, deterministic=False, exploration_rate=0.25)
+    env = expert_policy.env
+    obs = env.reset()
 
-	import random
-	episode_reward = 0
-	for timestep in range(20000):
-		action = expert_policy.predict(obs)
-		#action = [env.action_space.sample()]
-		if timestep > 30:
-			from IPython import embed; embed()
-		obs, reward, done, infos = env.step(action)
-		if False:
-			env.render("human")
+    import random
+    from time import sleep
+    episode_reward = 0
+    t = 0
+    for timestep in range(200000):
+        t+=1 
+        action = expert_policy.predict(obs)
+        #action = [env.action_space.sample()]
+        obs, reward, done, infos = env.step(action)
+        if False:
+            env.render("human")
+            sleep(0.1)
 
-		episode_reward += reward[0]
+        if reward == 1 or reward == -1:
+            obsq.append(obs)
+            print(t)
+            t=0
+        episode_reward += reward[0]
 
-		# For atari the return reward is not the atari score
-		# so we have to get it from the infos dict
-		if True and infos is not None:
-			episode_infos = infos[0].get("episode")
-			if episode_infos is not None:
-				print(f"Atari Episode Score: {episode_infos['r']:.2f}")
-				print("Atari Episode Length", episode_infos["l"])
-				expert_policy.state = None
-	env.close()
+        # For atari the return reward is not the atari score
+        # so we have to get it from the infos dict
+        if done and infos is not None:
+            episode_infos = infos[0].get("episode")
+            if episode_infos is not None:
+                print(f"Atari Episode Score: {episode_infos['r']:.2f}")
+                print("Atari Episode Length", episode_infos["l"])
+                expert_policy.state = None
+    env.close()
+    with open('pong_obs_s.pkl', 'wb') as pkl_f:
+        pickle.dump(obsq, pkl_f, protocol=pickle.HIGHEST_PROTOCOL)
