@@ -79,8 +79,16 @@ class LTUSynced : public SyncedNeuron {
   float backward(float output_grad);
   float forward(float temp_value);
   LTUSynced(bool is_input, bool is_output, float threshold);
-
+  void set_threshold(float threshold);
   float activation_threshold;
+
+};
+
+class RecurrentReluNeuron : public SyncedNeuron {
+ public:
+  float backward(float output_grad);
+
+  float forward(float temp_value);
 
 };
 

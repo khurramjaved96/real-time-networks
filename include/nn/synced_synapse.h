@@ -81,6 +81,13 @@ class SyncedSynapse : public dynamic_elem {
   ~SyncedSynapse() = default;
 };
 
+class LTUSynapse: public SyncedSynapse {
+ public:
+  void update_utility();
+};
+
+
+
 
 
 #endif //INCLUDE_NN_SYNCED_SYNAPSE_H_
