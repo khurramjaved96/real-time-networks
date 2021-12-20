@@ -7,6 +7,13 @@
 #include <string>
 #include <iostream>
 #include <cstring>
+#include <stdlib.h>
+
+#include <chrono>
+#include <thread>
+#include <random>
+
+using namespace std::chrono_literals;
 
 Database::Database() {
   this->mysql = mysql_init(NULL);
@@ -73,6 +80,7 @@ int Database::create_database(const std::string &database_name) {
   }
   mysql_commit(this->mysql);
   mysql_close(this->mysql);
+  std::cout << "Database created\n";
   return val;
 }
 
@@ -85,12 +93,20 @@ int Database::run_query(std::string query, const std::string &database_name) {
 std::string Database::vec_to_tuple(std::vector<std::string> row, const std::string &padding) {
   std::string tup = "(";
   for (int counter = 0; counter < row.size() - 1; counter++) {
-    tup += padding;
-    tup += row[counter];
-    tup += padding;
+
+    if(row[counter] == "-nan" || row[counter] == "nan" ||  row[counter] == "inf" ||  row[counter] == "-inf")
+      tup += "NULL";
+    else {
+      tup += padding;
+      tup += row[counter];
+      tup += padding;
+    }
     tup += ",";
   }
-  tup = tup + padding + row[row.size() - 1] + padding + " )";
+  if(row[row.size() - 1] == "-nan" || row[row.size() - 1] == "nan" || row[row.size() - 1] == "inf" || row[row.size() - 1] == "-inf" )
+    tup = tup  + "NULL" + " )";
+  else
+    tup = tup + padding + row[row.size() - 1] + padding + " )";
   return tup;
 }
 
@@ -112,17 +128,37 @@ std::string Database::vec_to_tuple(std::vector<std::string> row, const std::stri
 int Database::add_rows_to_table(const std::string &database_name, const std::string &table,
                                 const std::vector<std::string> &keys,
                                 const std::vector<std::vector<std::string>> &values) {
+  float return_val = 1;
+  std::string query = "INSERT INTO " + table + vec_to_tuple(keys, "") + " VALUES ";
+  for (auto &value : values) {
+    query += vec_to_tuple(value, "'");
+    if (&value != &values.back())
+      query += ",";
+  }
+  int failures = 0;
+  using namespace std::this_thread;     // sleep_for, sleep_until
+  using namespace std::chrono_literals; // ns, us, ms, s, h, etc.
+
+  using std::chrono::system_clock;
+  std::mt19937 mt;
+  std::uniform_int_distribution<int> time_sampler(50, 3000);
+  while (return_val && failures < 100) {
     this->connect_and_use(database_name);
-    std::string query = "INSERT INTO " + table + vec_to_tuple(keys, "") + " VALUES ";
-    for (auto &value : values) {
-        query += vec_to_tuple(value, "'");
-        if (&value != &values.back())
-            query += ",";
+    return_val = mysql_query(this->mysql, &query[0]);
+    if(return_val == 0)
+      return_val = mysql_commit(this->mysql);
+    if(return_val != 0){
+      std::cout << "Error code = " << return_val << std::endl;
+      int sleep_time = time_sampler(mt);
+      std::cout << "Attempt " << failures << " failed;"  <<  " Sleeping for " << sleep_time << " ms" << std::endl;
+      sleep_for(std::chrono::milliseconds(sleep_time));
+      failures++;
+//      std::cout << "Query commit failed\n";
+//      std::cout << query << std::endl;
     }
-    mysql_query(this->mysql, &query[0]);
-    mysql_commit(this->mysql);
     mysql_close(this->mysql);
-    return 0;
+  }
+  return 0;
 }
 
 int
