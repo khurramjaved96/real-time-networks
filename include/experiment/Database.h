@@ -2,7 +2,7 @@
 // Created by Khurram Javed on 2021-03-29.
 //
 
-#include <mysql.h>
+#include <mysql/mysql.h>
 #include <string>
 #include <iostream>
 #include <vector>

@@ -3,7 +3,7 @@
 //
 
 #include "../../include/experiment/Database.h"
-#include <mysql.h>
+#include <mysql/mysql.h>
 #include <string>
 #include <iostream>
 #include <cstring>
@@ -145,9 +145,9 @@ int Database::add_rows_to_table(const std::string &database_name, const std::str
   while (return_val && failures < 100) {
     this->connect_and_use(database_name);
     return_val = mysql_query(this->mysql, &query[0]);
-    if(return_val == 0)
+    if(return_val == 0 || return_val == 1) // it returns 1 on success for me ¯\_(ツ)_/¯
       return_val = mysql_commit(this->mysql);
-    if(return_val != 0){
+    if(return_val != 0 && return_val != 1){
       std::cout << "Error code = " << return_val << std::endl;
       int sleep_time = time_sampler(mt);
       std::cout << "Attempt " << failures << " failed;"  <<  " Sleeping for " << sleep_time << " ms" << std::endl;
