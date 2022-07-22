@@ -219,10 +219,15 @@ void Neuron::update_value(int time_step) {
 
 void Neuron::normalize_neuron() {
 
-        it->step_size = 0;
-//  }
-//
-//  if (this->neuron_age == this->drinking_age && !this->is_input_neuron && !this->is_output_neuron) {
+//    if (this->neuron_age == this->drinking_age * 4 && !this->is_output_neuron) {
+//      this->is_mature = true;
+//      for (auto it : this->incoming_synapses) {
+//        if (!it->get_recurrent_status()) {
+//          it->step_size = 0;
+//          it->turn_off_idbd();
+//        }
+//      }
+//    }
 
   if(this->neuron_age % this->drinking_age == 0 && !this->is_input_neuron && !this->is_output_neuron){
     float scale = 1 / this->average_activation;
@@ -804,7 +809,7 @@ float Microstimuli::forward(float temp_value) {
         is_currently_decreasing = true;
       }
     }
-    else if (currenty_timer >= delay && is_currently_decreasing){
+    else if (current_timer >= delay && is_currently_decreasing){
       current_value -= rate_of_change;
       if (current_value <= 0){
         current_value = 0;

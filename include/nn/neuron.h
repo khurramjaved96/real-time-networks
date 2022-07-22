@@ -121,7 +121,7 @@ class Microstimuli : public Neuron {
   int current_timer;
   bool is_currently_active;
   bool is_currently_decreasing;
-}
+};
 
 class LTU : public Neuron {
  public:

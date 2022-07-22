@@ -28,18 +28,18 @@ int main(int argc, char *argv[]){
 
   float running_error = 6;
   float accuracy = 0.1;
-  Experiment my_experiment = Experiment(argc, argv);
+  Experiment *my_experiment = new ExperimentJSON(argc, argv);
 
-  Metric error_metric = Metric(my_experiment.database_name, "error_table",
+  Metric error_metric = Metric(my_experiment->database_name, "error_table",
                                std::vector < std::string > {"step", "run", "error", "accuracy"},
                                std::vector < std::string > {"int", "int", "real", "real"},
                                std::vector < std::string > {"step", "run"});
-  Metric error_metric_test = Metric(my_experiment.database_name, "test_set",
+  Metric error_metric_test = Metric(my_experiment->database_name, "test_set",
                                std::vector < std::string > {"step", "run", "accuracy", "mode"},
                                std::vector < std::string > {"int", "int", "real", "int"},
                                std::vector < std::string > {"step", "run", "mode"});
 
-  LayerwiseFeedforward network = LayerwiseFeedforward(my_experiment.get_float_param("step_size"), my_experiment.get_float_param("meta_step_size"), my_experiment.get_int_param("seed"), 28*28, 10, 0.001);
+  LayerwiseFeedforward network = LayerwiseFeedforward(my_experiment->get_float_param("step_size"), my_experiment->get_float_param("meta_step_size"), my_experiment->get_int_param("seed"), 28*28, 10, 0.001);
 
   std::vector<std::vector<std::string>> error_logger;
   std::vector<std::vector<std::string>> error_logger_test;
@@ -48,8 +48,8 @@ int main(int argc, char *argv[]){
   mnist::MNIST_dataset<std::vector, std::vector<uint8_t>, uint8_t> dataset =
                                                               mnist::read_dataset<std::vector, std::vector, uint8_t, uint8_t>("data/");
 
-  std::mt19937 mt(my_experiment.get_int_param("seed"));
-  int total_data_points = my_experiment.get_int_param("training_points");
+  std::mt19937 mt(my_experiment->get_int_param("seed"));
+  int total_data_points = my_experiment->get_int_param("training_points");
   int total_test_points = 10000;
   std::uniform_int_distribution<int> index_sampler(0, total_data_points - 1);
 //
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
     targets_test.push_back(y_temp);
   }
   int total_steps = 0;
-  for (int i = 0; i < my_experiment.get_int_param("steps"); i++) {
+  for (int i = 0; i < my_experiment->get_int_param("steps"); i++) {
     total_steps++;
     int index = index_sampler(mt);
     auto x = images[index];
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]){
     if (i % 100 == 0) {
       std::vector<std::string> error;
       error.push_back(std::to_string(i));
-      error.push_back(std::to_string(my_experiment.get_int_param("run")));
+      error.push_back(std::to_string(my_experiment->get_int_param("run")));
       error.push_back(std::to_string(running_error));
       error.push_back(std::to_string(accuracy));
       error_logger.push_back(error);
@@ -155,11 +155,11 @@ int main(int argc, char *argv[]){
 //      if(network.all_synapses.size() < 10000)
 //      for(int temp = 0; temp<10; temp ++)
 
-      if(my_experiment.get_int_param("imprint") == 1)
+      if(my_experiment->get_int_param("imprint") == 1)
 //        for(int temp = 0; temp<10; temp ++)
-          network.imprint_feature(i, x, my_experiment.get_float_param("step_size"), my_experiment.get_float_param("meta_step_size"), y_index);
+          network.imprint_feature(i, x, my_experiment->get_float_param("step_size"), my_experiment->get_float_param("meta_step_size"), y_index);
       else
-        network.imprint_feature_random(my_experiment.get_float_param("step_size"), my_experiment.get_float_param("meta_step_size"));
+        network.imprint_feature_random(my_experiment->get_float_param("step_size"), my_experiment->get_float_param("meta_step_size"));
 
     }
 
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]){
       }
       std::vector<std::string> error;
       error.push_back(std::to_string(i));
-      error.push_back(std::to_string(my_experiment.get_int_param("run")));
+      error.push_back(std::to_string(my_experiment->get_int_param("run")));
       error.push_back(std::to_string(float(correct)/total_data_points));
       error.push_back(std::to_string(0));
       error_logger_test.push_back(error);
@@ -205,7 +205,7 @@ int main(int argc, char *argv[]){
       }
       std::vector<std::string> error;
       error.push_back(std::to_string(i));
-      error.push_back(std::to_string(my_experiment.get_int_param("run")));
+      error.push_back(std::to_string(my_experiment->get_int_param("run")));
       error.push_back(std::to_string(float(correct)/10000));
       error.push_back(std::to_string(1));
       error_logger_test.push_back(error);
@@ -234,7 +234,7 @@ int main(int argc, char *argv[]){
   }
   std::vector<std::string> error;
   error.push_back(std::to_string(total_steps));
-  error.push_back(std::to_string(my_experiment.get_int_param("run")));
+  error.push_back(std::to_string(my_experiment->get_int_param("run")));
   error.push_back(std::to_string(float(correct)/total_data_points));
   error.push_back(std::to_string(0));
   error_logger_test.push_back(error);
