@@ -7,7 +7,7 @@ matplotlib==3.4.3
 seaborn==0.11.2
 gym_donkeycar==1.0.13
 highway_env==1.4
-ipython==7.28.0
+ipython==7.31.1
 optuna==2.9.1
 panda_gym==1.1.1
 pytablewriter==0.63.0
